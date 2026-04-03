@@ -1,6 +1,6 @@
 # [ISSUE-02] Frontend UI Shell & Routing
 
-**Status:** In Progress  
+**Status:** Done  
 **Assignee:** Execution Agent  
 **Priority:** High  
 **Ref:** `PRD.md` Section 8 (UI/UX) & Section 9 (Navigation Flow)  
@@ -30,13 +30,13 @@ Gunakan **MCP Stitch** untuk mengambil kode HTML dari setiap screen di project S
 
 ## Acceptance Criteria
 
-- [ ] React Router terinstall dan terkonfigurasi.
-- [ ] Layout global (Sidebar + Header + Content) berfungsi di semua halaman.
-- [ ] Semua 5 route di tabel atas bisa diakses tanpa error.
-- [ ] Setiap halaman menampilkan UI sesuai desain Stitch (bisa menggunakan data dummy/hardcoded).
-- [ ] Navigasi antar halaman berfungsi melalui sidebar.
-- [ ] Responsive design minimal untuk desktop.
-- [ ] Tidak ada console error atau warning.
+- [x] React Router terinstall dan terkonfigurasi.
+- [x] Layout global (Sidebar + Header + Content) berfungsi di semua halaman.
+- [x] Semua 5 route di tabel atas bisa diakses tanpa error.
+- [x] Setiap halaman menampilkan UI sesuai desain Stitch (bisa menggunakan data dummy/hardcoded).
+- [x] Navigasi antar halaman berfungsi melalui sidebar.
+- [x] Responsive design minimal untuk desktop.
+- [x] Tidak ada console error atau warning.
 
 ---
 

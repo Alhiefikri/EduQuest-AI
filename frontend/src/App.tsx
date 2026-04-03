@@ -5,6 +5,10 @@ import GenerateSoal from './pages/GenerateSoal';
 import DaftarSoal from './pages/DaftarSoal';
 import EditSoal from './pages/EditSoal';
 import PreviewWord from './pages/PreviewWord';
+import ModulAjar from './pages/ModulAjar';
+import TemplateWord from './pages/TemplateWord';
+import Settings from './pages/Settings';
+import Support from './pages/Support';
 
 export default function App() {
   return (
@@ -16,6 +20,10 @@ export default function App() {
           <Route path="soal/generate" element={<GenerateSoal />} />
           <Route path="soal/edit/:id" element={<EditSoal />} />
           <Route path="soal/preview/:id" element={<PreviewWord />} />
+          <Route path="modul" element={<ModulAjar />} />
+          <Route path="template" element={<TemplateWord />} />
+          <Route path="settings" element={<Settings />} />
+          <Route path="support" element={<Support />} />
         </Route>
       </Routes>
     </BrowserRouter>
