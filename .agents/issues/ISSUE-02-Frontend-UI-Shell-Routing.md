@@ -1,6 +1,6 @@
 # [ISSUE-02] Frontend UI Shell & Routing
 
-**Status:** Open  
+**Status:** In Progress  
 **Assignee:** Execution Agent  
 **Priority:** High  
 **Ref:** `PRD.md` Section 8 (UI/UX) & Section 9 (Navigation Flow)  
