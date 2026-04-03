@@ -14,30 +14,32 @@ Sistem kerja ini menggunakan dua peran utama AI Agent untuk menghemat biaya (tok
 - **Tugas Utama:**
   - Memastikan *Product Requirements Document* (PRD) dipatuhi.
   - Memecah Phase di PRD menjadi tugas-tugas teknis (Issues).
-  - Membuat tiket issue di direktori `issues/`.
-  - Melakukan Code Review dari hasil kerja *Execution Agent*.
-  - Menyetujui (Merge) atau memberikan revisi atas tugas yang dikerjakan.
+  - Membuat file issue di dalam direktori `.agent/issues/` dan melakukan push ke Github.
+  - Melakukan Code Review atas Pull Request (PR) Github dari hasil *Execution Agent*.
+  - Memberikan komentar (feedback) untuk direvisi, lalu menyetujuinya (Merge branch) bila sudah sesuai standar.
 
 ### 👷 2. Execution Agent (The Worker)
 - **Karakteristik:** Agent dengan model yang lebih murah dan cepat (contoh: Gemini 1.5 Flash / Claude 3 Haiku / spesialis IDE seperti Cursor/Cline). Hebat dalam eksekusi code, refactoring cepat, dan menjalankan command terminal.
 - **Tugas Utama:**
-  - Mengambil issue dari direktori `issues/`.
-  - Menulis dan memodifikasi *source code* sesuai instruksi issue.
-  - Melakukan testing *local* / memastikan tidak ada error syntax.
-  - Memberikan notifikasi bahwa tugas selesai (membuat Pull Request / Review Note).
+  - Membaca issue yang dibuat Senior Agent dari `.agent/issues/`.
+  - Membuat **branch** Git baru untuk menyelesaikan fungsionalitas fitur (DILARANG melakukan push langsung ke *origin main*).
+  - Menulis dan memodifikasi *source code* tanpa deviasi dari *requirements*.
+  - Melakukan Testing local.
+  - Membuka Pull Request (PR) terhadap branch utama dan mengajukan file `.agent/reviews/PR-...` sebagai ringkasan.
+  - Mengerjakan ulang revisi (Commit Ulang di branch yang sama) apabila mendapat komentar tambahan dari Senior Agent.
 
 ---
 
 ## 2. Alur Kerja (SOP) Kolaborasi Agent
 
-### Step 1: Issue Generation (Oleh Smart Agent)
-Smart Agent akan melihat `PRD.md` dan struktur project. Berdasarkan fase saat ini, Smart Agent akan membuat file issue baru, contoh: `issues/ISSUE-01-Setup-FastAPI.md`.
+### Step 1: Issue Generation (Oleh Senior Agent)
+Smart Agent akan melihat `PRD.md` dan struktur project. Berdasarkan fase saat ini, Senior Agent akan menyusun task dan menaruhnya ke `.agent/issues/[Nama_Task].md`.
 
-**Format File Issue (`issues/ISSUE-XX-[Nama_Task].md`):**
+**Format File Issue (`.agent/issues/ISSUE-XX-[Nama_Task].md`):**
 ```markdown
 # [ISSUE-01] Setup Basic FastAPI & SQLite
 **Status:** Open / In Progress / Review / Done
-**Assignee:** Execution Agent
+**Assignee:** Junior Execution Agent
 
 ## Deskripsi High-Level
 Setup folder `backend/`, inisialisasi lingkungan virtual Python, install FastAPI, dan koneksi ke SQLite menggunakan Prisma ORM sesuai dengan skema di PRD.
@@ -54,12 +56,13 @@ Setup folder `backend/`, inisialisasi lingkungan virtual Python, install FastAPI
 ```
 
 ### Step 2: Eksekusi (Oleh Execution Agent)
-1. Execution Agent membaca `PRD.md` (sekilas batas scope) dan secara spesifik membaca file `issues/ISSUE-XX.md` yang berstatus **Open**.
-2. Execution Agent merubah status di file issue menjadi **In Progress**.
-3. Menulis *code*, membuat file/folder, menginstall dependencies (Misal di terminal OS via user).
-4. Setelah koding selesai dan jalan di lokal, Agent merubah status di file issue menjadi **Review** dan membuat file PR Review: `reviews/PR-ISSUE-XX.md`.
+1. Execution Agent membaca `.agent/issues/ISSUE-XX.md` yang berstatus **Open**.
+2. **Membuat Branch Baru**: Junior Agent mengeksekusi `git checkout -b feature/issue-XX`. 
+3. Junior Agent merubah status file lokal ke **In Progress** lalu mengerjakan kodingan asli sesuai spesifikasi.
+4. Setelah koding jalan, Agent membuat laporan di `.agent/reviews/PR-ISSUE-XX.md` dan merubah status ke **Review**.
+5. Agent menaikkan ke Github (Commit & Push branch `feature/issue-XX`) sekaligus meminta pembukaan **Pull Request** ke branch `main`.
 
-**Format File PR Review (`reviews/PR-ISSUE-XX.md`):**
+**Format File PR Review (`.agent/reviews/PR-ISSUE-XX.md`):**
 ```markdown
 # Pull Request / Hasil Kerja untuk [ISSUE-01]
 **Status execution:** Berhasil
@@ -68,14 +71,15 @@ Setup folder `backend/`, inisialisasi lingkungan virtual Python, install FastAPI
 - Install `fastapi`, `uvicorn`, `prisma`
 - Menjalankan migrasi prisma awal.
 
-Tolong Smart Agent / User review kode saya di `backend/app/main.py` dan `prisma/schema.prisma`.
+Tolong Senior Agent review kode saya lewat branch ini.
 ```
 
-### Step 3: Review & Kualifikasi (Oleh Smart Agent / User)
-1. User meminta **Smart Agent** untuk memeriksa hasil kerja `PR-ISSUE-XX`.
-2. Smart Agent memeriksa file yang dirubah. Membandingkan fungsionalitas dengan **Acceptance Criteria** di issue awal.
-3. **Jika ada bug/kurang tepat:** Smart Agent mencatat feedbacknya di file `reviews/PR-ISSUE-XX.md` dan mengubah status issue kembali ke **In Progress** agar si Pekerja membenarkannya lagi.
-4. **Jika sudah sempurna (Approved):** Smart Agent memberikan tanda Approved, menyuruh user commit ke Git (atau eksekusi Git Merge kalau ada branch), dan merubah status di file Issue menjadi **Done**.
+### Step 3: Review, Komentar & Merge (Oleh Senior Agent)
+1. User meminta **Senior Agent** untuk me-review Pull Request yang diunggah Junior Agent.
+2. Senior Agent mereview arsitektur, standar Clean Code, dan Acceptance Criteria.
+3. **Jika ada bug/kurang tepat:** Senior Agent mencatat dafatar perbaikannya (komentar review) secara transparan pada `.agent/reviews/PR-ISSUE-XX.md`.
+4. Junior Agent melihat komentar kembali, memperbaiki kode, lalu push ulasan *commit* barunya di PR branch yang sama.
+5. **Jika kode terverifikasi (Approved):** Senior Agent akan mengeksekusi Git Merge dari branch tersebut menuju `main`, lalu merubah status file issue lokal menjadi **Done**.
 
 ---
 
@@ -97,7 +101,7 @@ Aturan ini harus di baca oleh **KEDUA AGENT** setiap kali memulai sesi.
 ---
 ## 4. Inisiasi Folder Environment
 
-Untuk mulai menjalankan SOP ini, jalankan perintah pembuatan folder ini dalam terminal:
+Untuk mulai menjalankan SOP ini, jalankan perintah pembuatan sub-folder terpisah ini dalam terminal:
 ```bash
-mkdir -p issues reviews
+mkdir -p .agent/issues .agent/reviews
 ```

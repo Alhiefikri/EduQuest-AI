@@ -1,0 +1,53 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:../backend/data/soal.db"
+}
+
+model ModulAjar {
+  id            String   @id @default(uuid())
+  judul         String
+  mataPelajaran String
+  kelas         String
+  kontenTeks    String
+  filePath      String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  soal          Soal[]
+}
+
+model TemplateWord {
+  id            String   @id @default(uuid())
+  nama          String
+  filePath      String
+  isDefault     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+
+  soal          Soal[]
+}
+
+model Soal {
+  id                String   @id @default(uuid())
+  modulId           String?
+  templateId        String?
+  mataPelajaran     String
+  topik             String?
+  tipeSoal          String
+  difficulty        String
+  jumlahSoal        Int
+  includePembahasan Boolean  @default(true)
+  includeKunci      Boolean  @default(true)
+  includeGambar     Boolean  @default(false)
+  dataSoal          String
+  status            String   @default("draft")
+  filePath          String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  modul             ModulAjar? @relation(fields: [modulId], references: [id])
+  template          TemplateWord? @relation(fields: [templateId], references: [id])
+}
