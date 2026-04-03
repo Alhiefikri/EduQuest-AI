@@ -1,4 +1,4 @@
-import { FileCheck, LayoutTemplate, Plus, MoreHorizontal, ChevronRight, Info } from 'lucide-react';
+import { LayoutTemplate, Plus, MoreHorizontal, Info } from 'lucide-react';
 
 export default function TemplateWord() {
   const templates = [

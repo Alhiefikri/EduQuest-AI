@@ -1,4 +1,4 @@
-import { ArrowLeft, Download, FileText, ChevronRight, Share2, Printer } from 'lucide-react';
+import { ArrowLeft, Download, FileText, Share2, Printer, Info } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
 
 export default function PreviewWord() {

@@ -1,4 +1,4 @@
-import { ArrowLeft, Book, Info, CheckCircle2, Circle, Settings2, SlidersHorizontal, BrainCircuit, Rocket, FileText, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Book, CheckCircle2, Circle, Settings2, SlidersHorizontal, BrainCircuit, Rocket, FileText, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export default function GenerateSoal() {
@@ -132,11 +132,11 @@ export default function GenerateSoal() {
               </div>
               <div>
                 <label className="block text-[11px] font-black text-gray-400 tracking-widest uppercase mb-3">Tingkat Kesulitan</label>
-                <select className="w-full bg-gray-50 border border-gray-100 text-gray-900 text-sm font-bold rounded-xl focus:ring-2 focus:ring-brand-100 focus:border-brand-500 block px-4 py-3 outline-none appearance-none cursor-pointer">
-                  <option>Mudah</option>
-                  <option selected>Sedang</option>
-                  <option>Sulit</option>
-                  <option>Campuran (HOTS)</option>
+                <select defaultValue="Sedang" className="w-full bg-gray-50 border border-gray-100 text-gray-900 text-sm font-bold rounded-xl focus:ring-2 focus:ring-brand-100 focus:border-brand-500 block px-4 py-3 outline-none appearance-none cursor-pointer">
+                  <option value="Mudah">Mudah</option>
+                  <option value="Sedang">Sedang</option>
+                  <option value="Sulit">Sulit</option>
+                  <option value="Campuran (HOTS)">Campuran (HOTS)</option>
                 </select>
               </div>
               <div className="pt-2">
