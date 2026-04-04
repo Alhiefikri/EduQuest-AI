@@ -48,11 +48,19 @@ async def get_ai_config() -> tuple[str, str]:
     provider = settings.get("ai_provider") or os.getenv("AI_PROVIDER", "gemini")
     gemini_key = settings.get("gemini_api_key") or os.getenv("GEMINI_API_KEY", "")
     groq_key = settings.get("groq_api_key") or os.getenv("GROQ_API_KEY", "")
-    api_key = groq_key if provider == "groq" else gemini_key
+    openrouter_key = settings.get("openrouter_api_key") or os.getenv("OPENROUTER_API_KEY", "")
+    
+    if provider == "groq":
+        api_key = groq_key
+    elif provider == "openrouter":
+        api_key = openrouter_key
+    else:
+        api_key = gemini_key
+        
     return provider, api_key
 
 
-async def save_ai_settings(provider: str, gemini_api_key: str = "", groq_api_key: str = "") -> dict:
+async def save_ai_settings(provider: str, gemini_api_key: str = "", groq_api_key: str = "", openrouter_api_key: str = "") -> dict:
     settings = await _get_db_settings()
     if provider == "groq":
         settings["ai_provider"] = "groq"
@@ -60,6 +68,12 @@ async def save_ai_settings(provider: str, gemini_api_key: str = "", groq_api_key
         if groq_api_key:
             settings["groq_api_key"] = groq_api_key
             await _save_db_setting("groq_api_key", groq_api_key)
+    elif provider == "openrouter":
+        settings["ai_provider"] = "openrouter"
+        await _save_db_setting("ai_provider", "openrouter")
+        if openrouter_api_key:
+            settings["openrouter_api_key"] = openrouter_api_key
+            await _save_db_setting("openrouter_api_key", openrouter_api_key)
     else:
         settings["ai_provider"] = "gemini"
         await _save_db_setting("ai_provider", "gemini")
@@ -75,16 +89,20 @@ async def get_ai_settings_response() -> dict:
     provider = settings.get("ai_provider") or os.getenv("AI_PROVIDER", "gemini")
     gemini_key = os.getenv("GEMINI_API_KEY", "")
     groq_key = os.getenv("GROQ_API_KEY", "")
+    openrouter_key = os.getenv("OPENROUTER_API_KEY", "")
 
     gemini_masked = _mask_key(settings.get("gemini_api_key") or gemini_key)
     groq_masked = _mask_key(settings.get("groq_api_key") or groq_key)
+    openrouter_masked = _mask_key(settings.get("openrouter_api_key") or openrouter_key)
 
     return {
         "provider": provider,
         "gemini_api_key": gemini_masked,
         "groq_api_key": groq_masked,
+        "openrouter_api_key": openrouter_masked,
         "gemini_configured": bool(settings.get("gemini_api_key") or gemini_key),
         "groq_configured": bool(settings.get("groq_api_key") or groq_key),
+        "openrouter_configured": bool(settings.get("openrouter_api_key") or openrouter_key),
     }
 
 

@@ -1,6 +1,7 @@
 import json
 import asyncio
-from typing import List
+from typing import List, Optional
+from openai import AsyncOpenAI
 
 SYSTEM_PROMPT = """Kamu adalah pendidik profesional yang ahli dalam evaluasi pembelajaran Kurikulum Merdeka. 
 Tugasmu adalah membuat soal evaluasi yang valid, berpusat pada materi pokok, sesuai dengan perkembangan kognitif siswa, 
@@ -244,6 +245,53 @@ async def _generate_with_groq(
     raise RuntimeError("Gagal menghasilkan respons dari Groq setelah beberapa percobaan")
 
 
+async def _generate_with_openrouter(
+    prompt: str,
+    api_key: str,
+    max_retries: int = 3,
+) -> str:
+    # Model specified in ISSUE-39
+    model = "qwen/qwen-3.6-plus:free"
+    
+    client = AsyncOpenAI(
+        base_url="https://openrouter.ai/api/v1",
+        api_key=api_key
+    )
+
+    messages = [
+        {"role": "system", "content": SYSTEM_PROMPT},
+        {"role": "user", "content": prompt},
+    ]
+
+    for attempt in range(max_retries):
+        try:
+            response = await client.chat.completions.create(
+                model=model,
+                messages=messages,
+                temperature=0.7,
+                # OpenRouter extra headers often recommended for identification
+                extra_headers={
+                    "HTTP-Referer": "https://github.com/Alhiefikri/EduQuest-AI",
+                    "X-Title": "EduQuest AI",
+                }
+            )
+            return response.choices[0].message.content or ""
+
+        except Exception as e:
+            error_msg = str(e).lower()
+            if "rate_limit" in error_msg or "429" in error_msg:
+                wait_time = 2 ** (attempt + 1)
+                await asyncio.sleep(wait_time)
+                continue
+
+            if attempt == max_retries - 1:
+                raise RuntimeError(f"Gagal menghubungi layanan OpenRouter: {str(e)}")
+            await asyncio.sleep(2)
+            continue
+
+    raise RuntimeError("Gagal menghasilkan respons dari OpenRouter setelah beberapa percobaan")
+
+
 async def generate_soal(
     jumlah_soal: int,
     tipe_soal: str,
@@ -277,6 +325,8 @@ async def generate_soal(
 
     if provider == "groq":
         response_text = await _generate_with_groq(prompt, api_key, max_retries)
+    elif provider == "openrouter":
+        response_text = await _generate_with_openrouter(prompt, api_key, max_retries)
     else:
         response_text = await _generate_with_gemini(prompt, api_key, max_retries)
 
@@ -408,6 +458,8 @@ async def regenerate_single_soal(
 
     if provider == "groq":
         response_text = await _generate_with_groq(prompt, api_key, max_retries)
+    elif provider == "openrouter":
+        response_text = await _generate_with_openrouter(prompt, api_key, max_retries)
     else:
         response_text = await _generate_with_gemini(prompt, api_key, max_retries)
 
@@ -425,6 +477,8 @@ async def test_ai_connection(provider: str, api_key: str) -> str:
 
     if provider == "groq":
         await _generate_with_groq("Respond with exactly: {\"status\": \"ok\"}", api_key, max_retries=1)
+    elif provider == "openrouter":
+        await _generate_with_openrouter("Respond with exactly: {\"status\": \"ok\"}", api_key, max_retries=1)
     else:
         await _generate_with_gemini("Respond with exactly: {\"status\": \"ok\"}", api_key, max_retries=1)
 
