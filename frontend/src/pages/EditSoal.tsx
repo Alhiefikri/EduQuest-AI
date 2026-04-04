@@ -102,36 +102,36 @@ export default function EditSoal() {
   }
 
   return (
-    <div className="max-w-[1000px] mx-auto space-y-12 pb-40 animate-in fade-in p-4 md:p-8">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 px-2">
+    <div className="max-w-[1000px] mx-auto space-y-12 pb-40 animate-in fade-in p-2 md:p-8 max-w-full overflow-hidden">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 px-2">
         <div className="flex items-center gap-6">
-          <Button asChild variant="outline" size="icon" className="w-12 h-12 border-2 border-slate-200 shadow-sm hover:bg-slate-50 rounded-xl transition-all">
+          <Button asChild variant="outline" size="icon" className="w-12 h-12 border-2 border-slate-200 shadow-sm hover:bg-slate-50 rounded-xl transition-all shrink-0">
             <Link to="/soal">
               <ArrowLeft className="w-6 h-6 text-slate-600" strokeWidth={2.5} />
             </Link>
           </Button>
           <div className="space-y-1">
-            <h1 className="text-3xl font-black text-slate-900 tracking-tight uppercase">Editor Soal</h1>
-            <p className="text-base font-bold text-slate-400 border-l-4 border-brand-500 pl-4 uppercase tracking-wider">
+            <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight uppercase leading-none break-words">Editor Soal</h1>
+            <p className="text-sm md:text-base font-bold text-slate-400 border-l-4 border-brand-500 pl-4 uppercase tracking-wider">
               {soal.mata_pelajaran} {soal.topik ? ` - ${soal.topik}` : ''}
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-4 flex-wrap">
+        <div className="flex items-center gap-3 md:gap-4 flex-wrap w-full lg:w-auto">
           {saveSuccess && (
-            <span className="text-sm font-black text-emerald-600 bg-emerald-50 border border-emerald-100 shadow-sm px-4 py-2 rounded-full uppercase tracking-wider animate-in fade-in slide-in-from-right-4">Tersimpan!</span>
+            <span className="text-[10px] md:text-sm font-black text-emerald-600 bg-emerald-50 border border-emerald-100 shadow-sm px-4 py-2 rounded-full uppercase tracking-wider animate-in fade-in slide-in-from-right-4">Tersimpan!</span>
           )}
           <Button
             onClick={() => handleSave(false)}
             disabled={saving}
             variant="outline"
-            className="h-12 border-2 border-slate-200 text-slate-700 font-bold uppercase px-6 rounded-xl shadow-sm hover:bg-slate-50 transition-all disabled:opacity-50"
+            className="flex-1 lg:flex-none h-12 border-2 border-slate-200 text-slate-700 font-bold uppercase px-6 rounded-xl shadow-sm hover:bg-slate-50 transition-all disabled:opacity-50 text-xs md:text-sm"
           >
-            {saving ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <Save className="w-5 h-5 mr-2" />} Simpan Draft
+            {saving ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <Save className="w-5 h-5 mr-2" />} <span className="hidden sm:inline">Simpan</span> Draft
           </Button>
-          <Button asChild className="h-12 border-none font-bold uppercase px-8 rounded-xl bg-brand-600 hover:bg-brand-700 text-white shadow-lg shadow-brand-200 transition-all hover:translate-y-[-1px]">
+          <Button asChild className="flex-1 lg:flex-none h-12 border-none font-bold uppercase px-8 rounded-xl bg-brand-600 hover:bg-brand-700 text-white shadow-lg shadow-brand-200 transition-all hover:translate-y-[-1px] text-xs md:text-sm">
             <Link to={`/soal/preview/${id}`}>
-              <FileCheck className="w-5 h-5 mr-2" /> Selesai & Preview
+              <FileCheck className="w-5 h-5 mr-2" /> Selesai <span className="hidden sm:inline">& Preview</span>
             </Link>
           </Button>
         </div>
@@ -261,17 +261,17 @@ export default function EditSoal() {
         </Button>
       </div>
 
-      <div className="fixed bottom-10 left-1/2 -translate-x-1/2 bg-slate-900/90 backdrop-blur-xl border border-white/10 px-10 py-5 rounded-[2.5rem] shadow-2xl z-30 flex items-center gap-10 animate-in slide-in-from-bottom-10 border-t-2 border-t-white/5">
-        <div className="flex items-center gap-6 border-r border-white/10 pr-10">
-          <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Editor Status</p>
-          <p className="text-base font-bold text-white tracking-tight">{editedSoal.length} <span className="text-brand-400">Butir Terangkum</span></p>
+      <div className="fixed bottom-4 md:bottom-10 left-1/2 -translate-x-1/2 bg-slate-900/90 backdrop-blur-xl border border-white/10 px-6 md:px-10 py-4 md:py-5 rounded-2xl md:rounded-[2.5rem] shadow-2xl z-30 flex flex-col sm:flex-row items-center gap-4 md:gap-10 animate-in slide-in-from-bottom-10 border-t-2 border-t-white/5 w-[95%] max-w-2xl">
+        <div className="flex items-center gap-4 md:gap-6 sm:border-r border-white/10 sm:pr-10">
+          <p className="text-[8px] md:text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Editor Status</p>
+          <p className="text-sm md:text-base font-bold text-white tracking-tight">{editedSoal.length} <span className="text-brand-400">Butir</span></p>
         </div>
-        <div className="flex items-center gap-5">
-          <button onClick={() => navigate('/soal')} className="px-6 py-2 text-xs font-black text-slate-400 hover:text-white uppercase tracking-widest transition-colors">Batal</button>
+        <div className="flex items-center gap-3 md:gap-5 w-full sm:w-auto">
+          <button onClick={() => navigate('/soal')} className="flex-1 sm:flex-none px-4 md:px-6 py-2 text-[10px] md:text-xs font-black text-slate-400 hover:text-white uppercase tracking-widest transition-colors">Batal</button>
           <Button
             onClick={() => handleSave(true)}
             disabled={saving}
-            className="h-12 bg-white text-slate-950 hover:bg-brand-50 rounded-2xl font-black uppercase tracking-widest text-xs px-10 shadow-lg active:scale-95 transition-all disabled:opacity-50"
+            className="flex-2 sm:flex-none h-10 md:h-12 bg-white text-slate-950 hover:bg-brand-50 rounded-xl md:rounded-2xl font-black uppercase tracking-widest text-[10px] md:text-xs px-6 md:px-10 shadow-lg active:scale-95 transition-all disabled:opacity-50"
           >
             {saving && <Loader2 className="w-4 h-4 animate-spin mr-3" />} Simpan Permanen
           </Button>
