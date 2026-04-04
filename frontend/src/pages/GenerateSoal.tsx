@@ -222,23 +222,33 @@ export default function GenerateSoal() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
                   <div className="space-y-4">
                     <label className="block text-sm font-black text-slate-400 uppercase tracking-widest">Fase (Ops)</label>
-                    <Input
-                      type="text"
-                      value={fase}
-                      onChange={(e) => setFase(e.target.value)}
-                      placeholder="Fase D"
-                      className="w-full bg-white border-2 border-slate-200 h-14 text-base font-bold rounded-xl shadow-sm focus-visible:ring-brand-500/20"
-                    />
+                    <Select value={fase} onValueChange={setFase}>
+                      <SelectTrigger className="w-full bg-white border-2 border-slate-200 h-14 text-base font-bold rounded-xl shadow-sm focus:ring-brand-500/20">
+                        <SelectValue placeholder="Pilih Fase" />
+                      </SelectTrigger>
+                      <SelectContent className="border-2 border-slate-100 rounded-xl shadow-xl">
+                        {['Fase A', 'Fase B', 'Fase C', 'Fase D', 'Fase E', 'Fase F'].map((f) => (
+                          <SelectItem key={f} value={f} className="font-bold py-3">{f}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div className="space-y-4">
                     <label className="block text-sm font-black text-slate-400 uppercase tracking-widest">Kelas (Ops)</label>
-                    <Input
-                      type="text"
-                      value={kelas}
-                      onChange={(e) => setKelas(e.target.value)}
-                      placeholder="Kelas 7"
-                      className="w-full bg-white border-2 border-slate-200 h-14 text-base font-bold rounded-xl shadow-sm focus-visible:ring-brand-500/20"
-                    />
+                    <Select value={kelas} onValueChange={setKelas}>
+                      <SelectTrigger className="w-full bg-white border-2 border-slate-200 h-14 text-base font-bold rounded-xl shadow-sm focus:ring-brand-500/20">
+                        <SelectValue placeholder="Pilih Kelas" />
+                      </SelectTrigger>
+                      <SelectContent className="border-2 border-slate-100 rounded-xl shadow-xl max-h-[300px]">
+                        {[
+                          'Kelas 1 SD', 'Kelas 2 SD', 'Kelas 3 SD', 'Kelas 4 SD', 'Kelas 5 SD', 'Kelas 6 SD',
+                          'Kelas 7 SMP', 'Kelas 8 SMP', 'Kelas 9 SMP',
+                          'Kelas 10 SMA', 'Kelas 11 SMA', 'Kelas 12 SMA'
+                        ].map((k) => (
+                          <SelectItem key={k} value={k} className="font-bold py-3">{k}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
                 <div className="space-y-5">

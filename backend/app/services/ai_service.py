@@ -2,10 +2,7 @@ import json
 import asyncio
 from typing import List, Optional
 
-SYSTEM_PROMPT = """Kamu adalah pendidik profesional yang ahli dalam evaluasi pembelajaran Kurikulum Merdeka. 
-Tugasmu adalah membuat soal evaluasi yang valid, berpusat pada materi pokok, sesuai dengan perkembangan kognitif siswa, 
-dan menggunakan bahasa yang mudah dipahami sesuai tingkat kelas yang diminta. 
-Gunakan nada yang memotivasi dan edukatif."""
+SYSTEM_PROMPT = "Pendidik ahli evaluasi Kurikulum Merdeka. Buat soal valid, materi inti, sesuai level kognitif, bahasa mudah dipahami, nada edukatif."
 
 # TODO: Implementasi ekstraksi PDF berdasarkan rentang halaman di layer controller untuk optimasi lebih lanjut
 MAX_CONTENT_CHARS = 8000
@@ -95,31 +92,18 @@ def _build_user_prompt(
 
     schema_str = json.dumps({"soal": [json_item]}, indent=2)
 
-    prompt = f"""Buat {jumlah_soal} soal {tipe_label.get(tipe_soal, tipe_soal)} berdasarkan parameter berikut:
+    prompt = f"""Buat {jumlah_soal} soal {tipe_label.get(tipe_soal, tipe_soal)}:
+Fase/Kelas: {fase_kelas} | Mapel: {mata_pelajaran} | Topik: {topik or 'Materi inti'}
+Gaya: {gaya_instruction} | Level: {difficulty_instruction.get(difficulty, difficulty)}
 
-Fase/Kelas: {fase_kelas}
-Mata Pelajaran: {mata_pelajaran}
-Tujuan Pembelajaran / Topik: {topik if topik else "Sesuaikan dengan materi"}
-Gaya Soal: {gaya_instruction}
-Level Kognitif: {difficulty_instruction.get(difficulty, difficulty)}
-
-Ringkasan Materi:
+Materi:
 {_truncate_content(konten_modul)}
 
-Instruksi Khusus (Wajib Dipatuhi):
-1. **DILARANG KERAS** membuat soal tentang kegiatan belajar di kelas, metode mengajar guru, langkah-langkah pembelajaran, atau alat peraga yang digunakan guru.
-2. **FOKUS HANYA** pada materi/fakta/konsep yang harus dikuasai oleh siswa.
-3. Bahasa harus disesuaikan untuk anak-anak sekolah/siswa.
-4. KHUSUS Fase A (Kelas 1-2): Gunakan kalimat sangat pendek, kosakata dasar, dan konsep konkret.
-5. Terapkan instruksi "Gaya Soal" yang tercantum pada Parameter Soal secara konsisten pada pertanyaan.
-6. Output HANYA berupa JSON valid sesuai skema berikut:
-
-{schema_str}
-
-PENTING:
-- Jangan tambahkan teks pengantar atau penutup apa pun.
-- Pastikan soal benar-benar berdasarkan materi yang diberikan.
-- Jawaban harus akurat dan pembahasan jelas."""
+Aturan Wajib:
+1. FOKUS materi inti. JANGAN buat soal tentang metode/alat peraga guru.
+2. Bahasa sesuai tingkat siswa (Fase A: sangat sederhana).
+3. Output HANYA JSON valid sesuai skema: {schema_str}
+4. Jawaban akurat & pembahasan jelas. No intro/outro."""
 
     return prompt
 
@@ -252,7 +236,7 @@ async def _generate_with_openrouter(
     from openrouter import OpenRouter
     
     # Model specified in ISSUE-39
-    model = "qwen/qwen-3.6-plus:free"
+    model = "qwen/qwen3.6-plus:free"
     
     messages = [
         {"role": "system", "content": SYSTEM_PROMPT},
