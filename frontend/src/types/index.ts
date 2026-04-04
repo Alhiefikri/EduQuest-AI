@@ -101,6 +101,7 @@ export interface GenerateWordResponse {
 
 export interface RegenerateSingleSoalRequest {
   nomor_soal: number
+  soal_lama: SoalItem
   gaya_soal?: string[]
   feedback?: string
 }

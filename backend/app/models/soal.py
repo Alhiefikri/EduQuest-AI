@@ -6,6 +6,7 @@ from pydantic import BaseModel, Field, ConfigDict  # type: ignore
 
 
 class SoalItem(BaseModel):
+    id: Optional[str] = None
     nomor: int
     pertanyaan: str
     pilihan: Optional[List[str]] = None
@@ -126,6 +127,7 @@ class UpdateSoalRequest(BaseModel):
 
 class RegenerateSingleSoalRequest(BaseModel):
     nomor_soal: int
+    soal_lama: SoalItem
     gaya_soal: List[str] = Field(default_factory=lambda: ["formal_academic"])
     feedback: Optional[str] = None
 

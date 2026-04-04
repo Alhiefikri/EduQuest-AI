@@ -251,11 +251,7 @@ async def regenerate_soal_item(soal_id: str, request: RegenerateSingleSoalReques
     if not soal:
         raise HTTPException(status_code=404, detail="Soal tidak ditemukan")
 
-    data_soal = json.loads(soal.dataSoal)
-    
-    target_item = next((item for item in data_soal if item["nomor"] == request.nomor_soal), None)
-    if not target_item:
-        raise HTTPException(status_code=404, detail=f"Soal nomor {request.nomor_soal} tidak ditemukan")
+    target_item = request.soal_lama.model_dump()
 
     konten_modul = ""
     fase_kelas = "umum"
