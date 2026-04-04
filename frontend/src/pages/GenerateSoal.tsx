@@ -22,6 +22,7 @@ export default function GenerateSoal() {
   const [fase, setFase] = useState('')
   const [kelas, setKelas] = useState('')
   const [tipeSoal, setTipeSoal] = useState('pilihan_ganda')
+  const [gayaSoal, setGayaSoal] = useState('formal_academic')
   const [jumlahSoal, setJumlahSoal] = useState(20)
   const [difficulty, setDifficulty] = useState('sedang')
   const [includePembahasan, setIncludePembahasan] = useState(true)
@@ -58,10 +59,12 @@ export default function GenerateSoal() {
         tipe_soal: tipeMap[tipeSoal] || tipeSoal,
         jumlah_soal: jumlahSoal,
         difficulty: difficultyMap[difficulty] || difficulty,
+        gaya_soal: gayaSoal,
         include_pembahasan: includePembahasan,
         include_kunci: includeKunci,
         include_gambar: includeGambar,
       })
+
       
       toast.dismiss(loadingToast)
       toast.success("Berhasil Generate Soal!", {
@@ -291,6 +294,20 @@ export default function GenerateSoal() {
                       <SelectItem value="sedang" className="uppercase font-bold py-3">Sedang</SelectItem>
                       <SelectItem value="sulit" className="uppercase font-bold py-3">Sulit</SelectItem>
                       <SelectItem value="campuran" className="uppercase font-bold py-3">Campuran (HOTS)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-4">
+                  <label className="block text-sm font-black text-slate-400 uppercase tracking-widest">Gaya Soal (Context)</label>
+                  <Select value={gayaSoal} onValueChange={setGayaSoal}>
+                    <SelectTrigger className="border-2 border-slate-200 h-14 bg-white text-base font-bold rounded-xl shadow-sm uppercase tracking-wide">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="border-2 border-slate-100 rounded-xl shadow-xl">
+                      <SelectItem value="light_story" className="font-bold py-3">CERITA RINGAN</SelectItem>
+                      <SelectItem value="formal_academic" className="font-bold py-3">AKADEMIK FORMAL</SelectItem>
+                      <SelectItem value="case_study" className="font-bold py-3">STUDI KASUS</SelectItem>
+                      <SelectItem value="standard_exam" className="font-bold py-3">UJIAN STANDAR</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

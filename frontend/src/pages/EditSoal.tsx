@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { toast } from 'sonner'
 
 export default function EditSoal() {
@@ -22,11 +23,14 @@ export default function EditSoal() {
   
   const [regenerateIndex, setRegenerateIndex] = useState<number | null>(null)
   const [regenerateFeedback, setRegenerateFeedback] = useState('')
-
+  const [regenerateGayaSoal, setRegenerateGayaSoal] = useState('formal_academic')
 
   useEffect(() => {
     if (soal?.data_soal) {
       setEditedSoal(soal.data_soal)
+    }
+    if (soal?.gaya_soal) {
+      setRegenerateGayaSoal(soal.gaya_soal)
     }
   }, [soal])
 
@@ -47,7 +51,7 @@ export default function EditSoal() {
       toast.success(finalized ? "Soal Final Disimpan" : "Draft Tersimpan", {
         description: finalized ? "Anda akan dialihkan ke daftar soal." : "Perubahan Anda telah disimpan ke draft.",
       })
-      
+
       if (finalized) {
         setTimeout(() => navigate('/soal'), 1500)
       } else {
@@ -86,16 +90,17 @@ export default function EditSoal() {
   const handleRegenerate = async () => {
     if (regenerateIndex === null || !id) return
     const itemToRegenerate = editedSoal[regenerateIndex]
-    
+
     try {
       const newSoalItem = await regenerateMutation.mutateAsync({
         id,
         data: {
           nomor_soal: itemToRegenerate.nomor,
+          gaya_soal: regenerateGayaSoal,
           feedback: regenerateFeedback || undefined,
         },
       })
-      
+
       setEditedSoal(prev => 
         prev.map((item, i) => (i === regenerateIndex ? newSoalItem : item))
       )
@@ -228,17 +233,31 @@ export default function EditSoal() {
                     </Button>
                   </div>
                   <CardContent className="p-6 bg-slate-50 space-y-4 rounded-b-2xl">
-                    <p className="text-sm font-medium text-slate-600">
-                      Berikan instruksi spesifik ke AI tentang bagaimana soal ini harus diubah (opsional).
-                    </p>
-                    <Textarea 
-                      placeholder="Contoh: Buat lebih sulit, ganti ke konteks bermain bola, gunakan bahasa yang lebih sederhana..."
-                      value={regenerateFeedback}
-                      onChange={(e) => setRegenerateFeedback(e.target.value)}
-                      className="bg-white border-2 border-slate-200 rounded-xl focus-visible:ring-brand-500/20"
-                      rows={3}
-                    />
-                    <div className="flex justify-end gap-3 pt-2">
+                    <div className="space-y-3">
+                      <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Gaya Soal (Context)</label>
+                      <Select value={regenerateGayaSoal} onValueChange={setRegenerateGayaSoal}>
+                        <SelectTrigger className="border-2 border-slate-200 h-12 bg-white text-sm font-bold rounded-xl shadow-sm uppercase tracking-wide focus:ring-brand-500/20">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="border-2 border-slate-100 rounded-xl shadow-xl">
+                          <SelectItem value="light_story" className="font-bold py-2">CERITA RINGAN</SelectItem>
+                          <SelectItem value="formal_academic" className="font-bold py-2">AKADEMIK FORMAL</SelectItem>
+                          <SelectItem value="case_study" className="font-bold py-2">STUDI KASUS</SelectItem>
+                          <SelectItem value="standard_exam" className="font-bold py-2">UJIAN STANDAR</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-3">
+                      <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Instruksi Tambahan (Opsional)</label>
+                      <Textarea 
+                        placeholder="Contoh: Buat lebih sulit, gunakan bahasa yang lebih sederhana..."
+                        value={regenerateFeedback}
+                        onChange={(e) => setRegenerateFeedback(e.target.value)}
+                        className="bg-white border-2 border-slate-200 rounded-xl focus-visible:ring-brand-500/20 text-sm font-medium text-slate-600"
+                        rows={3}
+                      />
+                    </div>
+                    <div className="flex justify-end gap-3 pt-4">
                       <Button variant="outline" onClick={() => setRegenerateIndex(null)} className="rounded-xl font-bold">Batal</Button>
                       <Button 
                         onClick={handleRegenerate}
