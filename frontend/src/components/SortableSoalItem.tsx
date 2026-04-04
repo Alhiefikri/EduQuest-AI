@@ -146,10 +146,10 @@ export function SortableSoalItem({
               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 text-brand-600">
                 <Plus className="w-3.5 h-3.5 text-brand-500" /> Jawaban Benar
               </label>
-              <Input 
+              <Textarea 
                 value={item.jawaban}
                 onChange={(e) => onUpdate(index, 'jawaban', e.target.value)}
-                className="h-9 border-2 border-brand-100 focus-visible:border-brand-200 focus-visible:ring-0 rounded-lg text-[13px] font-black uppercase bg-brand-50/30 text-brand-700 px-4 transition-all"
+                className="min-h-[60px] border-2 border-brand-100 focus-visible:border-brand-200 focus-visible:ring-0 rounded-lg text-[13px] font-black uppercase bg-brand-50/30 text-brand-700 px-4 py-2 transition-all"
               />
             </div>
             {item.pembahasan && (

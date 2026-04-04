@@ -10,13 +10,14 @@ router = APIRouter(prefix="/api/v1/settings", tags=["settings"])
 
 
 class AISettingsRequest(BaseModel):
-    provider: str = Field(..., pattern="^(gemini|groq)$")
+    provider: str = Field(..., pattern="^(gemini|groq|openrouter)$")
     gemini_api_key: str = ""
     groq_api_key: str = ""
+    openrouter_api_key: str = ""
 
 
 class TestConnectionRequest(BaseModel):
-    provider: str = Field(..., pattern="^(gemini|groq)$")
+    provider: str = Field(..., pattern="^(gemini|groq|openrouter)$")
     api_key: str
 
 
@@ -32,6 +33,7 @@ async def update_ai_settings(request: AISettingsRequest):
             provider=request.provider,
             gemini_api_key=request.gemini_api_key,
             groq_api_key=request.groq_api_key,
+            openrouter_api_key=request.openrouter_api_key,
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Gagal menyimpan pengaturan AI: {str(e)}")

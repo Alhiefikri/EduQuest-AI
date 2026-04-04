@@ -9,16 +9,21 @@ interface AISettings {
   groq_api_key: string
   gemini_configured: boolean
   groq_configured: boolean
+  openrouter_api_key: string
+  openrouter_configured: boolean
 }
 
 export default function Settings() {
   const [aiProvider, setAiProvider] = useState('gemini')
   const [geminiKey, setGeminiKey] = useState('')
   const [groqKey, setGroqKey] = useState('')
+  const [openrouterKey, setOpenrouterKey] = useState('')
   const [geminiConfigured, setGeminiConfigured] = useState(false)
   const [groqConfigured, setGroqConfigured] = useState(false)
+  const [openrouterConfigured, setOpenrouterConfigured] = useState(false)
   const [showGeminiKey, setShowGeminiKey] = useState(false)
   const [showGroqKey, setShowGroqKey] = useState(false)
+  const [showOpenrouterKey, setShowOpenrouterKey] = useState(false)
   const [loading, setLoading] = useState(false)
   const [testing, setTesting] = useState(false)
   const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null)
@@ -33,6 +38,7 @@ export default function Settings() {
         setAiProvider(data.provider)
         setGeminiConfigured(data.gemini_configured)
         setGroqConfigured(data.groq_configured)
+        setOpenrouterConfigured(data.openrouter_configured)
         setLoaded(true)
       })
       .catch(() => setLoaded(true))
@@ -42,7 +48,9 @@ export default function Settings() {
     setTesting(true)
     setTestResult(null)
     try {
-      const apiKey = aiProvider === 'groq' ? groqKey : geminiKey
+      const keys: Record<string, string> = { groq: groqKey, openrouter: openrouterKey, gemini: geminiKey }
+      const apiKey = keys[aiProvider as keyof typeof keys] || geminiKey
+
       if (!apiKey) {
         setTestResult({ success: false, message: 'Masukkan API key terlebih dahulu untuk menguji koneksi' })
         setTesting(false)
@@ -75,6 +83,7 @@ export default function Settings() {
           provider: aiProvider,
           gemini_api_key: geminiKey,
           groq_api_key: groqKey,
+          openrouter_api_key: openrouterKey,
         }),
       })
       const data = await res.json()
@@ -145,11 +154,14 @@ export default function Settings() {
                 >
                   <option value="gemini">Google Gemini (gemini-1.5-flash)</option>
                   <option value="groq">Groq (llama-3.3-70b-versatile)</option>
+                  <option value="openrouter">OpenRouter (qwen-3.6-plus:free)</option>
                 </select>
                 <p className="text-xs text-gray-400 mt-1">
                   {aiProvider === 'gemini'
                     ? 'Free tier: 15 RPM. Requires Google AI Studio API key.'
-                    : 'Free tier: 30 RPM. Requires Groq Cloud API key.'}
+                    : aiProvider === 'groq'
+                    ? 'Free tier: 30 RPM. Requires Groq Cloud API key.'
+                    : 'Free: qwen-3.6-plus is currently free on OpenRouter.'}
                 </p>
               </div>
 
@@ -210,6 +222,35 @@ export default function Settings() {
                   </div>
                 </div>
               )}
+              {aiProvider === 'openrouter' && (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="text-[11px] font-black text-gray-400 tracking-widest uppercase">OpenRouter API Key</label>
+                    {openrouterConfigured && (
+                      <span className="flex items-center gap-1 text-[10px] font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-md">
+                        <Check className="w-3 h-3" strokeWidth={3} /> Tersimpan
+                      </span>
+                    )}
+                  </div>
+                  <div className="relative">
+                    <input
+                      type={showOpenrouterKey ? 'text' : 'password'}
+                      value={openrouterKey}
+                      onChange={(e) => setOpenrouterKey(e.target.value)}
+                      placeholder={openrouterConfigured ? "Biarkan kosong untuk menggunakan key yang sudah tersimpan" : "sk-or-v1-..."}
+                      className="w-full bg-gray-50 border border-gray-100 text-gray-900 text-sm font-bold rounded-xl focus:ring-2 focus:ring-brand-100 focus:border-brand-500 block px-4 py-3 pr-12 outline-none transition-all placeholder:text-gray-400 placeholder:font-normal"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowOpenrouterKey(!showOpenrouterKey)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                    >
+                      {showOpenrouterKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+              )}
+
 
               <div className="flex items-center gap-3 pt-2">
                 <button
