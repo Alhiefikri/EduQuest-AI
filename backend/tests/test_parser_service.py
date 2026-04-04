@@ -43,7 +43,7 @@ class TestExtractTextFromDocx:
         assert text is not None
         assert len(text) > 0
         assert "Bahasa Indonesia" in text
-        assert page_count >= 0
+        assert page_count >= 1
 
     def test_extract_text_from_docx_with_tables(self):
         from docx import Document

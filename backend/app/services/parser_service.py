@@ -50,7 +50,8 @@ def extract_text_from_docx(file_content: bytes) -> Tuple[str, int]:
     if not full_text:
         raise ValueError("File Word tidak mengandung teks")
 
-    page_count = len(full_text) // 3000 if len(full_text) > 0 else 1
+    # Estimate: ~3000 characters per page (average A4 font 12pt)
+    page_count = max(1, len(full_text) // 3000)
 
     return full_text, page_count
 
