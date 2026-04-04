@@ -14,6 +14,8 @@ export default function GenerateSoal() {
   const [modulId, setModulId] = useState('')
   const [mataPelajaran, setMataPelajaran] = useState('')
   const [topik, setTopik] = useState('')
+  const [fase, setFase] = useState('')
+  const [kelas, setKelas] = useState('')
   const [tipeSoal, setTipeSoal] = useState('pilihan_ganda')
   const [jumlahSoal, setJumlahSoal] = useState(20)
   const [difficulty, setDifficulty] = useState('sedang')
@@ -42,6 +44,8 @@ export default function GenerateSoal() {
         modul_id: sourceType === 'modul' && modulId ? modulId : undefined,
         mata_pelajaran: mataPelajaran,
         topik: topik || undefined,
+        fase: fase || undefined,
+        kelas: kelas || undefined,
         tipe_soal: tipeMap[tipeSoal] || tipeSoal,
         jumlah_soal: jumlahSoal,
         difficulty: difficultyMap[difficulty] || difficulty,
@@ -196,6 +200,28 @@ export default function GenerateSoal() {
                   placeholder="Contoh: Matematika, Fisika, Biologi"
                   className="w-full bg-gray-50 border border-gray-100 text-gray-900 text-sm font-bold rounded-xl focus:ring-2 focus:ring-brand-100 focus:border-brand-500 block px-4 py-3 outline-none transition-all placeholder:text-gray-400 placeholder:font-normal"
                 />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[11px] font-black text-gray-400 tracking-widest uppercase mb-3">Fase (Opsional)</label>
+                  <input
+                    type="text"
+                    value={fase}
+                    onChange={(e) => setFase(e.target.value)}
+                    placeholder="Contoh: Fase D"
+                    className="w-full bg-gray-50 border border-gray-100 text-gray-900 text-sm font-bold rounded-xl focus:ring-2 focus:ring-brand-100 focus:border-brand-500 block px-4 py-3 outline-none transition-all placeholder:text-gray-400 placeholder:font-normal"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-black text-gray-400 tracking-widest uppercase mb-3">Kelas (Opsional)</label>
+                  <input
+                    type="text"
+                    value={kelas}
+                    onChange={(e) => setKelas(e.target.value)}
+                    placeholder="Contoh: Kelas 7"
+                    className="w-full bg-gray-50 border border-gray-100 text-gray-900 text-sm font-bold rounded-xl focus:ring-2 focus:ring-brand-100 focus:border-brand-500 block px-4 py-3 outline-none transition-all placeholder:text-gray-400 placeholder:font-normal"
+                  />
+                </div>
               </div>
               <div>
                 <label className="block text-[11px] font-black text-gray-400 tracking-widest uppercase mb-3">Tipe Soal</label>

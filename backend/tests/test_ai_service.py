@@ -3,7 +3,41 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from app.services.ai_service import _parse_ai_response
+from app.services.ai_service import _build_user_prompt, _parse_ai_response
+
+
+class TestBuildUserPrompt:
+    def test_build_user_prompt_with_fase_kelas(self):
+        prompt = _build_user_prompt(
+            jumlah_soal=5,
+            tipe_soal="pilihan_ganda",
+            mata_pelajaran="IPAS",
+            topik="Energi",
+            difficulty="sedang",
+            include_pembahasan=True,
+            include_gambar=False,
+            konten_modul="Energi tidak dapat dimusnahkan.",
+            fase_kelas="Fase B / Kelas 4",
+        )
+        assert "Fase/Kelas: Fase B / Kelas 4" in prompt
+        assert "Mata Pelajaran: IPAS" in prompt
+        assert "Buat 5 soal pilihan ganda" in prompt
+        assert "Energi tidak dapat dimusnahkan" in prompt
+
+    def test_build_user_prompt_default_fase_kelas(self):
+        prompt = _build_user_prompt(
+            jumlah_soal=1,
+            tipe_soal="isian",
+            mata_pelajaran="Bahasa Indonesia",
+            topik="",
+            difficulty="mudah",
+            include_pembahasan=False,
+            include_gambar=True,
+            konten_modul="Kancil dan Buaya.",
+        )
+        assert "Fase/Kelas: umum" in prompt
+        assert "Mata Pelajaran: Bahasa Indonesia" in prompt
+        assert "Buat 1 soal isian singkat" in prompt
 
 
 class TestParseAIResponse:

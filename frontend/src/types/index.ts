@@ -60,6 +60,8 @@ export interface GenerateSoalRequest {
   modul_id?: string
   mata_pelajaran: string
   topik?: string
+  fase?: string
+  kelas?: string
   tipe_soal: string
   jumlah_soal: number
   difficulty: string

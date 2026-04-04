@@ -53,7 +53,7 @@ async def upload_template(file: UploadFile = File(...), nama: str = Query(None))
     db = await get_db()
 
     try:
-        template = await db.templateWord.create(
+        template = await db.templateword.create(
             data={
                 "nama": template_name,
                 "filePath": str(file_path),
@@ -73,7 +73,7 @@ async def list_templates():
     db = await get_db()
 
     try:
-        templates = await db.templateWord.find_many(order={"createdAt": "desc"})
+        templates = await db.templateword.find_many(order={"createdAt": "desc"})
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Gagal mengambil daftar template: {str(e)}")
 
@@ -85,7 +85,7 @@ async def get_template(template_id: str):
     db = await get_db()
 
     try:
-        template = await db.templateWord.find_unique(where={"id": template_id})
+        template = await db.templateword.find_unique(where={"id": template_id})
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Gagal mengambil template: {str(e)}")
 
@@ -112,16 +112,17 @@ async def generate_word(request: GenerateWordRequest):
     template_path = None
     if request.template_id:
         try:
-            template = await db.templateWord.find_unique(where={"id": request.template_id})
+            template = await db.templateword.find_unique(where={"id": request.template_id})
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Gagal mengambil template: {str(e)}")
 
         if not template:
-            raise HTTPException(status_code=404, detail="Template tidak ditemukan")
+            raise HTTPException(status_code=404, detail="Template find_unique gagal")
 
         template_path = template.filePath
     else:
-        default_template = await db.templateWord.find_first(where={"isDefault": True})
+        default_template = await db.templateword.find_first(where={"isDefault": True})
+
         if default_template:
             template_path = default_template.filePath
         else:

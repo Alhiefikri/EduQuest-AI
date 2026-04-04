@@ -18,6 +18,8 @@ class GenerateSoalRequest(BaseModel):
     modul_id: Optional[str] = None
     mata_pelajaran: str = Field(..., min_length=1, max_length=100)
     topik: Optional[str] = None
+    fase: Optional[str] = None
+    kelas: Optional[str] = None
     tipe_soal: str = Field(..., pattern="^(pilihan_ganda|isian|essay|campuran)$")
     jumlah_soal: int = Field(..., ge=1, le=100)
     difficulty: str = Field(..., pattern="^(mudah|sedang|sulit|campuran)$")

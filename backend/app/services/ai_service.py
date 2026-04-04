@@ -2,10 +2,7 @@ import json
 import time
 from typing import List
 
-SYSTEM_PROMPT = """Anda adalah guru berpengalaman yang ahli dalam membuat soal pelajaran.
-Buat soal berdasarkan KONTEN MODUL yang diberikan, BUKAN dari pengetahuan umum Anda.
-Pastikan soal relevan dengan materi, akurat, dan sesuai tingkat kesulitan.
-Output HANYA dalam format JSON yang valid, tanpa teks tambahan sebelum atau sesudah JSON."""
+SYSTEM_PROMPT = """Kamu adalah pendidik profesional yang ahli dalam evaluasi pembelajaran Kurikulum Merdeka. Tugasmu adalah membuat soal evaluasi yang valid, berpusat pada materi pokok, sesuai dengan perkembangan kognitif siswa, dan menggunakan bahasa yang mudah dipahami sesuai tingkat kelas yang diminta."""
 
 MAX_CONTENT_CHARS = 12000
 
@@ -34,6 +31,7 @@ def _build_user_prompt(
     include_pembahasan: bool,
     include_gambar: bool,
     konten_modul: str,
+    fase_kelas: str = "umum",
 ) -> str:
     tipe_label = {
         "pilihan_ganda": "pilihan ganda (4 opsi: A, B, C, D)",
@@ -49,20 +47,23 @@ def _build_user_prompt(
         "campuran": "distribusi merata antara mudah, sedang, dan sulit",
     }
 
-    prompt = f"""Buat {jumlah_soal} soal {tipe_label.get(tipe_soal, tipe_soal)} berdasarkan materi berikut:
+    prompt = f"""Buat {jumlah_soal} soal {tipe_label.get(tipe_soal, tipe_soal)} berdasarkan parameter berikut:
 
-MATERI:
+Fase/Kelas: {fase_kelas}
+Mata Pelajaran: {mata_pelajaran}
+Tujuan Pembelajaran / Topik: {topik if topik else "Sesuaikan dengan materi"}
+Ringkasan Materi:
 {_truncate_content(konten_modul)}
 
-KONFIGURASI:
-- Mata pelajaran: {mata_pelajaran}
-- Topik: {topik if topik else "Sesuaikan dengan materi"}
-- Tingkat kesulitan: {difficulty_instruction.get(difficulty, difficulty)}
-- Sertakan pembahasan: {"Ya" if include_pembahasan else "Tidak"}
-- Sertakan gambar: {"Ya, berikan deskripsi gambar yang relevan" if include_gambar else "Tidak"}
-- Bahasa: Indonesia
+Level Kognitif: {difficulty_instruction.get(difficulty, difficulty)}
 
-OUTPUT FORMAT (JSON):
+Syarat mutlak:
+- Fokus murni pada evaluasi penguasaan materi, bukan aktivitas belajar mengajar di kelas.
+- Bahasa harus disesuaikan untuk anak-anak sekolah/siswa.
+- KHUSUS Fase A (Kelas 1-2): Gunakan kalimat sangat pendek, kosakata dasar, dan konsep konkret yang mudah dibayangkan.
+- Jangan tambahkan teks pengantar atau penutup apa pun.
+- Output HANYA berupa JSON valid dengan skema berikut:
+
 {{
   "soal": [
     {{
@@ -71,12 +72,13 @@ OUTPUT FORMAT (JSON):
       "pilihan": ["A. ...", "B. ...", "C. ...", "D. ..."],
       "jawaban": "B",
       "pembahasan": "...",
-      "gambar_prompt": "deskripsi gambar jika perlu"
+      "gambar_prompt": "Deskripsi visual sederhana untuk ilustrasi soal ini (WAJIB ADA jika konfigurasi gambar AKTIF)"
     }}
   ]
 }}
 
 PENTING:
+- Field "gambar_prompt" HARUS diisi dengan deskripsi visual yang relevan jika include_gambar adalah True.
 - Untuk soal isian/essay, field "pilihan" boleh kosong [] dan "jawaban" berisi kunci jawaban singkat
 - Pastikan soal benar-benar berdasarkan materi yang diberikan
 - Jawaban harus akurat dan pembahasan jelas"""
@@ -203,6 +205,7 @@ async def generate_soal(
     include_gambar: bool,
     konten_modul: str,
     topik: str = "",
+    fase_kelas: str = "umum",
     max_retries: int = 3,
 ) -> List[dict]:
     prompt = _build_user_prompt(
@@ -214,6 +217,7 @@ async def generate_soal(
         include_pembahasan=include_pembahasan,
         include_gambar=include_gambar,
         konten_modul=konten_modul,
+        fase_kelas=fase_kelas,
     )
 
     provider, api_key = await _get_ai_config()
