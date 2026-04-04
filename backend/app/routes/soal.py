@@ -87,9 +87,6 @@ async def generate_soal_endpoint(request: GenerateSoalRequest):
                 "topik": request.topik,
                 "tipeSoal": request.tipe_soal,
                 "difficulty": request.difficulty,
-                # Safe fallback if Prisma schema doesn't have gayaSoal yet, we don't strictly need to save it if not in DB schema, 
-                # but if it is in schema, we save it. We'll attempt to save it if it's there.
-                **({"gayaSoal": request.gaya_soal} if hasattr(db.soal.actions.model, 'gayaSoal') else {}),
                 "jumlahSoal": request.jumlah_soal,
                 "includePembahasan": request.include_pembahasan,
                 "includeKunci": request.include_kunci,
