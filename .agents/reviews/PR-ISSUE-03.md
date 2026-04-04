@@ -3,7 +3,7 @@
 **Status execution:** Berhasil
 **Branch:** `feature/issue-03`
 **GitHub PR:** https://github.com/Alhiefikri/EduQuest-AI/pull/6
-**Commits:** 2 (initial implementation + review fixes)
+**Commits:** 4 (initial + review round 1 fixes + review round 2 fixes + round 2 nits)
 
 ---
 
@@ -130,3 +130,34 @@ uvicorn app.main:app --reload --app-dir backend
 ```
 
 Tolong Senior Agent review kode saya lewat branch ini.
+
+---
+
+## Commit 3: Review Round 2 Nits
+
+Setelah review round 2 dari Senior Agent ("Approve with Nits"), berikut 3 nit yang sudah diperbaiki:
+
+### Nit 1: `filepath` Exposed di API Response (Security)
+- **Masalah:** `DocumentResponse` dan `DocumentListResponse` expose field `filepath` yang berisi path server internal ke client
+- **Fix:** Hapus field `filepath` dari kedua response model. Field `filepath` tetap ada di database model (Prisma) dan `DocumentCreate` untuk keperluan internal, tapi tidak dikirim ke client
+- **Files:** `models/document.py`
+
+### Nit 2: Inline Imports di Route Functions
+- **Masalah:** `from app.database.connection import get_db` ada di dalam function body di `list_documents`, `get_document`, `delete_document`
+- **Fix:** Pindah ke top-level import di `routes/documents.py`
+- **Files:** `routes/documents.py`
+
+### Nit 3: Error Messages di `parser_service.py` Tidak Konsisten
+- **Masalah:** Error message di parser service menggunakan gaya yang kurang formal ("rusak atau tidak valid", "mungkin berisi gambar saja")
+- **Fix:** Perbaiki ke Bahasa Indonesia yang benar dan konsisten:
+  - `"File PDF rusak atau tidak dapat dibaca: {detail}"` (sebelumnya: "tidak valid")
+  - `"File PDF tidak mengandung teks. Kemungkinan file hanya berisi gambar."` (sebelumnya: "mungkin berisi gambar saja")
+  - `"File Word rusak atau tidak dapat dibaca: {detail}"` (sebelumnya: "tidak valid")
+- Semua error message di service layer juga sudah menggunakan Bahasa Indonesia yang benar
+- **Files:** `parser_service.py`, `document_service.py`, `routes/documents.py`, `tests/test_parser_service.py`
+
+### Test Results (masih 10/10 passing):
+
+```
+10 passed, 5 warnings in 0.26s
+```
