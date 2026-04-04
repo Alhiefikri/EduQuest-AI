@@ -167,7 +167,7 @@ export default function EditSoal() {
 
       <div className="space-y-10">
         {editedSoal.map((item, index) => (
-          <Card key={index} className="shadow-md shadow-slate-100 border-2 border-slate-100 rounded-[2rem] overflow-hidden group hover:border-brand-200 transition-all duration-300">
+          <Card key={index} className="relative shadow-md shadow-slate-100 border-2 border-slate-100 rounded-[2rem] overflow-hidden group hover:border-brand-200 transition-all duration-300">
             <div className="p-4 bg-slate-50 border-b-2 border-slate-100 flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <div className="p-2 cursor-grab active:cursor-grabbing text-slate-300 hover:text-slate-500 transition-colors">
