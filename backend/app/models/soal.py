@@ -1,4 +1,5 @@
 from datetime import datetime
+import json
 from typing import List, Optional
 
 from pydantic import BaseModel, Field
@@ -46,7 +47,6 @@ class GenerateSoalResponse(BaseModel):
 
     @classmethod
     def from_prisma(cls, soal) -> "GenerateSoalResponse":
-        import json
         return cls(
             id=soal.id,
             modul_id=soal.modulId,

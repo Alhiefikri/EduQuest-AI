@@ -1,5 +1,4 @@
 import json
-import os
 import time
 from typing import List
 
@@ -149,8 +148,11 @@ def generate_soal(
             time.sleep(wait_time)
             continue
 
-        except json.JSONDecodeError as e:
-            raise ValueError(f"Respons AI bukan JSON yang valid: {str(e)}")
+        except (json.JSONDecodeError, ValueError) as e:
+            if attempt == max_retries - 1:
+                raise ValueError(f"Gagal memparsing respons AI setelah {max_retries} percobaan: {str(e)}")
+            time.sleep(2)
+            continue
 
         except Exception as e:
             if attempt == max_retries - 1:
