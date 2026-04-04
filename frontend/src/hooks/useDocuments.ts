@@ -1,36 +1,37 @@
-import { useState, useEffect, useCallback } from 'react'
-import { getDocuments } from '../services/documents'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { getDocuments, uploadDocument, deleteDocument } from '../services/documents'
 import type { DocumentListResponse } from '../types'
 
-interface UseDocumentsReturn {
-  documents: DocumentListResponse[]
-  loading: boolean
-  error: string | null
-  refetch: () => Promise<void>
-}
+export const useDocuments = () => {
+  const queryClient = useQueryClient()
 
-export const useDocuments = (): UseDocumentsReturn => {
-  const [documents, setDocuments] = useState<DocumentListResponse[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const { data, isLoading, error } = useQuery<DocumentListResponse[]>({
+    queryKey: ['documents'],
+    queryFn: getDocuments,
+  })
 
-  const fetchDocuments = useCallback(async () => {
-    setLoading(true)
-    setError(null)
-    try {
-      const data = await getDocuments()
-      setDocuments(data)
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Gagal memuat data dokumen'
-      setError(message)
-    } finally {
-      setLoading(false)
-    }
-  }, [])
+  const uploadMutation = useMutation({
+    mutationFn: uploadDocument,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['documents'] })
+    },
+  })
 
-  useEffect(() => {
-    fetchDocuments()
-  }, [fetchDocuments])
+  const deleteMutation = useMutation({
+    mutationFn: deleteDocument,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['documents'] })
+    },
+  })
 
-  return { documents, loading, error, refetch: fetchDocuments }
+  return {
+    documents: data ?? [],
+    loading: isLoading,
+    error: error instanceof Error ? error.message : null,
+    uploadDocument: uploadMutation.mutateAsync,
+    deleteDocument: deleteMutation.mutateAsync,
+    isUploading: uploadMutation.isPending,
+    isDeleting: deleteMutation.isPending,
+    refetch: () => queryClient.invalidateQueries({ queryKey: ['documents'] }),
+  }
 }

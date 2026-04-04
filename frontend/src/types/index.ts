@@ -1,16 +1,4 @@
-export interface DocumentItem {
-  id: string
-  filename: string
-  filetype: string
-  filesize: number
-  page_count: number
-  word_count: number
-  content: string
-  uploaded_at: string
-  updated_at: string
-}
-
-export interface DocumentListResponse {
+export interface BaseDocument {
   id: string
   filename: string
   filetype: string
@@ -21,17 +9,13 @@ export interface DocumentListResponse {
   updated_at: string
 }
 
-export interface UploadResponse {
-  id: string
-  filename: string
-  filetype: string
-  filesize: number
-  page_count: number
-  word_count: number
+export interface DocumentItem extends BaseDocument {
   content: string
-  uploaded_at: string
-  updated_at: string
 }
+
+export interface DocumentListResponse extends BaseDocument {}
+
+export interface UploadResponse extends DocumentItem {}
 
 export interface ApiError {
   detail: string

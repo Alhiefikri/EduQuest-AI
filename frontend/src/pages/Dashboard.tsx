@@ -1,12 +1,10 @@
 import { useState } from 'react'
-import { Upload, Zap, FileText, BookOpen, LayoutTemplate, ArrowRight, Folder, Lightbulb, Clock, ChevronRight, X, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react'
+import { Upload, Zap, FileText, BookOpen, LayoutTemplate, ArrowRight, Folder, Lightbulb, Clock, ChevronRight, X, AlertCircle, CheckCircle2 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useDocuments } from '../hooks/useDocuments'
-import { uploadDocument } from '../services/documents'
 
-function UploadModal({ isOpen, onClose, onSuccess }: { isOpen: boolean; onClose: () => void; onSuccess: () => void }) {
+function UploadModal({ isOpen, onClose, onSuccess }: { isOpen: boolean; onClose: () => void; onSuccess: (file: File) => void }) {
   const [dragActive, setDragActive] = useState(false)
-  const [uploading, setUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
 
@@ -26,21 +24,17 @@ function UploadModal({ isOpen, onClose, onSuccess }: { isOpen: boolean; onClose:
       return
     }
 
-    setUploading(true)
     setError(null)
     setSuccess(false)
     try {
-      await uploadDocument(file)
+      await onSuccess(file)
       setSuccess(true)
       setTimeout(() => {
-        onSuccess()
         onClose()
       }, 1500)
     } catch (err: unknown) {
       const message = err instanceof Error && 'message' in err ? err.message : 'Gagal mengupload file'
       setError(message)
-    } finally {
-      setUploading(false)
     }
   }
 
@@ -63,7 +57,7 @@ function UploadModal({ isOpen, onClose, onSuccess }: { isOpen: boolean; onClose:
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg mx-4 overflow-hidden" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between p-6 border-b border-gray-100">
           <h2 className="text-lg font-bold text-gray-900">Upload Modul Ajar</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors" disabled={uploading}>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -87,25 +81,15 @@ function UploadModal({ isOpen, onClose, onSuccess }: { isOpen: boolean; onClose:
                 onDragLeave={() => setDragActive(false)}
                 onDrop={handleDrop}
               >
-                {uploading ? (
-                  <div className="flex flex-col items-center">
-                    <Loader2 className="w-10 h-10 text-brand-500 animate-spin mb-3" />
-                    <p className="text-sm font-semibold text-gray-700">Mengupload file...</p>
-                    <p className="text-xs text-gray-400 mt-1">Mohon tunggu sebentar</p>
-                  </div>
-                ) : (
-                  <>
-                    <Upload className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-                    <p className="text-sm font-semibold text-gray-700">
-                      Drag & drop file di sini, atau{' '}
-                      <label className="text-brand-500 hover:text-brand-600 cursor-pointer underline">
-                        pilih file
-                        <input type="file" className="hidden" accept=".pdf,.docx" onChange={handleFileSelect} />
-                      </label>
-                    </p>
-                    <p className="text-xs text-gray-400 mt-2">PDF atau DOCX, maksimal 10MB</p>
-                  </>
-                )}
+                <Upload className="w-10 h-10 text-gray-300 mx-auto mb-3" />
+                <p className="text-sm font-semibold text-gray-700">
+                  Drag & drop file di sini, atau{' '}
+                  <label className="text-brand-500 hover:text-brand-600 cursor-pointer underline">
+                    pilih file
+                    <input type="file" className="hidden" accept=".pdf,.docx" onChange={handleFileSelect} />
+                  </label>
+                </p>
+                <p className="text-xs text-gray-400 mt-2">PDF atau DOCX, maksimal 10MB</p>
               </div>
 
               {error && (
@@ -123,7 +107,7 @@ function UploadModal({ isOpen, onClose, onSuccess }: { isOpen: boolean; onClose:
 }
 
 export default function Dashboard() {
-  const { documents, loading, error, refetch } = useDocuments()
+  const { documents, loading, error, uploadDocument, isUploading, refetch } = useDocuments()
   const [uploadOpen, setUploadOpen] = useState(false)
 
   return (
@@ -319,7 +303,7 @@ export default function Dashboard() {
       </div>
 
       {/* Upload Modal */}
-      <UploadModal isOpen={uploadOpen} onClose={() => setUploadOpen(false)} onSuccess={refetch} />
+      <UploadModal isOpen={uploadOpen} onClose={() => setUploadOpen(false)} onSuccess={uploadDocument} />
     </div>
   )
 }
