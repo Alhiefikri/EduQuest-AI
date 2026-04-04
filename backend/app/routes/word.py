@@ -1,7 +1,9 @@
+import json
 import os
 import uuid
 from pathlib import Path
 
+from docx import Document as DocxDocument
 from fastapi import APIRouter, UploadFile, File, HTTPException, Query
 from fastapi.responses import FileResponse
 
@@ -16,6 +18,18 @@ from app.models.word import (
 from app.services.word_service import generate_word_document
 
 router = APIRouter(prefix="/api/v1/word", tags=["word"])
+
+
+def _create_default_template() -> str:
+    default_path = TEMPLATES_DIR / "default.docx"
+    if not default_path.exists():
+        doc = DocxDocument()
+        doc.add_heading("{{JUDUL_UJIAN}}", level=1)
+        doc.add_paragraph("Nama: {{NAMA_SISWA}}")
+        doc.add_paragraph("Kelas: {{KELAS}}")
+        doc.add_paragraph("Tanggal: {{TANGGAL}}")
+        doc.save(str(default_path))
+    return str(default_path)
 
 
 @router.post("/template", response_model=TemplateUploadResponse, status_code=201)
@@ -93,7 +107,6 @@ async def generate_word(request: GenerateWordRequest):
     if not soal:
         raise HTTPException(status_code=404, detail="Soal tidak ditemukan")
 
-    import json
     soal_data = json.loads(soal.dataSoal)
 
     template_path = None
@@ -112,19 +125,7 @@ async def generate_word(request: GenerateWordRequest):
         if default_template:
             template_path = default_template.filePath
         else:
-            from docx import Document as DocxDocument
-            from docx.shared import Pt
-            from docx.enum.text import WD_ALIGN_PARAGRAPH
-
-            default_path = TEMPLATES_DIR / "default.docx"
-            if not default_path.exists():
-                doc = DocxDocument()
-                doc.add_heading("{{JUDUL_UJIAN}}", level=1)
-                doc.add_paragraph("Nama: {{NAMA_SISWA}}")
-                doc.add_paragraph("Kelas: {{KELAS}}")
-                doc.add_paragraph("Tanggal: {{TANGGAL}}")
-                doc.save(str(default_path))
-            template_path = str(default_path)
+            template_path = _create_default_template()
 
     try:
         output_path = generate_word_document(
@@ -148,8 +149,11 @@ async def generate_word(request: GenerateWordRequest):
             where={"id": request.soal_id},
             data={"filePath": output_path},
         )
-    except Exception:
-        pass
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Dokumen Word berhasil dibuat, namun gagal mencatat path file ke basis data: {str(e)}",
+        )
 
     return GenerateWordResponse(
         file_path=output_path,
