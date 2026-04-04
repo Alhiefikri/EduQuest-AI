@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Upload, FileText, Search, MoreVertical, Trash2, ExternalLink, Filter, Loader2, AlertCircle, X, FileText as FileTextIcon, Hash, Calendar, Clock, CheckCircle2 } from 'lucide-react'
+import { Upload, FileText, Search, Trash2, ExternalLink, Loader2, AlertCircle, X, FileText as FileTextIcon, Hash, Calendar, Clock, CheckCircle2 } from 'lucide-react'
 import { useDocuments } from '../hooks/useDocuments'
 import { getDocumentDetail } from '../services/documents'
 import type { DocumentItem } from '../types'

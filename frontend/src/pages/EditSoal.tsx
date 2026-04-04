@@ -159,13 +159,14 @@ export default function EditSoal() {
         id,
         data: {
           nomor_soal: itemToRegenerate.nomor,
+          soal_lama: itemToRegenerate,
           gaya_soal: regenerateGayaSoal,
           feedback: regenerateFeedback || undefined,
         },
       })
 
       setEditedSoal(prev => 
-        prev.map((item, i) => (i === regenerateIndex ? { ...newSoalItem, nomor: item.nomor } : item))
+        prev.map((item, i) => (i === regenerateIndex ? { ...newSoalItem, nomor: item.nomor, id: item.id } : item))
       )
       toast.success("Berhasil Generate Ulang", {
         description: `Soal no ${itemToRegenerate.nomor} telah diperbarui.`,

@@ -20,7 +20,7 @@ interface SortableItemProps {
   onRegenerate: (index: number) => void;
 }
 
-export function SortableSoalItem({ 
+export const SortableSoalItem = ({ 
   id, 
   index, 
   item, 
@@ -30,7 +30,7 @@ export function SortableSoalItem({
   onMoveUp,
   onMoveDown,
   onRegenerate, 
-}: SortableItemProps) {
+}: SortableItemProps) => {
   const {
     attributes,
     listeners,
@@ -169,4 +169,6 @@ export function SortableSoalItem({
       </Card>
     </div>
   );
-}
+};
+
+export default SortableSoalItem;
