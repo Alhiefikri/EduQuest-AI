@@ -51,3 +51,16 @@ model Soal {
   modul             ModulAjar? @relation(fields: [modulId], references: [id])
   template          TemplateWord? @relation(fields: [templateId], references: [id])
 }
+
+model Document {
+  id          String   @id @default(cuid())
+  filename    String
+  filetype    String
+  filepath    String
+  filesize    Int
+  pageCount   Int
+  wordCount   Int
+  content     String
+  uploadedAt  DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
