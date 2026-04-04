@@ -66,3 +66,30 @@ uvicorn app.main:app --reload --app-dir backend
 (10 parser + 7 AI + 12 word service tests)
 
 Tolong Senior Agent review kode saya lewat branch ini.
+
+---
+
+## Commit 2: Review Round 1 Fixes
+
+Setelah review round 1 dari Senior Agent, berikut 2 critical issue yang sudah diperbaiki:
+
+### 🔴 Critical 1: Silent Database Update Failure
+
+- **Masalah:** `except Exception: pass` pada blok update `filePath` di model Soal. Jika update DB gagal, file berhasil dibuat tapi id soal tidak mencatat URL-nya — user tidak bisa download file selamanya.
+- **Fix:** Ganti dengan `HTTPException(status_code=500)` yang memberikan pesan error jelas: "Dokumen Word berhasil dibuat, namun gagal mencatat path file ke basis data"
+- **Files:** `routes/word.py`
+
+### 🔴 Critical 2: Inline Imports Berulang Kali
+
+- **Masalah:** `import json`, `from docx import Document`, `from docx.shared import Pt`, `from docx.enum.text import WD_ALIGN_PARAGRAPH` ada di dalam function body `generate_word()`
+- **Fix:**
+  - Pindah semua import ke top-level
+  - Ekstrak logika pembuatan default template ke fungsi `_create_default_template()` agar route tetap bersih
+  - Hapus import yang tidak terpakai (`Pt`, `WD_ALIGN_PARAGRAPH`)
+- **Files:** `routes/word.py`
+
+### Test Results (masih 29/29 passing):
+
+```
+29 passed, 5 warnings in 1.63s
+```
