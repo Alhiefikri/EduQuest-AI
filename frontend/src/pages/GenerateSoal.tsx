@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { toast } from 'sonner'
 
 export default function GenerateSoal() {
   const navigate = useNavigate()
@@ -43,6 +44,10 @@ export default function GenerateSoal() {
 
   const handleGenerate = async () => {
     setError(null)
+    const loadingToast = toast.loading("Mempersiapkan Bank Soal...", {
+      description: "AI sedang menganalisis materi dan menyusun pertanyaan.",
+    })
+    
     try {
       const result = await generateMutation.mutateAsync({
         modul_id: sourceType === 'modul' && modulId ? modulId : undefined,
@@ -57,10 +62,20 @@ export default function GenerateSoal() {
         include_kunci: includeKunci,
         include_gambar: includeGambar,
       })
+      
+      toast.dismiss(loadingToast)
+      toast.success("Berhasil Generate Soal!", {
+        description: `${jumlahSoal} soal evaluasi telah berhasil dibuat.`,
+      })
+      
       navigate(`/soal/edit/${result.id}`)
     } catch (err: unknown) {
+      toast.dismiss(loadingToast)
       const message = err instanceof Error && 'message' in err ? err.message : 'Gagal generate soal'
       setError(message)
+      toast.error("Gagal Generate Soal", {
+        description: message,
+      })
     }
   }
 
