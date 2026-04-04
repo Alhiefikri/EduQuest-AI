@@ -3,6 +3,10 @@ import { Save, FileCheck, ArrowLeft, Plus, Trash2, GripVertical, ChevronDown, Ch
 import { Link, useParams, useNavigate } from 'react-router-dom'
 import { useSoalDetail, useUpdateSoal } from '../hooks/useSoal'
 import type { SoalItem } from '../types'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 
 export default function EditSoal() {
   const { id } = useParams()
@@ -69,10 +73,10 @@ export default function EditSoal() {
 
   if (isLoading) {
     return (
-      <div className="max-w-[1000px] mx-auto space-y-8 pb-20 animate-in fade-in">
+      <div className="max-w-[1000px] mx-auto space-y-8 pb-20 animate-in fade-in p-4 md:p-8">
         <div className="flex items-center gap-4">
-          <Loader2 className="w-6 h-6 text-brand-500 animate-spin" />
-          <p className="text-sm font-semibold text-gray-700">Memuat data soal...</p>
+          <Loader2 className="w-8 h-8 text-black animate-spin" strokeWidth={3} />
+          <p className="text-base font-black uppercase tracking-widest">Memuat data soal...</p>
         </div>
       </div>
     )
@@ -80,96 +84,113 @@ export default function EditSoal() {
 
   if (error || !soal) {
     return (
-      <div className="max-w-[1000px] mx-auto space-y-8 pb-20 animate-in fade-in">
-        <div className="bg-white p-8 rounded-2xl border border-red-100 text-center">
-          <AlertCircle className="w-10 h-10 text-red-400 mx-auto mb-3" />
-          <p className="text-sm font-semibold text-red-700">{error instanceof Error ? error.message : 'Soal tidak ditemukan'}</p>
-          <Link to="/soal" className="mt-3 inline-block text-sm font-bold text-brand-500 hover:text-brand-600">Kembali ke Daftar Soal</Link>
-        </div>
+      <div className="max-w-[1000px] mx-auto space-y-8 pb-20 animate-in fade-in p-4 md:p-8">
+        <Card className="bg-red-400 border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] text-center">
+          <CardContent className="p-12">
+            <AlertCircle className="w-12 h-12 text-black mx-auto mb-4" strokeWidth={2.5} />
+            <p className="text-xl font-black uppercase">{error instanceof Error ? error.message : 'Soal tidak ditemukan'}</p>
+            <Button asChild variant="default" className="mt-6 uppercase font-bold border-2 border-black bg-white text-black hover:bg-gray-100">
+              <Link to="/soal">Kembali ke Daftar Soal</Link>
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     )
   }
 
   return (
-    <div className="max-w-[1000px] mx-auto space-y-8 pb-20 animate-in fade-in">
+    <div className="max-w-[1000px] mx-auto space-y-12 pb-32 animate-in fade-in p-4 md:p-8">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div className="flex items-center gap-4">
-          <Link to="/soal" className="group flex items-center justify-center w-10 h-10 bg-white border border-gray-200 rounded-xl text-gray-500 hover:text-brand-500 hover:border-brand-200 hover:shadow-sm transition-all active:scale-95">
-            <ArrowLeft className="w-5 h-5 group-hover:-translate-x-0.5 transition-transform" />
-          </Link>
+        <div className="flex items-center gap-6">
+          <Button asChild variant="outline" size="icon" className="w-12 h-12 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all">
+            <Link to="/soal">
+              <ArrowLeft className="w-6 h-6" strokeWidth={3} />
+            </Link>
+          </Button>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Editor Bank Soal</h1>
-            <p className="text-sm font-medium text-gray-500 mt-1">
-              ID: {soal.id} • {soal.mata_pelajaran}{soal.topik ? ` - ${soal.topik}` : ''}
+            <h1 className="text-3xl font-black uppercase tracking-tighter drop-shadow-md">Editor Bank Soal</h1>
+            <p className="text-base font-bold mt-2 border-l-4 border-primary pl-3">
+              ID: <span className="bg-yellow-200 px-1 border-2 border-black">{soal.id}</span> &bull; {soal.mata_pelajaran}{soal.topik ? ` - ${soal.topik}` : ''}
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4 flex-wrap">
           {saveSuccess && (
-            <span className="text-sm font-bold text-green-600 bg-green-50 px-3 py-1.5 rounded-lg">Tersimpan!</span>
+            <span className="text-sm font-black text-black bg-green-400 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] px-4 py-2 uppercase">Tersimpan!</span>
           )}
           {saveError && (
-            <span className="text-sm font-bold text-red-600 bg-red-50 px-3 py-1.5 rounded-lg">{saveError}</span>
+            <span className="text-sm font-black text-black bg-red-400 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] px-4 py-2 uppercase">{saveError}</span>
           )}
-          <button
-            onClick={handleSave}
+          <Button
+            onClick={() => handleSave(false)}
             disabled={saving}
-            className="flex items-center gap-2 px-5 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl text-sm font-bold hover:bg-gray-50 transition-all shadow-xs active:scale-95 disabled:opacity-50"
+            variant="outline"
+            className="border-4 border-black text-black font-black uppercase px-6 h-12 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-y-1 hover:translate-x-1 hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
           >
-            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Simpan Draft
-          </button>
-          <Link to={`/soal/preview/${id}`} className="flex items-center gap-2 px-5 py-2.5 bg-brand-500 text-white rounded-xl text-sm font-bold hover:bg-brand-600 transition-all shadow-md active:scale-95">
-            <FileCheck className="w-4 h-4" /> Selesai & Preview
-          </Link>
+            {saving ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <Save className="w-5 h-5 mr-2" />} Simpan Draft
+          </Button>
+          <Button asChild className="border-4 border-black font-black uppercase px-6 h-12 bg-[#00f0ff] text-black hover:bg-[#00f0ff]/80 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-y-1 hover:translate-x-1 hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+            <Link to={`/soal/preview/${id}`}>
+              <FileCheck className="w-5 h-5 mr-2" /> Selesai & Preview
+            </Link>
+          </Button>
         </div>
       </div>
 
-      <div className="space-y-6">
+      <div className="space-y-8">
         {editedSoal.map((item, index) => (
-          <div key={index} className="bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden group hover:border-brand-200 transition-colors">
-            <div className="p-2 bg-gray-50/50 border-b border-gray-100 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="p-2 cursor-grab active:cursor-grabbing text-gray-300 hover:text-gray-500">
-                  <GripVertical className="w-4 h-4" />
+          <Card key={index} className="shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] border-4 border-black overflow-hidden group">
+            <div className="p-3 bg-[#ffc900] border-b-4 border-black flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 cursor-grab active:cursor-grabbing text-black hover:bg-black/10 rounded-md transition-colors">
+                  <GripVertical className="w-5 h-5" />
                 </div>
-                <span className="bg-brand-500 text-white text-[10px] font-black px-2.5 py-1 rounded-lg tracking-wider uppercase">Butir {item.nomor}</span>
+                <span className="bg-black text-white text-xs font-black px-3 py-1 uppercase tracking-widest shadow-[2px_2px_0px_0px_rgba(255,255,255,1)]">Butir {item.nomor}</span>
               </div>
-              <div className="flex items-center gap-1">
-                <button className="p-2 text-gray-400 hover:text-gray-900 transition-colors"><ChevronUp className="w-4 h-4" /></button>
-                <button className="p-2 text-gray-400 hover:text-gray-900 transition-colors"><ChevronDown className="w-4 h-4" /></button>
-                <div className="w-[1px] h-4 bg-gray-200 mx-1"></div>
-                <button onClick={() => removeSoalItem(index)} className="p-2 text-gray-400 hover:text-red-500 transition-colors"><Trash2 className="w-4 h-4" /></button>
+              <div className="flex items-center gap-2">
+                <Button variant="ghost" size="icon" className="hover:bg-black/10 text-black rounded-none">
+                  <ChevronUp className="w-5 h-5" />
+                </Button>
+                <Button variant="ghost" size="icon" className="hover:bg-black/10 text-black rounded-none">
+                  <ChevronDown className="w-5 h-5" />
+                </Button>
+                <div className="w-1 h-6 bg-black/20 mx-2"></div>
+                <Button variant="ghost" size="icon" onClick={() => removeSoalItem(index)} className="hover:bg-red-400 hover:text-black text-black rounded-none border-2 border-transparent hover:border-black">
+                  <Trash2 className="w-5 h-5" />
+                </Button>
               </div>
             </div>
 
-            <div className="p-8 space-y-8">
-              <div className="space-y-3">
-                <label className="text-[11px] font-black text-gray-400 tracking-widest uppercase">Pertanyaan</label>
-                <textarea
-                  className="w-full bg-gray-50 border border-transparent focus:bg-white focus:border-brand-200 focus:ring-4 focus:ring-brand-50/50 rounded-2xl p-5 text-base font-bold text-gray-900 outline-none transition-all min-h-[120px]"
+            <CardContent className="p-8 space-y-10">
+              <div className="space-y-4">
+                <label className="text-sm font-black uppercase bg-black text-white px-2 py-1">Pertanyaan</label>
+                <Textarea
+                  className="w-full bg-white border-4 border-black focus:ring-0 rounded-none p-5 text-base font-bold shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] min-h-[120px]"
                   value={item.pertanyaan}
                   onChange={(e) => updateSoalItem(index, 'pertanyaan', e.target.value)}
                 />
               </div>
 
               {item.pilihan && (
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center">
-                    <label className="text-[11px] font-black text-gray-400 tracking-widest uppercase">Pilihan Jawaban</label>
-                    <button 
+                <div className="space-y-4 p-6 bg-gray-50 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                  <div className="flex justify-between items-center border-b-4 border-black pb-4 mb-4">
+                    <label className="text-sm font-black uppercase">Pilihan Jawaban</label>
+                    <Button 
+                      variant="outline"
+                      size="sm"
                       onClick={() => {
                         const newPilihan = item.pilihan?.length ? [] : ['A. ', 'B. ', 'C. ', 'D. ']
                         updateSoalItem(index, 'pilihan', newPilihan)
                       }}
-                      className="text-[10px] font-bold text-brand-500 hover:text-brand-600 uppercase tracking-wider"
+                      className="text-xs font-black uppercase border-2 border-black"
                     >
                       {item.pilihan?.length ? 'Hapus Pilihan' : 'Tambah Pilihan (PG)'}
-                    </button>
+                    </Button>
                   </div>
                   {item.pilihan.length > 0 && (
-                    <div className="grid md:grid-cols-2 gap-4">
+                    <div className="grid md:grid-cols-2 gap-6">
                       {item.pilihan.map((opsi, oi) => (
-                        <input
+                        <Input
                           key={oi}
                           type="text"
                           value={opsi}
@@ -178,7 +199,7 @@ export default function EditSoal() {
                             newPilihan[oi] = e.target.value
                             updateSoalItem(index, 'pilihan', newPilihan)
                           }}
-                          className="w-full bg-gray-50 border border-transparent focus:bg-white focus:border-brand-200 focus:ring-4 focus:ring-brand-50/50 rounded-xl px-4 py-3 text-sm font-bold text-gray-900 outline-none transition-all"
+                          className="w-full bg-white border-4 border-black focus:ring-0 rounded-none h-12 text-sm font-bold shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
                         />
                       ))}
                     </div>
@@ -186,68 +207,74 @@ export default function EditSoal() {
                 </div>
               )}
 
-              <div className="grid md:grid-cols-2 gap-8">
-                <div className="space-y-3">
-                  <label className="text-[11px] font-black text-gray-400 tracking-widest uppercase flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-brand-500"></div>
+              <div className="grid md:grid-cols-2 gap-10">
+                <div className="space-y-4">
+                  <label className="text-sm font-black uppercase bg-[#00f0ff] text-black px-2 py-1 border-2 border-black inline-flex items-center gap-2">
+                    <div className="w-2 h-2 bg-black rounded-full"></div>
                     Kunci Jawaban
                   </label>
-                  <input
+                  <Input
                     type="text"
                     value={item.jawaban}
                     onChange={(e) => updateSoalItem(index, 'jawaban', e.target.value)}
-                    className="w-full bg-gray-50 border border-transparent focus:bg-white focus:border-brand-200 focus:ring-4 focus:ring-brand-50/50 rounded-xl px-4 py-3 text-sm font-bold text-gray-900 outline-none transition-all"
+                    className="w-full bg-white border-4 border-black focus:ring-0 rounded-none h-14 text-base font-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
                   />
                 </div>
-                <div className="space-y-3">
-                  <label className="text-[11px] font-black text-gray-400 tracking-widest uppercase">Gambar Prompt (AI)</label>
-                  <input
+                <div className="space-y-4">
+                  <label className="text-sm font-black uppercase bg-[#ff90e8] text-black px-2 py-1 border-2 border-black">Gambar Prompt (AI)</label>
+                  <Input
                     type="text"
                     value={item.gambar_prompt || ''}
                     onChange={(e) => updateSoalItem(index, 'gambar_prompt', e.target.value)}
-                    placeholder="Deskripsi visual untuk generate gambar..."
-                    className="w-full bg-gray-50 border border-transparent focus:bg-white focus:border-brand-200 focus:ring-4 focus:ring-brand-50/50 rounded-xl px-4 py-3 text-sm font-medium text-gray-600 outline-none transition-all"
+                    placeholder="Deskripsi visual..."
+                    className="w-full bg-white border-4 border-black focus:ring-0 rounded-none h-14 text-sm font-bold shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
                   />
                 </div>
               </div>
 
-              <div className="space-y-3">
-                <label className="text-[11px] font-black text-gray-400 tracking-widest uppercase">Pembahasan</label>
-                <textarea
+              <div className="space-y-4">
+                <label className="text-sm font-black uppercase bg-gray-200 text-black px-2 py-1 border-2 border-black">Pembahasan</label>
+                <Textarea
                   value={item.pembahasan || ''}
                   onChange={(e) => updateSoalItem(index, 'pembahasan', e.target.value)}
-                  className="w-full bg-gray-50 border border-transparent focus:bg-white focus:border-brand-200 focus:ring-4 focus:ring-brand-50/50 rounded-xl p-5 text-sm font-medium text-gray-600 outline-none transition-all min-h-[100px]"
+                  className="w-full bg-white border-4 border-black focus:ring-0 rounded-none p-5 text-sm font-bold shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] min-h-[100px]"
                 />
               </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         ))}
 
-        <button
+        <Button
           onClick={addSoalItem}
-          className="w-full py-8 border-2 border-dashed border-gray-200 rounded-3xl text-gray-400 font-bold hover:border-brand-200 hover:bg-brand-50/10 hover:text-brand-600 flex flex-col items-center justify-center gap-3 transition-all group"
+          variant="outline"
+          className="w-full h-32 border-4 border-dashed border-black bg-gray-50 text-black font-black uppercase tracking-widest hover:bg-[#ffc900] hover:border-solid hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all group rounded-none"
         >
-          <div className="w-12 h-12 rounded-2xl bg-gray-50 flex items-center justify-center group-hover:bg-brand-50 group-hover:text-brand-500 transition-colors">
-            <Plus className="w-6 h-6" strokeWidth={3} />
+          <div className="flex flex-col items-center gap-4">
+            <div className="w-12 h-12 bg-black text-white flex items-center justify-center group-hover:scale-110 transition-transform shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+              <Plus className="w-8 h-8" strokeWidth={3} />
+            </div>
+            <span>Tambah Butir Soal Manual</span>
           </div>
-          <span className="text-sm uppercase tracking-widest font-black">Tambah Butir Soal Manual</span>
-        </button>
+        </Button>
       </div>
 
-      <div className="fixed bottom-8 left-1/2 -translate-x-1/2 bg-gray-900/90 backdrop-blur-lg border border-white/10 px-8 py-4 rounded-3xl shadow-2xl z-30 flex items-center gap-8 animate-in slide-in-from-bottom-8">
-        <div className="flex items-center gap-4 border-r border-white/10 pr-8">
-          <p className="text-xs font-black text-gray-400 uppercase tracking-widest">Editor Stats</p>
-          <p className="text-sm font-bold text-white">{editedSoal.length} <span className="text-brand-400">Soal</span></p>
+      <div className="fixed bottom-0 left-0 right-0 bg-[#ff90e8] border-t-8 border-black p-6 z-30 flex flex-col md:flex-row items-center justify-between gap-6 shadow-[0px_-8px_0px_0px_rgba(0,0,0,0.1)]">
+        <div className="flex items-center gap-6">
+          <p className="text-sm font-black text-black uppercase tracking-widest bg-white border-4 border-black px-4 py-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+            Editor Stats: <span className="text-[#00f0ff] stroke-black" style={{ WebkitTextStroke: '1px black' }}>{editedSoal.length} SOAL</span>
+          </p>
         </div>
-        <div className="flex items-center gap-3">
-          <button onClick={() => navigate('/soal')} className="px-4 py-2 text-xs font-bold text-white hover:text-brand-300 transition-colors">Batal</button>
-          <button
+        <div className="flex items-center gap-4 w-full md:w-auto">
+          <Button onClick={() => navigate('/soal')} variant="outline" className="flex-1 md:flex-none border-4 border-black font-black uppercase px-8 h-14 bg-white text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-gray-100 hover:translate-y-1 hover:translate-x-1 hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+            Batal
+          </Button>
+          <Button
             onClick={() => handleSave(true)}
             disabled={saving}
-            className="bg-brand-500 hover:bg-brand-600 text-white px-6 py-2.5 rounded-xl font-bold text-sm shadow-lg active:scale-95 transition-all disabled:opacity-50 flex items-center gap-2"
+            className="flex-2 md:flex-none border-4 border-black font-black uppercase px-10 h-14 bg-black text-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-black/80 hover:translate-y-1 hover:translate-x-1 hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] text-base"
           >
-            {saving && <Loader2 className="w-4 h-4 animate-spin" />} Simpan Permanen
-          </button>
+            {saving && <Loader2 className="w-6 h-6 animate-spin mr-3" />} Simpan Permanen
+          </Button>
         </div>
       </div>
     </div>

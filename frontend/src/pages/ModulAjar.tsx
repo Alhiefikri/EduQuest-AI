@@ -1,8 +1,12 @@
 import { useState } from 'react'
-import { Upload, FileText, Search, MoreVertical, Trash2, ExternalLink, Filter, Loader2, AlertCircle, X, FileText as FileTextIcon, Hash, Calendar, Clock } from 'lucide-react'
+import { Upload, FileText, Search, MoreVertical, Trash2, ExternalLink, Filter, Loader2, AlertCircle, X, FileText as FileTextIcon, Hash, Calendar, Clock, CheckCircle2 } from 'lucide-react'
 import { useDocuments } from '../hooks/useDocuments'
 import { getDocumentDetail } from '../services/documents'
 import type { DocumentItem } from '../types'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
 function UploadModal({ isOpen, onClose, onSuccess }: { isOpen: boolean; onClose: () => void; onSuccess: (file: File) => void }) {
   const [dragActive, setDragActive] = useState(false)
@@ -55,56 +59,54 @@ function UploadModal({ isOpen, onClose, onSuccess }: { isOpen: boolean; onClose:
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={onClose}>
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg mx-4 overflow-hidden" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between p-6 border-b border-gray-100">
-          <h2 className="text-lg font-bold text-gray-900">Upload Modul Ajar</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
-            <Upload className="w-5 h-5" />
-          </button>
+      <Card className="w-full max-w-lg mx-4 overflow-hidden border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] rounded-none" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between p-6 border-b-4 border-black bg-[#ff90e8]">
+          <h2 className="text-xl font-black uppercase tracking-tight text-black">Upload Modul Ajar</h2>
+          <Button variant="ghost" size="icon" onClick={onClose} className="hover:bg-black/10 rounded-none text-black">
+            <X className="w-6 h-6" strokeWidth={3} />
+          </Button>
         </div>
 
-        <div className="p-6">
+        <CardContent className="p-8">
           {success ? (
             <div className="flex flex-col items-center py-8 text-center">
-              <div className="w-16 h-16 rounded-full bg-green-50 flex items-center justify-center mb-4">
-                <svg className="w-8 h-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                </svg>
+              <div className="w-16 h-16 border-4 border-black bg-[#00f0ff] flex items-center justify-center mb-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transform -rotate-6">
+                <CheckCircle2 className="w-8 h-8 text-black" strokeWidth={3} />
               </div>
-              <p className="text-lg font-bold text-gray-900">Upload Berhasil</p>
-              <p className="text-sm text-gray-500 mt-1">Modul ajar telah berhasil ditambahkan</p>
+              <p className="text-2xl font-black uppercase mt-4">Upload Berhasil</p>
+              <p className="text-base font-bold mt-2">Modul ajar telah ditambahkan</p>
             </div>
           ) : (
             <>
               <div
-                className={`border-2 border-dashed rounded-2xl p-10 text-center transition-colors ${
-                  dragActive ? 'border-brand-400 bg-brand-50' : 'border-gray-200 hover:border-gray-300'
+                className={`border-4 border-dashed p-10 text-center transition-all cursor-pointer ${
+                  dragActive ? 'border-black bg-[#ffc900] scale-[1.02] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]' : 'border-gray-400 hover:border-black hover:bg-gray-50 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]'
                 }`}
                 onDragOver={(e) => { e.preventDefault(); setDragActive(true) }}
                 onDragLeave={() => setDragActive(false)}
                 onDrop={handleDrop}
               >
-                <Upload className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-                <p className="text-sm font-semibold text-gray-700">
+                <Upload className="w-12 h-12 text-black mx-auto mb-4" strokeWidth={2.5} />
+                <p className="text-base font-black uppercase">
                   Drag & drop file di sini, atau{' '}
-                  <label className="text-brand-500 hover:text-brand-600 cursor-pointer underline">
+                  <label className="text-[#00f0ff] bg-black px-2 hover:bg-black/80 cursor-pointer transition-colors inline-block mt-2">
                     pilih file
                     <input type="file" className="hidden" accept=".pdf,.docx" onChange={handleFileSelect} />
                   </label>
                 </p>
-                <p className="text-xs text-gray-400 mt-2">PDF atau DOCX, maksimal 10MB</p>
+                <p className="text-sm font-bold mt-4 border-t-2 border-black border-dashed pt-4">PDF atau DOCX, maks 10MB</p>
               </div>
 
               {error && (
-                <div className="flex items-center gap-2 mt-4 p-3 bg-red-50 border border-red-100 rounded-xl">
-                  <AlertCircle className="w-4 h-4 text-red-500 shrink-0" />
-                  <p className="text-sm text-red-700 font-medium">{error}</p>
+                <div className="flex items-center gap-3 mt-6 p-4 bg-red-400 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                  <AlertCircle className="w-6 h-6 text-black shrink-0" strokeWidth={2.5} />
+                  <p className="text-sm text-black font-black uppercase">{error}</p>
                 </div>
               )}
             </>
           )}
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }
@@ -114,58 +116,58 @@ function DetailModal({ isOpen, onClose, document }: { isOpen: boolean; onClose: 
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={onClose}>
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl mx-4 overflow-hidden max-h-[80vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between p-6 border-b border-gray-100">
-          <h2 className="text-lg font-bold text-gray-900">Detail Modul Ajar</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
-            <X className="w-5 h-5" />
-          </button>
+      <Card className="w-full max-w-2xl mx-4 overflow-hidden max-h-[85vh] flex flex-col border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] rounded-none" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between p-6 border-b-4 border-black bg-[#ffc900]">
+          <h2 className="text-xl font-black uppercase tracking-tight text-black">Detail Modul Ajar</h2>
+          <Button variant="ghost" size="icon" onClick={onClose} className="hover:bg-black/10 rounded-none text-black">
+            <X className="w-6 h-6" strokeWidth={3} />
+          </Button>
         </div>
 
-        <div className="p-6 overflow-y-auto flex-1">
-          <div className="grid grid-cols-2 gap-4 mb-6">
-            <div className="bg-gray-50 rounded-xl p-4">
-              <div className="flex items-center gap-2 mb-1">
-                <FileTextIcon className="w-4 h-4 text-gray-400" />
-                <span className="text-[10px] font-black text-gray-400 tracking-widest uppercase">Nama File</span>
+        <CardContent className="p-8 overflow-y-auto flex-1 bg-white">
+          <div className="grid grid-cols-2 gap-6 mb-8">
+            <div className="bg-white border-4 border-black p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+              <div className="flex items-center gap-2 mb-2 border-b-2 border-black pb-2">
+                <FileTextIcon className="w-5 h-5 text-black" strokeWidth={2.5} />
+                <span className="text-xs font-black text-black tracking-widest uppercase">Nama File</span>
               </div>
-              <p className="text-sm font-bold text-gray-900 truncate">{document.filename}</p>
+              <p className="text-base font-bold text-black truncate">{document.filename}</p>
             </div>
-            <div className="bg-gray-50 rounded-xl p-4">
-              <div className="flex items-center gap-2 mb-1">
-                <Hash className="w-4 h-4 text-gray-400" />
-                <span className="text-[10px] font-black text-gray-400 tracking-widest uppercase">Format</span>
+            <div className="bg-white border-4 border-black p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+              <div className="flex items-center gap-2 mb-2 border-b-2 border-black pb-2">
+                <Hash className="w-5 h-5 text-black" strokeWidth={2.5} />
+                <span className="text-xs font-black text-black tracking-widest uppercase">Format</span>
               </div>
-              <p className="text-sm font-bold text-gray-900 uppercase">{document.filetype}</p>
+              <p className="text-base font-bold text-black uppercase">{document.filetype}</p>
             </div>
-            <div className="bg-gray-50 rounded-xl p-4">
-              <div className="flex items-center gap-2 mb-1">
-                <Calendar className="w-4 h-4 text-gray-400" />
-                <span className="text-[10px] font-black text-gray-400 tracking-widest uppercase">Tanggal Upload</span>
+            <div className="bg-white border-4 border-black p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+              <div className="flex items-center gap-2 mb-2 border-b-2 border-black pb-2">
+                <Calendar className="w-5 h-5 text-black" strokeWidth={2.5} />
+                <span className="text-xs font-black text-black tracking-widest uppercase">Tanggal Upload</span>
               </div>
-              <p className="text-sm font-bold text-gray-900">
+              <p className="text-base font-bold text-black">
                 {new Date(document.uploaded_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })}
               </p>
             </div>
-            <div className="bg-gray-50 rounded-xl p-4">
-              <div className="flex items-center gap-2 mb-1">
-                <Clock className="w-4 h-4 text-gray-400" />
-                <span className="text-[10px] font-black text-gray-400 tracking-widest uppercase">Ukuran</span>
+            <div className="bg-white border-4 border-black p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+              <div className="flex items-center gap-2 mb-2 border-b-2 border-black pb-2">
+                <Clock className="w-5 h-5 text-black" strokeWidth={2.5} />
+                <span className="text-xs font-black text-black tracking-widest uppercase">Ukuran & Konten</span>
               </div>
-              <p className="text-sm font-bold text-gray-900">
-                {(document.filesize / 1024 / 1024).toFixed(1)} MB &bull; {document.page_count} halaman &bull; {document.word_count.toLocaleString('id-ID')} kata
+              <p className="text-sm font-bold text-black leading-tight">
+                {(document.filesize / 1024 / 1024).toFixed(1)} MB<br/>{document.page_count} halaman<br/>{document.word_count.toLocaleString('id-ID')} kata
               </p>
             </div>
           </div>
 
           <div>
-            <h3 className="text-[10px] font-black text-gray-400 tracking-widest uppercase mb-3">Konten yang Di-extract</h3>
-            <div className="bg-gray-50 border border-gray-100 rounded-xl p-5 max-h-64 overflow-y-auto">
-              <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">{document.content}</p>
+            <h3 className="text-sm font-black text-black tracking-widest uppercase mb-4 bg-[#00f0ff] inline-block px-3 py-1 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">Konten Hasil Ekstraksi AI</h3>
+            <div className="bg-gray-50 border-4 border-black p-6 max-h-[300px] overflow-y-auto shadow-inner font-mono text-sm leading-relaxed">
+              {document.content}
             </div>
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }
@@ -235,142 +237,154 @@ export default function ModulAjar() {
   }
 
   return (
-    <div className="space-y-8 animate-in fade-in pb-12">
+    <div className="space-y-10 animate-in fade-in pb-12 p-4 md:p-8">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Modul Ajar</h1>
-          <p className="text-gray-500 mt-2 font-medium">Kelola berkas modul sebagai sumber materi ekstraksi AI.</p>
+          <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tighter drop-shadow-md">Modul Ajar</h1>
+          <p className="mt-3 text-lg font-bold border-l-4 border-primary pl-4">Kelola berkas modul sebagai sumber materi ekstraksi AI.</p>
         </div>
-        <button
+        <Button
           onClick={() => setUploadOpen(true)}
-          className="flex items-center gap-2.5 px-6 py-3 bg-brand-500 text-white rounded-xl text-sm font-bold hover:bg-brand-600 transition-all shadow-md active:scale-95"
+          size="lg"
+          className="border-4 border-black font-black uppercase text-base h-14 bg-black text-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-black/80 hover:translate-y-1 hover:translate-x-1 hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all rounded-none"
         >
-          <Upload className="w-4 h-4" /> Upload Modul
-        </button>
+          <Upload className="w-5 h-5 mr-3" strokeWidth={3} /> Upload Modul
+        </Button>
       </div>
 
       {loading ? (
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden p-12 text-center">
-          <Loader2 className="w-8 h-8 text-brand-500 animate-spin mx-auto mb-3" />
-          <p className="text-sm font-semibold text-gray-700">Memuat daftar modul...</p>
-        </div>
+        <Card className="border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] rounded-none">
+          <CardContent className="p-16 text-center flex flex-col items-center">
+            <Loader2 className="w-12 h-12 text-black animate-spin mb-4" strokeWidth={3} />
+            <p className="text-xl font-black uppercase tracking-widest">Memuat daftar modul...</p>
+          </CardContent>
+        </Card>
       ) : error ? (
-        <div className="bg-white rounded-2xl border border-red-100 shadow-sm p-8 text-center">
-          <AlertCircle className="w-10 h-10 text-red-400 mx-auto mb-3" />
-          <p className="text-sm font-semibold text-red-700">{error}</p>
-        </div>
+        <Card className="bg-red-400 border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] rounded-none">
+          <CardContent className="p-16 text-center flex flex-col items-center">
+            <AlertCircle className="w-12 h-12 text-black mb-4" strokeWidth={3} />
+            <p className="text-xl font-black uppercase tracking-widest">{error}</p>
+          </CardContent>
+        </Card>
       ) : (
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-          <div className="p-5 border-b border-gray-100 flex flex-wrap gap-4 justify-between items-center bg-gray-50/50">
+        <Card className="border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] rounded-none overflow-hidden bg-white">
+          <div className="p-6 border-b-4 border-black flex flex-wrap gap-4 justify-between items-center bg-[#ff90e8]">
             <div className="relative w-full max-w-md group">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-brand-500 transition-colors" />
-              <input
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-black" strokeWidth={3} />
+              <Input
                 type="text"
                 placeholder="Cari modul berdasarkan nama..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-100 transition-all"
+                className="w-full pl-12 pr-4 h-14 bg-white border-4 border-black rounded-none text-base font-bold placeholder:text-gray-500 placeholder:font-bold focus:ring-0 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
               />
             </div>
-            <div className="flex items-center gap-3">
-              <select
-                value={filterType}
-                onChange={(e) => setFilterType(e.target.value)}
-                className="px-4 py-2.5 text-sm font-bold text-gray-600 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-all appearance-none cursor-pointer"
-              >
-                <option value="all">Semua Format</option>
-                <option value="pdf">PDF</option>
-                <option value="docx">DOCX</option>
-              </select>
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-                className="px-4 py-2.5 text-sm font-bold text-gray-600 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-all appearance-none cursor-pointer"
-              >
-                <option value="newest">Terbaru</option>
-                <option value="oldest">Terlama</option>
-                <option value="name">Nama A-Z</option>
-                <option value="size">Ukuran Terbesar</option>
-              </select>
+            <div className="flex items-center gap-4">
+              <Select value={filterType} onValueChange={setFilterType}>
+                <SelectTrigger className="border-4 border-black font-bold h-14 bg-white text-sm shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rounded-none w-[180px] uppercase">
+                  <SelectValue placeholder="Semua Format" />
+                </SelectTrigger>
+                <SelectContent className="border-4 border-black font-bold rounded-none">
+                  <SelectItem value="all" className="uppercase font-bold">Semua Format</SelectItem>
+                  <SelectItem value="pdf" className="uppercase font-bold">PDF</SelectItem>
+                  <SelectItem value="docx" className="uppercase font-bold">DOCX</SelectItem>
+                </SelectContent>
+              </Select>
+              
+              <Select value={sortBy} onValueChange={(val: any) => setSortBy(val)}>
+                <SelectTrigger className="border-4 border-black font-bold h-14 bg-white text-sm shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rounded-none w-[180px] uppercase">
+                  <SelectValue placeholder="Terbaru" />
+                </SelectTrigger>
+                <SelectContent className="border-4 border-black font-bold rounded-none">
+                  <SelectItem value="newest" className="uppercase font-bold">Terbaru</SelectItem>
+                  <SelectItem value="oldest" className="uppercase font-bold">Terlama</SelectItem>
+                  <SelectItem value="name" className="uppercase font-bold">Nama A-Z</SelectItem>
+                  <SelectItem value="size" className="uppercase font-bold">Ukuran Terbesar</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
           {filtered.length === 0 ? (
-            <div className="p-12 text-center">
-              <FileText className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-              <p className="text-sm font-semibold text-gray-700">
-                {search || filterType !== 'all' ? 'Tidak ada modul yang sesuai filter' : 'Belum ada modul ajar'}
+            <div className="p-16 text-center flex flex-col items-center bg-gray-50">
+              <FileText className="w-16 h-16 text-gray-400 mb-6" strokeWidth={2.5} />
+              <p className="text-3xl font-black uppercase tracking-tighter mb-2">
+                {search || filterType !== 'all' ? 'Tidak ada modul' : 'Belum ada modul ajar'}
               </p>
-              <p className="text-xs text-gray-400 mt-1 mb-4">
+              <p className="text-base font-bold mb-8 border-l-4 border-black pl-4">
                 {search || filterType !== 'all' ? 'Coba ubah kata kunci atau filter' : 'Upload modul pertama Anda untuk memulai'}
               </p>
               {!search && filterType === 'all' && (
-                <button
+                <Button
                   onClick={() => setUploadOpen(true)}
-                  className="text-sm font-bold text-brand-500 hover:text-brand-600"
+                  size="lg"
+                  className="border-4 border-black font-black uppercase text-base h-14 bg-[#00f0ff] text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-[#00f0ff]/80 hover:translate-y-1 hover:translate-x-1 hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all rounded-none"
                 >
                   Upload Sekarang
-                </button>
+                </Button>
               )}
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-left">
+              <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="bg-gray-50/50 text-[11px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-100">
-                    <th className="px-8 py-5">Nama Modul</th>
-                    <th className="px-8 py-5">Format</th>
-                    <th className="px-8 py-5">Ukuran</th>
-                    <th className="px-8 py-5">Tanggal Upload</th>
-                    <th className="px-8 py-5 text-right">Aksi</th>
+                  <tr className="bg-white border-b-4 border-black text-sm uppercase text-black font-black tracking-widest">
+                    <th className="px-6 py-5 border-r-4 border-black">Nama Modul</th>
+                    <th className="px-6 py-5 border-r-4 border-black text-center">Format</th>
+                    <th className="px-6 py-5 border-r-4 border-black text-center">Ukuran</th>
+                    <th className="px-6 py-5 border-r-4 border-black text-center">Tanggal Upload</th>
+                    <th className="px-6 py-5 text-center">Aksi</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-50">
+                <tbody className="divide-y-4 divide-black">
                   {filtered.map((mod) => (
-                    <tr key={mod.id} className="hover:bg-gray-50/50 transition-colors group">
-                      <td className="px-8 py-5">
-                        <div className="flex items-center gap-4">
-                          <div className={`p-3 rounded-xl shadow-inner ${
-                            mod.filetype === 'pdf' ? 'bg-red-50 text-red-600' : 'bg-blue-50 text-blue-600'
+                    <tr key={mod.id} className="hover:bg-gray-100 transition-colors group">
+                      <td className="px-6 py-5 border-r-4 border-black">
+                        <div className="flex items-center gap-5">
+                          <div className={`w-12 h-12 border-4 border-black flex items-center justify-center shrink-0 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] group-hover:scale-110 transition-transform ${
+                            mod.filetype === 'pdf' ? 'bg-[#ff90e8]' : 'bg-[#00f0ff]'
                           }`}>
-                            <FileText className="w-5 h-5" />
+                            <FileText className="w-6 h-6 text-black" strokeWidth={2.5} />
                           </div>
-                          <span className="text-sm font-bold text-gray-900 group-hover:text-brand-600 transition-colors truncate max-w-xs">
+                          <span className="text-lg font-black text-black group-hover:underline underline-offset-4 truncate max-w-xs block">
                             {mod.filename}
                           </span>
                         </div>
                       </td>
-                      <td className="px-8 py-5">
-                        <span className={`text-[10px] font-black px-2 py-1 rounded-md tracking-wider uppercase ${
-                          mod.filetype === 'pdf' ? 'bg-red-50 text-red-600' : 'bg-blue-50 text-blue-600'
-                        }`}>{mod.filetype}</span>
+                      <td className="px-6 py-5 border-r-4 border-black text-center">
+                        <span className={`text-sm font-black uppercase text-black border-2 border-black px-3 py-1 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] inline-block ${
+                          mod.filetype === 'pdf' ? 'bg-[#ff90e8]' : 'bg-[#00f0ff]'
+                        }`}>
+                          {mod.filetype}
+                        </span>
                       </td>
-                      <td className="px-8 py-5 text-sm font-semibold text-gray-500">
+                      <td className="px-6 py-5 border-r-4 border-black text-center text-base font-bold text-black">
                         {(mod.filesize / 1024 / 1024).toFixed(1)} MB
                       </td>
-                      <td className="px-8 py-5 text-sm font-semibold text-gray-500">
+                      <td className="px-6 py-5 border-r-4 border-black text-center text-sm font-bold text-gray-700">
                         {new Date(mod.uploaded_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })}
                       </td>
-                      <td className="px-8 py-5 text-right">
-                        <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button
+                      <td className="px-6 py-5">
+                        <div className="flex items-center justify-center gap-3 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                          <Button
+                            variant="outline"
+                            size="icon"
                             onClick={() => handleViewDetail(mod.id)}
-                            className="p-2 text-gray-400 hover:text-brand-500 bg-white rounded-xl border border-gray-200 hover:shadow-sm transition-all"
+                            className="border-2 border-black bg-white hover:bg-[#ffc900] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-transform hover:-translate-y-1 rounded-none"
                             title="Lihat Detail"
                           >
-                            <ExternalLink className="w-4 h-4" />
-                          </button>
-                          <button
+                            <ExternalLink className="w-5 h-5 text-black" strokeWidth={2.5} />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="icon"
                             onClick={() => handleDelete(mod.id)}
                             disabled={deletingId === mod.id}
-                            className="p-2 text-gray-400 hover:text-red-500 bg-white rounded-xl border border-gray-200 hover:shadow-sm transition-all disabled:opacity-50"
+                            className="border-2 border-black bg-white hover:bg-red-400 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-transform hover:-translate-y-1 rounded-none disabled:opacity-50 disabled:hover:translate-y-0"
                             title="Hapus"
                           >
-                            {deletingId === mod.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
-                          </button>
-                          <button className="p-2 text-gray-400 hover:text-gray-900 bg-white rounded-xl border border-gray-200 hover:shadow-sm transition-all">
-                            <MoreVertical className="w-4 h-4" />
-                          </button>
+                            {deletingId === mod.id ? <Loader2 className="w-5 h-5 text-black animate-spin" /> : <Trash2 className="w-5 h-5 text-black" strokeWidth={2.5} />}
+                          </Button>
                         </div>
                       </td>
                     </tr>
@@ -380,22 +394,22 @@ export default function ModulAjar() {
             </div>
           )}
 
-          <div className="p-5 border-t border-gray-100 bg-gray-50/30 flex items-center justify-between">
-            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">
+          <div className="p-6 border-t-4 border-black bg-gray-100 flex items-center justify-center">
+            <p className="text-sm font-black text-black uppercase tracking-widest">
               Menampilkan {filtered.length} dari {documents.length} modul
             </p>
           </div>
-        </div>
+        </Card>
       )}
 
       <UploadModal isOpen={uploadOpen} onClose={() => setUploadOpen(false)} onSuccess={uploadDocument} />
       <DetailModal isOpen={detailOpen} onClose={() => setDetailOpen(false)} document={detailDoc} />
       {detailLoading && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl shadow-xl p-8 flex flex-col items-center">
-            <Loader2 className="w-8 h-8 text-brand-500 animate-spin mb-3" />
-            <p className="text-sm font-semibold text-gray-700">Memuat detail modul...</p>
-          </div>
+          <Card className="border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] rounded-none bg-white p-8 flex flex-col items-center">
+            <Loader2 className="w-12 h-12 text-black animate-spin mb-4" strokeWidth={3} />
+            <p className="text-sm font-black uppercase tracking-widest text-black">Memuat detail modul...</p>
+          </Card>
         </div>
       )}
     </div>
