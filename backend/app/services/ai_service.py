@@ -249,16 +249,11 @@ async def _generate_with_openrouter(
     api_key: str,
     max_retries: int = 3,
 ) -> str:
-    from openai import AsyncOpenAI
+    from openrouter import OpenRouter
     
     # Model specified in ISSUE-39
     model = "qwen/qwen-3.6-plus:free"
     
-    client = AsyncOpenAI(
-        base_url="https://openrouter.ai/api/v1",
-        api_key=api_key
-    )
-
     messages = [
         {"role": "system", "content": SYSTEM_PROMPT},
         {"role": "user", "content": prompt},
@@ -266,17 +261,14 @@ async def _generate_with_openrouter(
 
     for attempt in range(max_retries):
         try:
-            response = await client.chat.completions.create(
-                model=model,
-                messages=messages,
-                temperature=0.7,
-                # OpenRouter extra headers often recommended for identification
-                extra_headers={
-                    "HTTP-Referer": "https://github.com/Alhiefikri/EduQuest-AI",
-                    "X-OpenRouter-Title": "EduQuest AI",
-                }
-            )
-            return response.choices[0].message.content or ""
+            # Gunakan context manager untuk menghindari kebocoran memori (memory leak)
+            async with OpenRouter(api_key=api_key) as client:
+                # Menggunakan fungsi 'send_async' dari official SDK
+                response = await client.chat.send_async(
+                    model=model,
+                    messages=messages,
+                )
+                return response.choices[0].message.content or ""
 
         except Exception as e:
             error_msg = str(e).lower()
@@ -286,7 +278,7 @@ async def _generate_with_openrouter(
                 continue
 
             if attempt == max_retries - 1:
-                raise RuntimeError(f"Gagal menghubungi layanan OpenRouter: {str(e)}")
+                raise RuntimeError(f"Gagal menghubungi layanan OpenRouter (Native SDK): {str(e)}")
             await asyncio.sleep(2)
             continue
 
