@@ -137,6 +137,7 @@ def _generate_with_gemini(
             if attempt == max_retries - 1:
                 raise RuntimeError(f"Gagal menghubungi layanan Gemini: {str(e)}")
             time.sleep(2)
+            continue
 
     raise RuntimeError("Gagal menghasilkan respons dari Gemini setelah beberapa percobaan")
 

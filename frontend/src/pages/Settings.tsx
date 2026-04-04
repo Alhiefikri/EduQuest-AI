@@ -22,6 +22,7 @@ export default function Settings() {
   const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null)
   const [saveResult, setSaveResult] = useState<{ success: boolean; message: string } | null>(null)
   const [loaded, setLoaded] = useState(false)
+  const [activeTab, setActiveTab] = useState(2)
 
   useEffect(() => {
     fetch(`${API_URL}/api/v1/settings/ai`)
@@ -93,9 +94,12 @@ export default function Settings() {
       <div className="bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden">
         <div className="flex border-b border-gray-100 bg-gray-50/50 p-1">
           {['My Details', 'Preferences', 'AI Integration'].map((tab, i) => (
-            <button key={i} className={`flex-1 px-6 py-4 text-xs font-black uppercase tracking-widest transition-all rounded-2xl ${
-              i === 2 ? 'bg-white text-brand-500 shadow-sm' : 'text-gray-400 hover:text-gray-900'
-            }`}>{tab}</button>
+            <button
+              key={i}
+              onClick={() => setActiveTab(i)}
+              className={`flex-1 px-6 py-4 text-xs font-black uppercase tracking-widest transition-all rounded-2xl ${
+                i === activeTab ? 'bg-white text-brand-500 shadow-sm' : 'text-gray-400 hover:text-gray-900'
+              }`}>{tab}</button>
           ))}
         </div>
 
