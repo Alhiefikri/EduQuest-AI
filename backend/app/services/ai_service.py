@@ -248,17 +248,11 @@ async def _generate_with_openrouter(
             # Gunakan context manager untuk menghindari kebocoran memori (memory leak)
             async with OpenRouter(
                 api_key=api_key,
-                sdk_hooks=None # Default hook works fine
+                http_referer="https://github.com/Alhiefikri/EduQuest-AI",
+                x_open_router_title="EduQuest AI"
             ) as client:
                 # Menggunakan fungsi 'send_async' dari official SDK
-                # Tambahkan referer dan title untuk statistik OpenRouter
-                extra_headers = {
-                    "HTTP-Referer": "https://github.com/Alhiefikri/EduQuest-AI",
-                    "X-OpenRouter-Title": "EduQuest AI"
-                }
-                
-                response = await client.chat.send_async(
-                    model=model,
+                response = await client.chat.send_async(                    model=model,
                     messages=messages,
                 )
                 return response.choices[0].message.content or ""
