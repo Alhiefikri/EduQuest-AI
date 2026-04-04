@@ -17,6 +17,10 @@ dist/
 /prisma/client
 /prisma/migrations
 
+# Uploads
+backend/uploads/*
+!backend/uploads/.gitkeep
+
 # OS
 .DS_Store
 Thumbs.db

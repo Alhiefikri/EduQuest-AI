@@ -1,6 +1,6 @@
 # [ISSUE-03] Backend Parser Service
 
-**Status:** Open  
+**Status:** Review  
 **Assignee:** Execution Agent  
 **Priority:** High  
 **Ref:** `PRD.md` Section 5 (Core Features) & Section 6 (Tech Stack)
