@@ -18,6 +18,7 @@ export interface DocumentListResponse extends BaseDocument {}
 export interface UploadResponse extends DocumentItem {}
 
 export interface SoalItem {
+  id: string
   nomor: number
   pertanyaan: string
   pilihan?: string[]
