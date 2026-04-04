@@ -14,6 +14,7 @@ export default function GenerateSoal() {
   const navigate = useNavigate()
   const generateMutation = useGenerateSoal()
   const { documents } = useDocuments()
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
   const [error, setError] = useState<string | null>(null)
 
   const [step, setStep] = useState(1)
@@ -241,7 +242,7 @@ export default function GenerateSoal() {
                      </div>
                    </div>
                    <iframe 
-                      src={`/uploads/${documents.find(d => d.id === modulId)?.filepath?.split('/').pop()}`} 
+                      src={`${API_URL}/uploads/${documents.find(d => d.id === modulId)?.filepath?.split('/').pop()}`} 
                       className="w-full h-[600px] bg-slate-800"
                     />
                 </Card>
