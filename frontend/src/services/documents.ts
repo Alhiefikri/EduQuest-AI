@@ -1,4 +1,4 @@
-import type { DocumentListResponse, UploadResponse } from '../types'
+import type { DocumentItem, DocumentListResponse, UploadResponse } from '../types'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
@@ -40,4 +40,8 @@ export const deleteDocument = async (id: string): Promise<void> => {
   return request<void>(`/api/v1/documents/${id}`, {
     method: 'DELETE',
   })
+}
+
+export const getDocumentDetail = async (id: string): Promise<DocumentItem> => {
+  return request<DocumentItem>(`/api/v1/documents/${id}`)
 }
