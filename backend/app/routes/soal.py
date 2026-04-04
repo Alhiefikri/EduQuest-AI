@@ -22,11 +22,18 @@ async def generate_soal_endpoint(request: GenerateSoalRequest):
     konten_modul = ""
     if request.modul_id:
         modul = await db.modulajar.find_unique(where={"id": request.modul_id})
-        if not modul:
-            raise HTTPException(status_code=404, detail="Modul ajar tidak ditemukan")
-        konten_modul = modul.kontenTeks
-        if not request.topik:
-            request.topik = modul.judul
+        if modul:
+            konten_modul = modul.kontenTeks
+            if not request.topik:
+                request.topik = modul.judul
+        else:
+            document = await db.document.find_unique(where={"id": request.modul_id})
+            if document:
+                konten_modul = document.content
+                if not request.topik:
+                    request.topik = document.filename
+            else:
+                raise HTTPException(status_code=404, detail="Modul ajar tidak ditemukan")
 
     if not konten_modul and not request.topik:
         raise HTTPException(

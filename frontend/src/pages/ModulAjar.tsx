@@ -1,6 +1,8 @@
 import { useState } from 'react'
-import { Upload, FileText, Search, MoreVertical, Trash2, ExternalLink, Filter, Loader2, AlertCircle } from 'lucide-react'
+import { Upload, FileText, Search, MoreVertical, Trash2, ExternalLink, Filter, Loader2, AlertCircle, X, FileText as FileTextIcon, Hash, Calendar, Clock } from 'lucide-react'
 import { useDocuments } from '../hooks/useDocuments'
+import { getDocumentDetail } from '../services/documents'
+import type { DocumentItem } from '../types'
 
 function UploadModal({ isOpen, onClose, onSuccess }: { isOpen: boolean; onClose: () => void; onSuccess: (file: File) => void }) {
   const [dragActive, setDragActive] = useState(false)
@@ -107,9 +109,73 @@ function UploadModal({ isOpen, onClose, onSuccess }: { isOpen: boolean; onClose:
   )
 }
 
+function DetailModal({ isOpen, onClose, document }: { isOpen: boolean; onClose: () => void; document: DocumentItem | null }) {
+  if (!isOpen || !document) return null
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={onClose}>
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl mx-4 overflow-hidden max-h-[80vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between p-6 border-b border-gray-100">
+          <h2 className="text-lg font-bold text-gray-900">Detail Modul Ajar</h2>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <div className="p-6 overflow-y-auto flex-1">
+          <div className="grid grid-cols-2 gap-4 mb-6">
+            <div className="bg-gray-50 rounded-xl p-4">
+              <div className="flex items-center gap-2 mb-1">
+                <FileTextIcon className="w-4 h-4 text-gray-400" />
+                <span className="text-[10px] font-black text-gray-400 tracking-widest uppercase">Nama File</span>
+              </div>
+              <p className="text-sm font-bold text-gray-900 truncate">{document.filename}</p>
+            </div>
+            <div className="bg-gray-50 rounded-xl p-4">
+              <div className="flex items-center gap-2 mb-1">
+                <Hash className="w-4 h-4 text-gray-400" />
+                <span className="text-[10px] font-black text-gray-400 tracking-widest uppercase">Format</span>
+              </div>
+              <p className="text-sm font-bold text-gray-900 uppercase">{document.filetype}</p>
+            </div>
+            <div className="bg-gray-50 rounded-xl p-4">
+              <div className="flex items-center gap-2 mb-1">
+                <Calendar className="w-4 h-4 text-gray-400" />
+                <span className="text-[10px] font-black text-gray-400 tracking-widest uppercase">Tanggal Upload</span>
+              </div>
+              <p className="text-sm font-bold text-gray-900">
+                {new Date(document.uploaded_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })}
+              </p>
+            </div>
+            <div className="bg-gray-50 rounded-xl p-4">
+              <div className="flex items-center gap-2 mb-1">
+                <Clock className="w-4 h-4 text-gray-400" />
+                <span className="text-[10px] font-black text-gray-400 tracking-widest uppercase">Ukuran</span>
+              </div>
+              <p className="text-sm font-bold text-gray-900">
+                {(document.filesize / 1024 / 1024).toFixed(1)} MB &bull; {document.page_count} halaman &bull; {document.word_count.toLocaleString('id-ID')} kata
+              </p>
+            </div>
+          </div>
+
+          <div>
+            <h3 className="text-[10px] font-black text-gray-400 tracking-widest uppercase mb-3">Konten yang Di-extract</h3>
+            <div className="bg-gray-50 border border-gray-100 rounded-xl p-5 max-h-64 overflow-y-auto">
+              <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">{document.content}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function ModulAjar() {
   const { documents, loading, error, uploadDocument, refetch } = useDocuments()
   const [uploadOpen, setUploadOpen] = useState(false)
+  const [detailOpen, setDetailOpen] = useState(false)
+  const [detailDoc, setDetailDoc] = useState<DocumentItem | null>(null)
+  const [detailLoading, setDetailLoading] = useState(false)
   const [search, setSearch] = useState('')
   const [filterType, setFilterType] = useState<string>('all')
   const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'name' | 'size'>('newest')
@@ -151,6 +217,20 @@ export default function ModulAjar() {
       alert('Gagal menghapus modul')
     } finally {
       setDeletingId(null)
+    }
+  }
+
+  const handleViewDetail = async (id: string) => {
+    setDetailLoading(true)
+    setDetailOpen(true)
+    try {
+      const doc = await getDocumentDetail(id)
+      setDetailDoc(doc)
+    } catch {
+      alert('Gagal memuat detail modul')
+      setDetailOpen(false)
+    } finally {
+      setDetailLoading(false)
     }
   }
 
@@ -273,7 +353,11 @@ export default function ModulAjar() {
                       </td>
                       <td className="px-8 py-5 text-right">
                         <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button className="p-2 text-gray-400 hover:text-brand-500 bg-white rounded-xl border border-gray-200 hover:shadow-sm transition-all" title="Lihat Detail">
+                          <button
+                            onClick={() => handleViewDetail(mod.id)}
+                            className="p-2 text-gray-400 hover:text-brand-500 bg-white rounded-xl border border-gray-200 hover:shadow-sm transition-all"
+                            title="Lihat Detail"
+                          >
                             <ExternalLink className="w-4 h-4" />
                           </button>
                           <button
@@ -305,6 +389,15 @@ export default function ModulAjar() {
       )}
 
       <UploadModal isOpen={uploadOpen} onClose={() => setUploadOpen(false)} onSuccess={uploadDocument} />
+      <DetailModal isOpen={detailOpen} onClose={() => setDetailOpen(false)} document={detailDoc} />
+      {detailLoading && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-xl p-8 flex flex-col items-center">
+            <Loader2 className="w-8 h-8 text-brand-500 animate-spin mb-3" />
+            <p className="text-sm font-semibold text-gray-700">Memuat detail modul...</p>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
