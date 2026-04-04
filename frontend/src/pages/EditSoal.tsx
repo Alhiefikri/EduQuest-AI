@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Save, FileCheck, ArrowLeft, Plus, Trash2, GripVertical, ChevronDown, ChevronUp, Loader2, AlertCircle, RefreshCcw, X } from 'lucide-react'
+import { Save, FileCheck, ArrowLeft, Plus, Trash2, GripVertical, ChevronDown, Loader2, AlertCircle, RefreshCcw, X, FileText, BookOpen } from 'lucide-react'
 import { Link, useParams, useNavigate } from 'react-router-dom'
 import { useSoalDetail, useUpdateSoal, useRegenerateSingleSoal } from '../hooks/useSoal'
 import type { SoalItem } from '../types'
@@ -11,6 +11,265 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
+import { cn } from '@/lib/utils'
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
+import type { DragEndEvent } from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+
+interface SortableItemProps {
+  id: string;
+  index: number;
+  item: SoalItem;
+  onUpdate: (index: number, field: keyof SoalItem, value: any) => void;
+  onRemove: (index: number) => void;
+  onRegenerate: (index: number) => void;
+  regenerateIndex: number | null;
+  setRegenerateIndex: (index: number | null) => void;
+  regenerateFeedback: string;
+  setRegenerateFeedback: (val: string) => void;
+  regenerateGayaSoal: string[];
+  setRegenerateGayaSoal: (val: string[]) => void;
+  handleRegenerate: () => Promise<void>;
+  isPending: boolean;
+}
+
+function SortableSoalItem({ 
+  id, 
+  index, 
+  item, 
+  onUpdate, 
+  onRemove, 
+  onRegenerate, 
+  regenerateIndex, 
+  setRegenerateIndex,
+  regenerateFeedback,
+  setRegenerateFeedback,
+  regenerateGayaSoal,
+  setRegenerateGayaSoal,
+  handleRegenerate,
+  isPending
+}: SortableItemProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging
+  } = useSortable({ id: id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 50 : 'auto',
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div ref={setNodeRef} style={style} className="touch-none">
+      <Card className={cn(
+        "relative shadow-md shadow-slate-100 border-2 border-slate-100 rounded-[2rem] overflow-hidden group hover:border-brand-200 transition-all duration-300",
+        isDragging && "border-brand-500 shadow-xl"
+      )}>
+        <div className="p-4 bg-slate-50 border-b-2 border-slate-100 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div 
+              {...attributes} 
+              {...listeners}
+              className="p-2 cursor-grab active:cursor-grabbing text-slate-300 hover:text-slate-500 transition-colors shrink-0"
+            >
+              <GripVertical className="w-5 h-5" />
+            </div>
+            <span className="bg-slate-900 text-white text-[10px] font-black px-4 py-1.5 rounded-full uppercase tracking-[0.2em] shadow-sm whitespace-nowrap">
+              Butir Soal {item.nomor}
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => onRegenerate(index)}
+              className="h-9 px-3 hover:bg-brand-50 text-brand-600 border-brand-200 rounded-lg flex items-center gap-2 text-[10px] font-black uppercase tracking-wider"
+            >
+              <RefreshCcw className="w-3.5 h-3.5" strokeWidth={2.5} />
+              <span className="hidden sm:inline">Regenerate</span>
+            </Button>
+            <div className="w-px h-6 bg-slate-200 mx-2 hidden sm:block"></div>
+            <Button variant="ghost" size="icon" onClick={() => onRemove(index)} className="h-9 w-9 hover:bg-rose-50 hover:text-rose-600 text-slate-300 rounded-lg transition-all">
+              <Trash2 className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+
+        <CardContent className="p-6 md:p-8 space-y-8">
+          <div className="space-y-4">
+            <label className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+              <FileText className="w-4 h-4" /> Pertanyaan
+            </label>
+            <Textarea 
+              value={item.pertanyaan}
+              onChange={(e) => onUpdate(index, 'pertanyaan', e.target.value)}
+              className="min-h-[120px] text-lg font-bold text-slate-800 border-2 border-slate-100 focus-visible:border-brand-200 focus-visible:ring-0 rounded-2xl p-6 bg-slate-50/30 transition-all"
+            />
+          </div>
+
+          {(item.pilihan && item.pilihan.length > 0) && (
+            <div className="space-y-4">
+              <label className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                <ChevronDown className="w-4 h-4" /> Pilihan Jawaban
+              </label>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {item.pilihan?.map((opt, optIndex) => (
+                  <div key={optIndex} className="flex gap-3 items-start group/opt">
+                    <div className="w-10 h-10 rounded-xl bg-white border-2 border-slate-100 flex items-center justify-center text-sm font-black text-slate-400 shrink-0 group-focus-within/opt:border-brand-200 group-focus-within/opt:text-brand-500 transition-all uppercase">
+                      {String.fromCharCode(65 + optIndex)}
+                    </div>
+                    <Input 
+                      value={opt.replace(/^[A-Z]\.\s*/, '')}
+                      onChange={(e) => {
+                        const newPilihan = [...(item.pilihan || [])]
+                        newPilihan[optIndex] = `${String.fromCharCode(65 + optIndex)}. ${e.target.value}`
+                        onUpdate(index, 'pilihan', newPilihan)
+                      }}
+                      className="h-10 border-2 border-slate-100 focus-visible:border-brand-200 focus-visible:ring-0 rounded-xl text-sm font-bold uppercase transition-all bg-white"
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="space-y-4">
+              <label className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 text-brand-600">
+                <Plus className="w-4 h-4 text-brand-500" /> Jawaban Benar
+              </label>
+              <Input 
+                value={item.jawaban}
+                onChange={(e) => onUpdate(index, 'jawaban', e.target.value)}
+                className="h-12 border-2 border-brand-100 focus-visible:border-brand-200 focus-visible:ring-0 rounded-xl text-sm font-black uppercase bg-brand-50/30 text-brand-700 px-6 transition-all"
+              />
+            </div>
+            {item.pembahasan && (
+              <div className="space-y-4">
+                <label className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                  <BookOpen className="w-4 h-4 text-slate-400" /> Pembahasan
+                </label>
+                <Textarea 
+                  value={item.pembahasan}
+                  onChange={(e) => onUpdate(index, 'pembahasan', e.target.value)}
+                  className="min-h-[100px] border-2 border-slate-100 focus-visible:border-brand-200 focus-visible:ring-0 rounded-xl text-sm font-medium text-slate-600 p-4 transition-all"
+                />
+              </div>
+            )}
+          </div>
+        </CardContent>
+
+        {/* Regenerate Overlay inside the card */}
+        {regenerateIndex === index && (
+          <div className="absolute inset-0 z-10 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-6 animate-in fade-in">
+            <Card className="w-full max-w-lg border-2 border-slate-200 shadow-2xl rounded-2xl">
+              <div className="flex items-center justify-between p-5 border-b border-slate-100 bg-white rounded-t-2xl">
+                <h3 className="font-bold text-slate-900 flex items-center gap-2 uppercase tracking-tight">
+                  <RefreshCcw className="w-5 h-5 text-brand-500" />
+                  Regenerate Soal {item.nomor}
+                </h3>
+                <Button variant="ghost" size="icon" onClick={() => {
+                  setRegenerateIndex(null); 
+                  setRegenerateFeedback('');
+                }}>
+                  <X className="w-5 h-5 text-slate-400" />
+                </Button>
+              </div>
+              <CardContent className="p-6 bg-slate-50 space-y-4 rounded-b-2xl">
+                <div className="space-y-4 text-left">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Gaya Soal (Multi-Select)</label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {[
+                      { id: "light_story", label: "Cerita Ringan" },
+                      { id: "formal_academic", label: "Akademik Formal" },
+                      { id: "case_study", label: "Studi Kasus" },
+                      { id: "standard_exam", label: "Ujian Standar" },
+                      { id: "hots", label: "Tingkat Tinggi (HOTS)" },
+                    ].map((style) => (
+                      <div 
+                        key={style.id} 
+                        className={cn(
+                          "flex items-center space-x-2.5 p-3 rounded-xl border-2 transition-all cursor-pointer",
+                          regenerateGayaSoal.includes(style.id) 
+                            ? 'bg-brand-50 border-brand-200' 
+                            : 'bg-white border-slate-200 hover:border-slate-300'
+                        )}
+                        onClick={() => {
+                          if (regenerateGayaSoal.includes(style.id)) {
+                            setRegenerateGayaSoal(regenerateGayaSoal.filter(id => id !== style.id))
+                          } else {
+                            setRegenerateGayaSoal([...regenerateGayaSoal, style.id])
+                          }
+                        }}
+                      >
+                        <Checkbox 
+                          id={`reg-${style.id}`} 
+                          checked={regenerateGayaSoal.includes(style.id)}
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              setRegenerateGayaSoal([...regenerateGayaSoal, style.id])
+                            } else {
+                              setRegenerateGayaSoal(regenerateGayaSoal.filter(id => id !== style.id))
+                            }
+                          }}
+                          className="border-2 border-slate-300 data-[state=checked]:bg-brand-500 data-[state=checked]:border-brand-500 w-4 h-4"
+                        />
+                        <Label htmlFor={`reg-${style.id}`} className="text-xs font-bold text-slate-700 cursor-pointer select-none">
+                          {style.label}
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="space-y-3 text-left">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Instruksi Tambahan (Opsional)</label>
+                  <Textarea 
+                    placeholder="Contoh: Buat lebih sulit, gunakan bahasa yang lebih sederhana..."
+                    value={regenerateFeedback}
+                    onChange={(e) => setRegenerateFeedback(e.target.value)}
+                    className="bg-white border-2 border-slate-200 rounded-xl focus-visible:ring-brand-500/20 text-sm font-medium text-slate-600"
+                    rows={3}
+                  />
+                </div>
+                <div className="flex justify-end gap-3 pt-4">
+                  <Button variant="outline" onClick={() => setRegenerateIndex(null)} className="rounded-xl font-bold uppercase tracking-tight">Batal</Button>
+                  <Button 
+                    onClick={handleRegenerate}
+                    disabled={isPending}
+                    className="rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-bold px-6 uppercase tracking-tight"
+                  >
+                    {isPending ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <RefreshCcw className="w-5 h-5 mr-2" />}
+                    Mulai Generate
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+      </Card>
+    </div>
+  );
+}
 
 export default function EditSoal() {
   const { id } = useParams()
@@ -20,12 +279,33 @@ export default function EditSoal() {
   const regenerateMutation = useRegenerateSingleSoal()
   const [editedSoal, setEditedSoal] = useState<SoalItem[]>([])
   const [saving, setSaving] = useState(false)
-  const [saveError, setSaveError] = useState<string | null>(null)
   const [saveSuccess, setSaveSuccess] = useState(false)
   
   const [regenerateIndex, setRegenerateIndex] = useState<number | null>(null)
   const [regenerateFeedback, setRegenerateFeedback] = useState('')
   const [regenerateGayaSoal, setRegenerateGayaSoal] = useState<string[]>(['formal_academic'])
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      setEditedSoal((items) => {
+        const oldIndex = items.findIndex((i) => `soal-${i.nomor}-${i.pertanyaan.substring(0, 10)}` === active.id);
+        const newIndex = items.findIndex((i) => `soal-${i.nomor}-${i.pertanyaan.substring(0, 10)}` === over.id);
+
+        const newItems = arrayMove(items, oldIndex, newIndex);
+        // Recalculate nomor based on new order
+        return newItems.map((item, index) => ({ ...item, nomor: index + 1 }));
+      });
+    }
+  };
 
   useEffect(() => {
     if (soal?.data_soal) {
@@ -106,7 +386,7 @@ export default function EditSoal() {
       })
 
       setEditedSoal(prev => 
-        prev.map((item, i) => (i === regenerateIndex ? newSoalItem : item))
+        prev.map((item, i) => (i === regenerateIndex ? { ...newSoalItem, nomor: item.nomor } : item))
       )
       toast.success("Berhasil Generate Ulang", {
         description: `Soal no ${itemToRegenerate.nomor} telah diperbarui.`,
@@ -188,210 +468,36 @@ export default function EditSoal() {
       </div>
 
       <div className="space-y-10">
-        {editedSoal.map((item, index) => (
-          <Card key={index} className="relative shadow-md shadow-slate-100 border-2 border-slate-100 rounded-[2rem] overflow-hidden group hover:border-brand-200 transition-all duration-300">
-            <div className="p-4 bg-slate-50 border-b-2 border-slate-100 flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="p-2 cursor-grab active:cursor-grabbing text-slate-300 hover:text-slate-500 transition-colors">
-                  <GripVertical className="w-5 h-5" />
-                </div>
-                <span className="bg-slate-900 text-white text-[10px] font-black px-4 py-1.5 rounded-full uppercase tracking-[0.2em] shadow-sm">Butir Soal {item.nomor}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={() => setRegenerateIndex(index)}
-                  className="h-9 px-3 hover:bg-brand-50 text-brand-600 border-brand-200 rounded-lg flex items-center gap-2 text-[10px] font-black uppercase tracking-wider"
-                >
-                  <RefreshCcw className="w-3.5 h-3.5" strokeWidth={2.5} />
-                  <span className="hidden sm:inline">Regenerate</span>
-                </Button>
-                <div className="w-px h-6 bg-slate-200 mx-2"></div>
-                <Button variant="ghost" size="icon" className="h-9 w-9 hover:bg-slate-200 text-slate-400 rounded-lg">
-                  <ChevronUp className="w-4 h-4" />
-                </Button>
-                <Button variant="ghost" size="icon" className="h-9 w-9 hover:bg-slate-200 text-slate-400 rounded-lg">
-                  <ChevronDown className="w-4 h-4" />
-                </Button>
-                <Button variant="ghost" size="icon" onClick={() => removeSoalItem(index)} className="h-9 w-9 hover:bg-rose-50 hover:text-rose-600 text-slate-300 rounded-lg transition-all">
-                  <Trash2 className="w-4 h-4" />
-                </Button>
-              </div>
-            </div>
-
-            {/* Regenerate Modal for this item */}
-            {regenerateIndex === index && (
-              <div className="absolute inset-0 z-10 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm rounded-[2rem] p-6 animate-in fade-in">
-                <Card className="w-full max-w-lg border-2 border-slate-200 shadow-2xl rounded-2xl">
-                  <div className="flex items-center justify-between p-5 border-b border-slate-100 bg-white rounded-t-2xl">
-                    <h3 className="font-bold text-slate-900 flex items-center gap-2">
-                      <RefreshCcw className="w-5 h-5 text-brand-500" />
-                      Regenerate Soal {item.nomor}
-                    </h3>
-                    <Button variant="ghost" size="icon" onClick={() => {
-                      setRegenerateIndex(null); 
-                      setRegenerateFeedback('');
-                    }}>
-                      <X className="w-5 h-5 text-slate-400" />
-                    </Button>
-                  </div>
-                  <CardContent className="p-6 bg-slate-50 space-y-4 rounded-b-2xl">
-                    <div className="space-y-4">
-                      <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Gaya Soal (Multi-Select)</label>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        {[
-                          { id: "light_story", label: "Cerita Ringan" },
-                          { id: "formal_academic", label: "Akademik Formal" },
-                          { id: "case_study", label: "Studi Kasus" },
-                          { id: "standard_exam", label: "Ujian Standar" },
-                          { id: "hots", label: "Tingkat Tinggi (HOTS)" },
-                        ].map((style) => (
-                          <div 
-                            key={style.id} 
-                            className={`flex items-center space-x-2.5 p-3 rounded-xl border-2 transition-all cursor-pointer ${
-                              regenerateGayaSoal.includes(style.id) 
-                                ? 'bg-brand-50 border-brand-200' 
-                                : 'bg-white border-slate-200 hover:border-slate-300'
-                            }`}
-                            onClick={() => {
-                              if (regenerateGayaSoal.includes(style.id)) {
-                                setRegenerateGayaSoal(regenerateGayaSoal.filter(id => id !== style.id))
-                              } else {
-                                setRegenerateGayaSoal([...regenerateGayaSoal, style.id])
-                              }
-                            }}
-                          >
-                            <Checkbox 
-                              id={`reg-${style.id}`} 
-                              checked={regenerateGayaSoal.includes(style.id)}
-                              onCheckedChange={(checked) => {
-                                if (checked) {
-                                  setRegenerateGayaSoal([...regenerateGayaSoal, style.id])
-                                } else {
-                                  setRegenerateGayaSoal(regenerateGayaSoal.filter(id => id !== style.id))
-                                }
-                              }}
-                              className="border-2 border-slate-300 data-[state=checked]:bg-brand-500 data-[state=checked]:border-brand-500 w-4 h-4"
-                            />
-                            <Label htmlFor={`reg-${style.id}`} className="text-xs font-bold text-slate-700 cursor-pointer select-none">
-                              {style.label}
-                            </Label>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="space-y-3">
-                      <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Instruksi Tambahan (Opsional)</label>
-                      <Textarea 
-                        placeholder="Contoh: Buat lebih sulit, gunakan bahasa yang lebih sederhana..."
-                        value={regenerateFeedback}
-                        onChange={(e) => setRegenerateFeedback(e.target.value)}
-                        className="bg-white border-2 border-slate-200 rounded-xl focus-visible:ring-brand-500/20 text-sm font-medium text-slate-600"
-                        rows={3}
-                      />
-                    </div>
-                    <div className="flex justify-end gap-3 pt-4">
-                      <Button variant="outline" onClick={() => setRegenerateIndex(null)} className="rounded-xl font-bold">Batal</Button>
-                      <Button 
-                        onClick={handleRegenerate}
-                        disabled={regenerateMutation.isPending}
-                        className="rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-bold px-6"
-                      >
-                        {regenerateMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <RefreshCcw className="w-4 h-4 mr-2" />}
-                        Generate Ulang
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            )}
-
-            <CardContent className="p-10 space-y-12 relative z-0">
-              <div className="space-y-4">
-                <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Deskripsi Pertanyaan</label>
-                <Textarea
-                  className="w-full bg-slate-50/50 border-2 border-transparent focus:bg-white focus:border-brand-200 focus:ring-4 focus:ring-brand-50/50 rounded-2xl p-6 text-lg font-bold text-slate-900 outline-none transition-all min-h-[140px] shadow-inner"
-                  value={item.pertanyaan}
-                  onChange={(e) => updateSoalItem(index, 'pertanyaan', e.target.value)}
-                />
-              </div>
-
-              {item.pilihan && (
-                <div className="space-y-6 p-8 bg-slate-50/50 rounded-3xl border-2 border-slate-100 shadow-inner">
-                  <div className="flex justify-between items-center border-b border-slate-200 pb-4">
-                    <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Opsi Jawaban (Multi Pilihan)</label>
-                    <Button 
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        const newPilihan = item.pilihan?.length ? [] : ['A. ', 'B. ', 'C. ', 'D. ']
-                        updateSoalItem(index, 'pilihan', newPilihan)
-                      }}
-                      className="text-[10px] font-black uppercase rounded-lg border-2 border-slate-200 h-8 px-4"
-                    >
-                      {item.pilihan?.length ? 'Hapus Pilihan' : 'Aktifkan Pilihan Ganda'}
-                    </Button>
-                  </div>
-                  {item.pilihan.length > 0 && (
-                    <div className="grid md:grid-cols-2 gap-6 pt-2">
-                      {item.pilihan.map((opsi, oi) => (
-                        <div key={oi} className="relative group">
-                          <Input
-                            type="text"
-                            value={opsi}
-                            onChange={(e) => {
-                              const newPilihan = [...item.pilihan!]
-                              newPilihan[oi] = e.target.value
-                              updateSoalItem(index, 'pilihan', newPilihan)
-                            }}
-                            className="w-full bg-white border-2 border-slate-100 focus:border-brand-200 focus:ring-0 rounded-xl h-14 pl-12 pr-4 text-sm font-bold shadow-sm transition-all"
-                          />
-                          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xs font-black text-slate-300 group-focus-within:text-brand-500">#{oi + 1}</span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
-
-              <div className="grid md:grid-cols-2 gap-12">
-                <div className="space-y-4">
-                  <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-2">
-                    <div className="w-2 h-2 bg-brand-500 rounded-full"></div>
-                    Kunci Jawaban Valid
-                  </label>
-                  <Input
-                    type="text"
-                    value={item.jawaban}
-                    onChange={(e) => updateSoalItem(index, 'jawaban', e.target.value)}
-                    className="w-full bg-slate-50/50 border-2 border-transparent focus:bg-white focus:border-brand-200 focus:ring-4 focus:ring-brand-50/50 rounded-xl h-14 px-6 text-base font-black text-brand-600 transition-all shadow-inner"
-                  />
-                </div>
-                <div className="space-y-4">
-                  <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">AI Visual Prompt (Opsional)</label>
-                  <Input
-                    type="text"
-                    value={item.gambar_prompt || ''}
-                    onChange={(e) => updateSoalItem(index, 'gambar_prompt', e.target.value)}
-                    placeholder="Contoh: Ilustrasi sebuah mikroskop cahaya..."
-                    className="w-full bg-slate-50/50 border-2 border-transparent focus:bg-white focus:border-brand-200 focus:ring-4 focus:ring-brand-50/50 rounded-xl h-14 px-6 text-sm font-medium text-slate-500 transition-all shadow-inner"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Pembahasan & Penjelasan</label>
-                <Textarea
-                  value={item.pembahasan || ''}
-                  onChange={(e) => updateSoalItem(index, 'pembahasan', e.target.value)}
-                  className="w-full bg-slate-50/50 border-2 border-transparent focus:bg-white focus:border-brand-200 focus:ring-4 focus:ring-brand-50/50 rounded-2xl p-6 text-sm font-medium text-slate-600 outline-none transition-all min-h-[120px] shadow-inner leading-relaxed"
-                  placeholder="Berikan alasan mengapa jawaban tersebut benar..."
-                />
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+        <DndContext 
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext 
+            items={editedSoal.map(i => `soal-${i.nomor}-${i.pertanyaan.substring(0, 10)}`)}
+            strategy={verticalListSortingStrategy}
+          >
+            {editedSoal.map((item, index) => (
+              <SortableSoalItem
+                key={`soal-${item.nomor}-${item.pertanyaan.substring(0, 10)}`}
+                id={`soal-${item.nomor}-${item.pertanyaan.substring(0, 10)}`}
+                index={index}
+                item={item}
+                onUpdate={updateSoalItem}
+                onRemove={removeSoalItem}
+                onRegenerate={setRegenerateIndex}
+                regenerateIndex={regenerateIndex}
+                setRegenerateIndex={setRegenerateIndex}
+                regenerateFeedback={regenerateFeedback}
+                setRegenerateFeedback={setRegenerateFeedback}
+                regenerateGayaSoal={regenerateGayaSoal}
+                setRegenerateGayaSoal={setRegenerateGayaSoal}
+                handleRegenerate={handleRegenerate}
+                isPending={regenerateMutation.isPending}
+              />
+            ))}
+          </SortableContext>
+        </DndContext>
 
         <Button
           onClick={addSoalItem}
