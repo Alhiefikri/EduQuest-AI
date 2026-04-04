@@ -32,3 +32,26 @@
 7. Klik delete → konfirmasi → file terhapus dari list
 
 Tolong Senior Agent review kode saya lewat branch ini.
+
+---
+
+## Commit 2: Review Round 1 Fixes
+
+Setelah review round 1 dari Senior Agent, berikut 2 bug yang ditemukan di `GenerateSoal.tsx` dan sudah diperbaiki:
+
+### 🔴 Bug 1: Dropdown Modul Hardcoded (Data Palsu)
+
+- **Masalah:** Dropdown modul menggunakan ID hardcoded (`modul-1`, `modul-2`, `modul-3`) yang tidak ada di database. Jika user memilih, backend return `404: Modul tidak ditemukan`.
+- **Fix:** Ganti dengan data real dari `useDocuments()` hook. Dropdown sekarang menampilkan `doc.filename` dari semua dokumen yang sudah diupload.
+- **Files:** `GenerateSoal.tsx`
+
+### 🔴 Bug 2: Default State Hardcoded
+
+- **Masalah:** `mataPelajaran` default "Matematika" dan `topik` default "Persamaan Linear Satu Variabel" — seolah-olah sudah diisi user.
+- **Fix:** Ganti kedua default menjadi string kosong `""` dan tambahkan `placeholder` attribute untuk petunjuk user.
+- **Files:** `GenerateSoal.tsx`
+
+### Test Results:
+```
+npx tsc --noEmit → 0 errors
+```
