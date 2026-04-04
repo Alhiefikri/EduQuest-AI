@@ -20,9 +20,9 @@ def _truncate_content(content: str, max_chars: int = MAX_CONTENT_CHARS) -> str:
     return truncated + "\n\n[Konten diringkas karena terlalu panjang]"
 
 
-def _get_ai_config() -> tuple[str, str]:
+async def _get_ai_config() -> tuple[str, str]:
     from app.config import get_ai_config as _get_config
-    return _get_config()
+    return await _get_config()
 
 
 def _build_user_prompt(
