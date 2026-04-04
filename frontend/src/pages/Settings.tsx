@@ -15,6 +15,8 @@ export default function Settings() {
   const [aiProvider, setAiProvider] = useState('gemini')
   const [geminiKey, setGeminiKey] = useState('')
   const [groqKey, setGroqKey] = useState('')
+  const [geminiConfigured, setGeminiConfigured] = useState(false)
+  const [groqConfigured, setGroqConfigured] = useState(false)
   const [showGeminiKey, setShowGeminiKey] = useState(false)
   const [showGroqKey, setShowGroqKey] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -29,8 +31,8 @@ export default function Settings() {
       .then((res) => res.json())
       .then((data: AISettings) => {
         setAiProvider(data.provider)
-        setGeminiKey(data.gemini_api_key)
-        setGroqKey(data.groq_api_key)
+        setGeminiConfigured(data.gemini_configured)
+        setGroqConfigured(data.groq_configured)
         setLoaded(true)
       })
       .catch(() => setLoaded(true))
@@ -41,6 +43,11 @@ export default function Settings() {
     setTestResult(null)
     try {
       const apiKey = aiProvider === 'groq' ? groqKey : geminiKey
+      if (!apiKey) {
+        setTestResult({ success: false, message: 'Masukkan API key terlebih dahulu untuk menguji koneksi' })
+        setTesting(false)
+        return
+      }
       const res = await fetch(`${API_URL}/api/v1/settings/ai/test`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -148,13 +155,20 @@ export default function Settings() {
 
               {aiProvider === 'gemini' && (
                 <div className="space-y-2">
-                  <label className="text-[11px] font-black text-gray-400 tracking-widest uppercase">Gemini API Key</label>
+                  <div className="flex items-center justify-between">
+                    <label className="text-[11px] font-black text-gray-400 tracking-widest uppercase">Gemini API Key</label>
+                    {geminiConfigured && (
+                      <span className="flex items-center gap-1 text-[10px] font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-md">
+                        <Check className="w-3 h-3" strokeWidth={3} /> Tersimpan
+                      </span>
+                    )}
+                  </div>
                   <div className="relative">
                     <input
                       type={showGeminiKey ? 'text' : 'password'}
                       value={geminiKey}
                       onChange={(e) => setGeminiKey(e.target.value)}
-                      placeholder="AIza..."
+                      placeholder={geminiConfigured ? "Biarkan kosong untuk menggunakan key yang sudah tersimpan" : "AIza..."}
                       className="w-full bg-gray-50 border border-gray-100 text-gray-900 text-sm font-bold rounded-xl focus:ring-2 focus:ring-brand-100 focus:border-brand-500 block px-4 py-3 pr-12 outline-none transition-all placeholder:text-gray-400 placeholder:font-normal"
                     />
                     <button
@@ -170,13 +184,20 @@ export default function Settings() {
 
               {aiProvider === 'groq' && (
                 <div className="space-y-2">
-                  <label className="text-[11px] font-black text-gray-400 tracking-widest uppercase">Groq API Key</label>
+                  <div className="flex items-center justify-between">
+                    <label className="text-[11px] font-black text-gray-400 tracking-widest uppercase">Groq API Key</label>
+                    {groqConfigured && (
+                      <span className="flex items-center gap-1 text-[10px] font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-md">
+                        <Check className="w-3 h-3" strokeWidth={3} /> Tersimpan
+                      </span>
+                    )}
+                  </div>
                   <div className="relative">
                     <input
                       type={showGroqKey ? 'text' : 'password'}
                       value={groqKey}
                       onChange={(e) => setGroqKey(e.target.value)}
-                      placeholder="gsk_..."
+                      placeholder={groqConfigured ? "Biarkan kosong untuk menggunakan key yang sudah tersimpan" : "gsk_..."}
                       className="w-full bg-gray-50 border border-gray-100 text-gray-900 text-sm font-bold rounded-xl focus:ring-2 focus:ring-brand-100 focus:border-brand-500 block px-4 py-3 pr-12 outline-none transition-all placeholder:text-gray-400 placeholder:font-normal"
                     />
                     <button
