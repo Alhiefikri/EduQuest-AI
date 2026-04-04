@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
+import { toast } from 'sonner'
 
 export default function EditSoal() {
   const { id } = useParams()
@@ -43,13 +44,19 @@ export default function EditSoal() {
         } 
       })
       setSaveSuccess(true)
+      toast.success(finalized ? "Soal Final Disimpan" : "Draft Tersimpan", {
+        description: finalized ? "Anda akan dialihkan ke daftar soal." : "Perubahan Anda telah disimpan ke draft.",
+      })
+      
       if (finalized) {
         setTimeout(() => navigate('/soal'), 1500)
       } else {
         setTimeout(() => setSaveSuccess(false), 3000)
       }
     } catch {
-      setSaveError('Gagal menyimpan perubahan')
+      const errMessage = 'Gagal menyimpan perubahan'
+      setSaveError(errMessage)
+      toast.error("Gagal Menyimpan", { description: errMessage })
     } finally {
       setSaving(false)
     }
@@ -92,10 +99,16 @@ export default function EditSoal() {
       setEditedSoal(prev => 
         prev.map((item, i) => (i === regenerateIndex ? newSoalItem : item))
       )
+      toast.success("Berhasil Generate Ulang", {
+        description: `Soal no ${itemToRegenerate.nomor} telah diperbarui.`,
+      })
       setRegenerateIndex(null)
       setRegenerateFeedback('')
     } catch (err) {
-      alert('Gagal regenerate soal. ' + (err instanceof Error ? err.message : ''))
+      const errorMsg = err instanceof Error ? err.message : 'Silakan coba lagi.'
+      toast.error("Gagal Generate Soal", {
+        description: errorMsg
+      })
     }
   }
 

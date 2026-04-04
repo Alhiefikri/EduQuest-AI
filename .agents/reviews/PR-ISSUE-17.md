@@ -28,3 +28,10 @@ Elemen Modal membungkus kontennya dengan `absolute inset-0`, namun parent contai
 
 **Action Taken:**
 Saya (Senior Agent) telah menambahkan tag `relative` pada `<Card>` di `frontend/src/pages/EditSoal.tsx:170`. Bug teratasi, UX regenerasi 1 item kini berjalan responsif. Semua fungsi siap digunakan!
+
+---
+**Revision 1 (Visual Feedback & UX):**
+- Menginstal library `sonner` via Shadcn UI untuk notifikasi *Toast* yang elegan dan modern.
+- Menambahkan `<Toaster />` di root aplikasi (`App.tsx`).
+- Mengimplementasikan `toast.success`, `toast.error`, dan `toast.loading` pada fitur "Regenerate 1 Soal" di `EditSoal.tsx` agar pengguna mendapat konfirmasi visual saat proses berhasil/gagal.
+- Menerapkan notifikasi Toast yang sama pada fitur "Bulk Generate" di `GenerateSoal.tsx` untuk memberikan info status dari AI ke pengguna.
