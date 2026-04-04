@@ -14,8 +14,8 @@ def _truncate_content(content: str, max_chars: int = MAX_CONTENT_CHARS) -> str:
     truncated = content[:max_chars]
     last_period = truncated.rfind(".")
     if last_period > max_chars * 0.8:
-        truncated = truncated[:last_period + 1]
-    return truncated + "\n\n[Konten diringkas agar fokus pada materi inti]"
+        truncated = str(truncated)[:last_period + 1]
+    return str(truncated) + "\n\n[Konten diringkas agar fokus pada materi inti]"
 
 
 async def _get_ai_config() -> tuple[str, str]:
@@ -246,8 +246,17 @@ async def _generate_with_openrouter(
     for attempt in range(max_retries):
         try:
             # Gunakan context manager untuk menghindari kebocoran memori (memory leak)
-            async with OpenRouter(api_key=api_key) as client:
+            async with OpenRouter(
+                api_key=api_key,
+                sdk_hooks=None # Default hook works fine
+            ) as client:
                 # Menggunakan fungsi 'send_async' dari official SDK
+                # Tambahkan referer dan title untuk statistik OpenRouter
+                extra_headers = {
+                    "HTTP-Referer": "https://github.com/Alhiefikri/EduQuest-AI",
+                    "X-OpenRouter-Title": "EduQuest AI"
+                }
+                
                 response = await client.chat.send_async(
                     model=model,
                     messages=messages,

@@ -2,7 +2,7 @@ from datetime import datetime
 import json
 from typing import List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 
 class SoalItem(BaseModel):
@@ -55,9 +55,7 @@ class GenerateSoalResponse(BaseModel):
         if not value:
             return ["formal_academic"]
         return [value]
-
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
     @classmethod
     def from_prisma(cls, soal) -> "GenerateSoalResponse":
@@ -93,9 +91,7 @@ class SoalListResponse(BaseModel):
     status: str
     created_at: datetime
     updated_at: datetime
-
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
     @classmethod
     def _parse_gaya_soal(cls, value: str | List[str]) -> List[str]:
