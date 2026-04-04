@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ArrowLeft, CheckCircle2, SlidersHorizontal, BrainCircuit, Rocket, ChevronRight, Loader2, AlertCircle, BookOpen, Check, LayoutGrid, FileType } from 'lucide-react'
+import { ArrowLeft, CheckCircle2, BrainCircuit, Rocket, ChevronRight, Loader2, AlertCircle, BookOpen, Check, LayoutGrid, FileType } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useGenerateSoal } from '../hooks/useSoal'
 import { useDocuments } from '../hooks/useDocuments'
@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { toast } from 'sonner'
 
@@ -343,10 +342,11 @@ export default function GenerateSoal() {
                     <div className="space-y-5">
                       <label className="block text-sm font-black text-slate-400 uppercase tracking-widest">Tipe Soal</label>
                       <div className="flex flex-wrap gap-3">
-                        {['Pilihan Ganda', 'Isian', 'Essay', 'Campuran'].map((type) => (
-                          <Button
+                        {Object.keys(tipeMap).map((type) => (
+                          <Button 
                             key={type}
-                            variant={tipeMap[type] === tipeSoal ? 'default' : 'outline'}
+                            type="button"
+                            variant="outline"
                             onClick={() => setTipeSoal(tipeMap[type] || type)}
                             className={`h-12 px-6 rounded-2xl font-black transition-all text-xs tracking-wider uppercase ${
                               tipeMap[type] === tipeSoal 
@@ -354,6 +354,53 @@ export default function GenerateSoal() {
                                 : 'border-4 border-slate-50 text-slate-400 hover:bg-slate-50 hover:border-slate-200'
                             }`}
                           >{type}</Button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="space-y-4">
+                      <label className="block text-sm font-black text-slate-400 uppercase tracking-widest">Tingkat Kesulitan</label>
+                      <Select value={difficulty} onValueChange={setDifficulty}>
+                        <SelectTrigger className="w-full bg-white border-4 border-slate-100 h-16 text-lg font-black rounded-2xl shadow-sm">
+                          <SelectValue placeholder="Pilih Kesulitan" />
+                        </SelectTrigger>
+                        <SelectContent className="rounded-2xl border-4 border-slate-900 bg-white p-2">
+                          {Object.keys(difficultyMap).map((label) => (
+                            <SelectItem key={label} value={difficultyMap[label]} className="rounded-xl font-bold py-3">
+                              {label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-4">
+                      <label className="block text-sm font-black text-slate-400 uppercase tracking-widest">Gaya Bahasa / Style</label>
+                      <div className="grid grid-cols-2 gap-3">
+                        {[
+                          { id: 'formal_academic', label: 'Formal Akademik' },
+                          { id: 'kontekstual', label: 'Kontekstual' },
+                          { id: 'humor_ringan', label: 'Humor Ringan' },
+                          { id: 'cerita_narasi', label: 'Cerita Narasi' }
+                        ].map((style) => (
+                          <div 
+                            key={style.id}
+                            onClick={() => {
+                              if (gayaSoal.includes(style.id)) {
+                                if (gayaSoal.length > 1) setGayaSoal(gayaSoal.filter(s => s !== style.id))
+                              } else {
+                                setGayaSoal([...gayaSoal, style.id])
+                              }
+                            }}
+                            className={`p-4 rounded-xl border-4 cursor-pointer transition-all flex items-center justify-between ${
+                              gayaSoal.includes(style.id) 
+                                ? 'border-indigo-500 bg-indigo-50 shadow-md' 
+                                : 'border-slate-100 bg-white text-slate-400'
+                            }`}
+                          >
+                            <span className="text-[10px] font-black uppercase tracking-wider">{style.label}</span>
+                            {gayaSoal.includes(style.id) && <Check className="w-3 h-3 text-indigo-500" />}
+                          </div>
                         ))}
                       </div>
                     </div>
@@ -388,17 +435,18 @@ export default function GenerateSoal() {
                     <div className="space-y-6">
                         <label className="text-sm font-black text-slate-400 uppercase tracking-widest">Opsi Tambahan</label>
                         <div className="grid grid-cols-1 gap-4">
-                            {[
-                              { label: 'Pembahasan', active: includePembahasan, toggle: () => setIncludePembahasan(!includePembahasan), color: 'bg-indigo-500' },
-                              { label: 'Generate Gambar', active: includeGambar, toggle: () => setIncludeGambar(!includeGambar), color: 'bg-sky-500' }
-                            ].map((opt, i) => (
-                              <div key={i} className="flex items-center justify-between p-5 bg-slate-50 rounded-2xl border-4 border-transparent hover:border-slate-100 transition-all cursor-pointer" onClick={opt.toggle}>
-                                <span className="text-sm font-black text-slate-700 uppercase tracking-tight">{opt.label}</span>
-                                <div className={`w-12 h-7 rounded-full relative transition-all duration-300 ${opt.active ? opt.color : 'bg-slate-200'}`}>
-                                  <div className={`absolute top-1 w-5 h-5 bg-white rounded-full shadow-md transition-all duration-300 ${opt.active ? 'right-1' : 'left-1'}`}></div>
-                                </div>
-                              </div>
-                            ))}
+                             {[
+                               { label: 'Pembahasan', active: includePembahasan, toggle: () => setIncludePembahasan(!includePembahasan), color: 'bg-indigo-500' },
+                               { label: 'Halaman Kunci Jawaban', active: includeKunci, toggle: () => setIncludeKunci(!includeKunci), color: 'bg-emerald-500' },
+                               { label: 'Generate Gambar', active: includeGambar, toggle: () => setIncludeGambar(!includeGambar), color: 'bg-sky-500' }
+                             ].map((opt, i) => (
+                               <div key={i} className="flex items-center justify-between p-5 bg-slate-50 rounded-2xl border-4 border-transparent hover:border-slate-100 transition-all cursor-pointer" onClick={opt.toggle}>
+                                 <span className="text-sm font-black text-slate-700 uppercase tracking-tight">{opt.label}</span>
+                                 <div className={`w-12 h-7 rounded-full relative transition-all duration-300 ${opt.active ? opt.color : 'bg-slate-200'}`}>
+                                   <div className={`absolute top-1 w-5 h-5 bg-white rounded-full shadow-md transition-all duration-300 ${opt.active ? 'right-1' : 'left-1'}`}></div>
+                                 </div>
+                               </div>
+                             ))}
                         </div>
                     </div>
                   </div>

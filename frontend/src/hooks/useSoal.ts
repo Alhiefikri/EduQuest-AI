@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { generateSoal, getSoalList, getSoalDetail, updateSoal, deleteSoal, regenerateSingleSoal } from '../services/soal'
-import type { GenerateSoalRequest, UpdateSoalRequest, RegenerateSingleSoalRequest, SoalItem } from '../types'
+import type { GenerateSoalRequest, UpdateSoalRequest, RegenerateSingleSoalRequest } from '../types'
 
 export const useSoalList = () => {
   return useQuery({
