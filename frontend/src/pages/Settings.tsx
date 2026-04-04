@@ -1,6 +1,86 @@
-import { Save, Check } from 'lucide-react';
+import { useState, useEffect } from 'react'
+import { Save, Check, Eye, EyeOff, Loader2, AlertCircle, CheckCircle2, Zap } from 'lucide-react'
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+
+interface AISettings {
+  provider: string
+  gemini_api_key: string
+  groq_api_key: string
+  gemini_configured: boolean
+  groq_configured: boolean
+}
 
 export default function Settings() {
+  const [aiProvider, setAiProvider] = useState('gemini')
+  const [geminiKey, setGeminiKey] = useState('')
+  const [groqKey, setGroqKey] = useState('')
+  const [showGeminiKey, setShowGeminiKey] = useState(false)
+  const [showGroqKey, setShowGroqKey] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [testing, setTesting] = useState(false)
+  const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null)
+  const [saveResult, setSaveResult] = useState<{ success: boolean; message: string } | null>(null)
+  const [loaded, setLoaded] = useState(false)
+
+  useEffect(() => {
+    fetch(`${API_URL}/api/v1/settings/ai`)
+      .then((res) => res.json())
+      .then((data: AISettings) => {
+        setAiProvider(data.provider)
+        setGeminiKey(data.gemini_api_key)
+        setGroqKey(data.groq_api_key)
+        setLoaded(true)
+      })
+      .catch(() => setLoaded(true))
+  }, [])
+
+  const handleTestConnection = async () => {
+    setTesting(true)
+    setTestResult(null)
+    try {
+      const apiKey = aiProvider === 'groq' ? groqKey : geminiKey
+      const res = await fetch(`${API_URL}/api/v1/settings/ai/test`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ provider: aiProvider, api_key: apiKey }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.detail || 'Gagal menguji koneksi')
+      setTestResult({ success: true, message: data.message })
+    } catch (err: unknown) {
+      const message = err instanceof Error && 'message' in err ? err.message : 'Gagal menguji koneksi'
+      setTestResult({ success: false, message })
+    } finally {
+      setTesting(false)
+    }
+  }
+
+  const handleSave = async () => {
+    setLoading(true)
+    setSaveResult(null)
+    try {
+      const res = await fetch(`${API_URL}/api/v1/settings/ai`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          provider: aiProvider,
+          gemini_api_key: geminiKey,
+          groq_api_key: groqKey,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.detail || 'Gagal menyimpan pengaturan')
+      setSaveResult({ success: true, message: data.message })
+      setTimeout(() => setSaveResult(null), 3000)
+    } catch (err: unknown) {
+      const message = err instanceof Error && 'message' in err ? err.message : 'Gagal menyimpan pengaturan'
+      setSaveResult({ success: false, message })
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <div className="max-w-[1000px] mx-auto space-y-10 pb-20 animate-in fade-in">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
@@ -12,90 +92,139 @@ export default function Settings() {
 
       <div className="bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden">
         <div className="flex border-b border-gray-100 bg-gray-50/50 p-1">
-          {['My Details', 'Preferences', 'Integrations', 'Billing'].map((tab, i) => (
+          {['My Details', 'Preferences', 'AI Integration'].map((tab, i) => (
             <button key={i} className={`flex-1 px-6 py-4 text-xs font-black uppercase tracking-widest transition-all rounded-2xl ${
-              i === 0 ? 'bg-white text-brand-500 shadow-sm' : 'text-gray-400 hover:text-gray-900'
+              i === 2 ? 'bg-white text-brand-500 shadow-sm' : 'text-gray-400 hover:text-gray-900'
             }`}>{tab}</button>
           ))}
         </div>
 
         <div className="p-10 md:p-12 space-y-12">
-          {/* Section 1 */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
             <div>
-              <h3 className="text-base font-bold text-gray-900">Personal Information</h3>
-              <p className="text-sm font-medium text-gray-400 mt-2 leading-relaxed">Update your photo and personal details for your account profile.</p>
+              <h3 className="text-base font-bold text-gray-900 flex items-center gap-2">
+                <Zap className="w-5 h-5 text-brand-500" />
+                AI Integration
+              </h3>
+              <p className="text-sm font-medium text-gray-400 mt-2 leading-relaxed">Configure your AI provider and API key for question generation.</p>
             </div>
-            <div className="md:col-span-2 space-y-6">
-              <div className="flex items-center gap-6 mb-8">
-                <img 
-                  src="https://ui-avatars.com/api/?name=Budi+Santoso&background=1a56db&color=fff&font-size=0.4"
-                  alt="Profile" 
-                  className="w-20 h-20 rounded-3xl object-cover ring-4 ring-gray-50"
-                />
-                <div className="flex gap-3">
-                   <button className="bg-brand-500 text-white px-5 py-2.5 rounded-xl text-xs font-bold shadow-md hover:bg-brand-600 transition-all">Change Photo</button>
-                   <button className="bg-white border border-gray-200 text-gray-700 px-5 py-2.5 rounded-xl text-xs font-bold hover:bg-gray-50 transition-all">Remove</button>
-                </div>
-              </div>
 
-              <div className="grid grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="text-[11px] font-black text-gray-400 tracking-widest uppercase">First Name</label>
-                  <input type="text" defaultValue="Budi" className="w-full bg-gray-50 border border-transparent focus:bg-white focus:border-brand-200 focus:ring-4 focus:ring-brand-50/50 rounded-xl px-4 py-3 text-sm font-bold text-gray-900 outline-none transition-all" />
+            <div className="md:col-span-2 space-y-8">
+              {saveResult && (
+                <div className={`flex items-center gap-2 p-4 rounded-xl ${
+                  saveResult.success ? 'bg-green-50 border border-green-100' : 'bg-red-50 border border-red-100'
+                }`}>
+                  {saveResult.success ? (
+                    <CheckCircle2 className="w-5 h-5 text-green-500 shrink-0" />
+                  ) : (
+                    <AlertCircle className="w-5 h-5 text-red-500 shrink-0" />
+                  )}
+                  <p className={`text-sm font-medium ${saveResult.success ? 'text-green-700' : 'text-red-700'}`}>
+                    {saveResult.message}
+                  </p>
                 </div>
-                <div className="space-y-2">
-                  <label className="text-[11px] font-black text-gray-400 tracking-widest uppercase">Last Name</label>
-                  <input type="text" defaultValue="Santoso" className="w-full bg-gray-50 border border-transparent focus:bg-white focus:border-brand-200 focus:ring-4 focus:ring-brand-50/50 rounded-xl px-4 py-3 text-sm font-bold text-gray-900 outline-none transition-all" />
-                </div>
-              </div>
+              )}
+
               <div className="space-y-2">
-                <label className="text-[11px] font-black text-gray-400 tracking-widest uppercase">Email Address</label>
-                <input type="email" defaultValue="budi.santoso@eduquest.ai" className="w-full bg-gray-50 border border-transparent focus:bg-white focus:border-brand-200 focus:ring-4 focus:ring-brand-50/50 rounded-xl px-4 py-3 text-sm font-bold text-gray-900 outline-none transition-all" />
+                <label className="text-[11px] font-black text-gray-400 tracking-widest uppercase">AI Provider</label>
+                <select
+                  value={aiProvider}
+                  onChange={(e) => setAiProvider(e.target.value)}
+                  className="w-full bg-gray-50 border border-gray-100 text-gray-900 text-sm font-bold rounded-xl focus:ring-2 focus:ring-brand-100 focus:border-brand-500 block px-4 py-3 outline-none appearance-none cursor-pointer"
+                >
+                  <option value="gemini">Google Gemini (gemini-1.5-flash)</option>
+                  <option value="groq">Groq (llama-3.3-70b-versatile)</option>
+                </select>
+                <p className="text-xs text-gray-400 mt-1">
+                  {aiProvider === 'gemini'
+                    ? 'Free tier: 15 RPM. Requires Google AI Studio API key.'
+                    : 'Free tier: 30 RPM. Requires Groq Cloud API key.'}
+                </p>
               </div>
-            </div>
-          </div>
 
-          <div className="h-[1px] bg-gray-100"></div>
-
-          {/* Section 2 */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-            <div>
-              <h3 className="text-base font-bold text-gray-900">Notifications</h3>
-              <p className="text-sm font-medium text-gray-400 mt-2 leading-relaxed">Control how you receive updates and activity alerts.</p>
-            </div>
-            <div className="md:col-span-2 space-y-4">
-              {[
-                { label: 'Weekly Activity Summary', desc: 'Get a digest of your created questions and uploads.', active: true },
-                { label: 'System Announcements', desc: 'Receive updates about new AI models and features.', active: false },
-                { label: 'Security Alerts', desc: 'Important notifications about account security.', active: true }
-              ].map((pref, i) => (
-                <div key={i} className="flex items-center justify-between p-6 bg-gray-50/50 hover:bg-white border border-transparent hover:border-gray-100 rounded-2xl transition-all group">
-                  <div className="flex gap-4">
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-sm ${pref.active ? 'bg-brand-500 text-white' : 'bg-white text-gray-300 group-hover:text-gray-500 transition-colors'}`}>
-                      <Check className="w-5 h-5" strokeWidth={3} />
-                    </div>
-                    <div>
-                      <p className="text-sm font-bold text-gray-900">{pref.label}</p>
-                      <p className="text-xs font-medium text-gray-400 mt-0.5">{pref.desc}</p>
-                    </div>
-                  </div>
-                  <div className={`w-12 h-6 rounded-full relative transition-colors ${pref.active ? 'bg-brand-500' : 'bg-gray-200'}`}>
-                    <div className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow-md transition-all ${pref.active ? 'right-1' : 'left-1'}`}></div>
+              {aiProvider === 'gemini' && (
+                <div className="space-y-2">
+                  <label className="text-[11px] font-black text-gray-400 tracking-widest uppercase">Gemini API Key</label>
+                  <div className="relative">
+                    <input
+                      type={showGeminiKey ? 'text' : 'password'}
+                      value={geminiKey}
+                      onChange={(e) => setGeminiKey(e.target.value)}
+                      placeholder="AIza..."
+                      className="w-full bg-gray-50 border border-gray-100 text-gray-900 text-sm font-bold rounded-xl focus:ring-2 focus:ring-brand-100 focus:border-brand-500 block px-4 py-3 pr-12 outline-none transition-all placeholder:text-gray-400 placeholder:font-normal"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowGeminiKey(!showGeminiKey)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                    >
+                      {showGeminiKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
                   </div>
                 </div>
-              ))}
+              )}
+
+              {aiProvider === 'groq' && (
+                <div className="space-y-2">
+                  <label className="text-[11px] font-black text-gray-400 tracking-widest uppercase">Groq API Key</label>
+                  <div className="relative">
+                    <input
+                      type={showGroqKey ? 'text' : 'password'}
+                      value={groqKey}
+                      onChange={(e) => setGroqKey(e.target.value)}
+                      placeholder="gsk_..."
+                      className="w-full bg-gray-50 border border-gray-100 text-gray-900 text-sm font-bold rounded-xl focus:ring-2 focus:ring-brand-100 focus:border-brand-500 block px-4 py-3 pr-12 outline-none transition-all placeholder:text-gray-400 placeholder:font-normal"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowGroqKey(!showGroqKey)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                    >
+                      {showGroqKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex items-center gap-3 pt-2">
+                <button
+                  onClick={handleTestConnection}
+                  disabled={testing}
+                  className="flex items-center gap-2 px-5 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl text-sm font-bold hover:bg-gray-50 transition-all shadow-xs active:scale-95 disabled:opacity-50"
+                >
+                  {testing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
+                  Test Connection
+                </button>
+
+                {testResult && (
+                  <div className={`flex items-center gap-1.5 text-sm font-medium ${
+                    testResult.success ? 'text-green-600' : 'text-red-600'
+                  }`}>
+                    {testResult.success ? (
+                      <CheckCircle2 className="w-4 h-4" />
+                    ) : (
+                      <AlertCircle className="w-4 h-4" />
+                    )}
+                    {testResult.message}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
 
         <div className="p-8 bg-gray-50/80 border-t border-gray-100 flex justify-end gap-4">
           <button className="px-6 py-3 text-xs font-black uppercase tracking-widest text-gray-400 hover:text-gray-900 transition-all">Reset to Defaults</button>
-          <button className="flex items-center gap-2.5 px-8 py-3 bg-brand-500 text-white rounded-2xl text-sm font-bold hover:bg-brand-600 transition-all shadow-lg active:scale-95">
-            <Save className="w-4 h-4" /> Save Preferences
+          <button
+            onClick={handleSave}
+            disabled={loading}
+            className="flex items-center gap-2.5 px-8 py-3 bg-brand-500 text-white rounded-2xl text-sm font-bold hover:bg-brand-600 transition-all shadow-lg active:scale-95 disabled:opacity-50"
+          >
+            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+            Save Settings
           </button>
         </div>
       </div>
     </div>
-  );
+  )
 }
