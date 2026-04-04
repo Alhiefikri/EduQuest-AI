@@ -11,11 +11,9 @@
 Tolong Senior Agent review UI yang telah saya bangun di branch `feature/issue-29`.
 
 ---
-**Revision 1 (Soften UI Aesthetic):**
-- Mengurangi ketebalan border dari `border-4` menjadi `border-2` atau `border-1` secara merata.
-- Melembutkan bayangan (*hard shadows*) dengan mengurangi intensitas dan offsetnya.
-- Menambahkan *radius* (`0.75rem` atau `rounded-2xl/3xl`) pada seluruh komponen Card dan Button agar lebih bersahabat bagi pengguna.
-- Mendesaturasi palet warna (menggunakan `slate-50`, `indigo-50`, dsb) untuk mengurangi ketegangan mata.
-- Menambah *padding* dan *gap* antar elemen untuk memberikan "ruang bernapas" pada tata letak.
-- Meningkatkan ukuran font dan legibilitas pada komponen form dan label.
-- Mengganti teks hitam pekat dengan variasi `slate-900` atau `zinc-800` untuk kontras yang lebih nyaman.
+**Revision 2 (Responsive UI Fixes):**
+- Memperbaiki *overflow* horizontal pada halaman Daftar Soal dengan menerapkan `overflow-x-auto` dan penyesuaian lebar kolom tabel.
+- Mengatur ulang tata letak header dan tombol aksi agar bersifat *stackable* pada resolusi laptop (1366x768) dan tablet.
+- Memperbaiki *glitch* pada seleksi modul di halaman Generate Soal dengan menerapkan `truncate` pada nama file yang panjang dan membatasi *max-width* dropdown.
+- Mengoptimalkan komponen *fixed bottom bar* di Editor Soal agar tidak menutupi konten pada layar kecil dan tetap fungsional di perangkat mobile/tablet.
+- Menghapus lebar tetap (*fixed width*) pada container utama dan beralih ke *fluid layout* yang lebih adaptif.
