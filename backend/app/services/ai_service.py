@@ -1,7 +1,6 @@
 import json
 import asyncio
 from typing import List, Optional
-from openai import AsyncOpenAI
 
 SYSTEM_PROMPT = """Kamu adalah pendidik profesional yang ahli dalam evaluasi pembelajaran Kurikulum Merdeka. 
 Tugasmu adalah membuat soal evaluasi yang valid, berpusat pada materi pokok, sesuai dengan perkembangan kognitif siswa, 
@@ -250,6 +249,8 @@ async def _generate_with_openrouter(
     api_key: str,
     max_retries: int = 3,
 ) -> str:
+    from openai import AsyncOpenAI
+    
     # Model specified in ISSUE-39
     model = "qwen/qwen-3.6-plus:free"
     
@@ -272,7 +273,7 @@ async def _generate_with_openrouter(
                 # OpenRouter extra headers often recommended for identification
                 extra_headers={
                     "HTTP-Referer": "https://github.com/Alhiefikri/EduQuest-AI",
-                    "X-Title": "EduQuest AI",
+                    "X-OpenRouter-Title": "EduQuest AI",
                 }
             )
             return response.choices[0].message.content or ""

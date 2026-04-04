@@ -48,10 +48,8 @@ export default function Settings() {
     setTesting(true)
     setTestResult(null)
     try {
-      let apiKey = ''
-      if (aiProvider === 'groq') apiKey = groqKey
-      else if (aiProvider === 'openrouter') apiKey = openrouterKey
-      else apiKey = geminiKey
+      const keys: Record<string, string> = { groq: groqKey, openrouter: openrouterKey, gemini: geminiKey }
+      const apiKey = keys[aiProvider as keyof typeof keys] || geminiKey
 
       if (!apiKey) {
         setTestResult({ success: false, message: 'Masukkan API key terlebih dahulu untuk menguji koneksi' })
