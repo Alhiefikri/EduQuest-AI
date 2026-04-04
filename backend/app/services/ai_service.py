@@ -2,13 +2,7 @@ import json
 import time
 from typing import List
 
-from google import genai
-from google.genai import types
-from google.genai.errors import ServerError
-
-from app.config import GEMINI_API_KEY
-
-client = genai.Client(api_key=GEMINI_API_KEY)
+from app.config import AI_PROVIDER, GEMINI_API_KEY, GROQ_API_KEY
 
 SYSTEM_PROMPT = """Anda adalah guru berpengalaman yang ahli dalam membuat soal pelajaran.
 Buat soal berdasarkan KONTEN MODUL yang diberikan, BUKAN dari pengetahuan umum Anda.
@@ -98,6 +92,89 @@ def _parse_ai_response(response_text: str) -> List[dict]:
     raise ValueError("Format respons AI tidak dikenali")
 
 
+def _generate_with_gemini(
+    prompt: str,
+    max_retries: int = 3,
+) -> str:
+    from google import genai
+    from google.genai import types
+    from google.genai.errors import ServerError
+
+    client = genai.Client(api_key=GEMINI_API_KEY)
+
+    config = types.GenerateContentConfig(
+        system_instruction=SYSTEM_PROMPT,
+        temperature=0.7,
+        max_output_tokens=8192,
+        response_mime_type="application/json",
+    )
+
+    for attempt in range(max_retries):
+        try:
+            response = client.models.generate_content(
+                model="gemini-1.5-flash",
+                contents=prompt,
+                config=config,
+            )
+            return response.text
+
+        except ServerError:
+            wait_time = 2 ** (attempt + 1)
+            time.sleep(wait_time)
+            continue
+
+        except (json.JSONDecodeError, ValueError) as e:
+            if attempt == max_retries - 1:
+                raise ValueError(f"Gagal memparsing respons AI setelah {max_retries} percobaan: {str(e)}")
+            time.sleep(2)
+            continue
+
+        except Exception as e:
+            if attempt == max_retries - 1:
+                raise RuntimeError(f"Gagal menghubungi layanan Gemini: {str(e)}")
+            time.sleep(2)
+
+    raise RuntimeError("Gagal menghasilkan respons dari Gemini setelah beberapa percobaan")
+
+
+def _generate_with_groq(
+    prompt: str,
+    max_retries: int = 3,
+) -> str:
+    from groq import Groq
+
+    client = Groq(api_key=GROQ_API_KEY)
+
+    messages = [
+        {"role": "system", "content": SYSTEM_PROMPT},
+        {"role": "user", "content": prompt},
+    ]
+
+    for attempt in range(max_retries):
+        try:
+            response = client.chat.completions.create(
+                model="llama-3.3-70b-versatile",
+                messages=messages,
+                temperature=0.7,
+                max_tokens=8192,
+                response_format={"type": "json_object"},
+            )
+            return response.choices[0].message.content or ""
+
+        except Exception as e:
+            error_msg = str(e).lower()
+            if "rate_limit" in error_msg or "429" in error_msg:
+                wait_time = 2 ** (attempt + 1)
+                time.sleep(wait_time)
+                continue
+
+            if attempt == max_retries - 1:
+                raise RuntimeError(f"Gagal menghubungi layanan Groq: {str(e)}")
+            time.sleep(2)
+
+    raise RuntimeError("Gagal menghasilkan respons dari Groq setelah beberapa percobaan")
+
+
 def generate_soal(
     jumlah_soal: int,
     tipe_soal: str,
@@ -120,43 +197,14 @@ def generate_soal(
         konten_modul=konten_modul,
     )
 
-    config = types.GenerateContentConfig(
-        system_instruction=SYSTEM_PROMPT,
-        temperature=0.7,
-        max_output_tokens=8192,
-        response_mime_type="application/json",
-    )
+    if AI_PROVIDER == "groq":
+        response_text = _generate_with_groq(prompt, max_retries)
+    else:
+        response_text = _generate_with_gemini(prompt, max_retries)
 
-    for attempt in range(max_retries):
-        try:
-            response = client.models.generate_content(
-                model="gemini-2.0-flash",
-                contents=prompt,
-                config=config,
-            )
+    soal_list = _parse_ai_response(response_text)
 
-            response_text = response.text
-            soal_list = _parse_ai_response(response_text)
+    if not soal_list:
+        raise ValueError("AI menghasilkan daftar soal kosong")
 
-            if not soal_list:
-                raise ValueError("AI menghasilkan daftar soal kosong")
-
-            return soal_list
-
-        except ServerError:
-            wait_time = 2 ** (attempt + 1)
-            time.sleep(wait_time)
-            continue
-
-        except (json.JSONDecodeError, ValueError) as e:
-            if attempt == max_retries - 1:
-                raise ValueError(f"Gagal memparsing respons AI setelah {max_retries} percobaan: {str(e)}")
-            time.sleep(2)
-            continue
-
-        except Exception as e:
-            if attempt == max_retries - 1:
-                raise RuntimeError(f"Gagal menghubungi layanan AI: {str(e)}")
-            time.sleep(2)
-
-    raise RuntimeError("Gagal menghasilkan soal setelah beberapa percobaan")
+    return soal_list
