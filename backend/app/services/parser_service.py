@@ -1,5 +1,5 @@
 import io
-from typing import Tuple
+from typing import List, Tuple
 
 import fitz
 from docx import Document as DocxDocument
@@ -54,6 +54,30 @@ def extract_text_from_docx(file_content: bytes) -> Tuple[str, int]:
     page_count = max(1, len(full_text) // 3000)
 
     return full_text, page_count
+
+
+def extract_text_from_pdf_by_pages(file_path: str, page_numbers: List[int]) -> str:
+    """
+    Ekstrak teks dari file PDF pada halaman-halaman tertentu.
+    page_numbers: list of 1-based page numbers.
+    """
+    try:
+        doc = fitz.open(file_path)
+    except Exception as e:
+        raise ValueError(f"Gagal membuka file PDF dari disk: {str(e)}")
+
+    text_parts = []
+    max_pages = doc.page_count
+
+    for p_num in page_numbers:
+        # Convert 1-based to 0-based
+        idx = p_num - 1
+        if 0 <= idx < max_pages:
+            page = doc[idx]
+            text_parts.append(page.get_text())
+
+    doc.close()
+    return "\n".join(text_parts).strip()
 
 
 def count_words(text: str) -> int:

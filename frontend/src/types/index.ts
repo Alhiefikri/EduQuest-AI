@@ -1,6 +1,7 @@
 export interface BaseDocument {
   id: string
   filename: string
+  filepath: string
   filetype: string
   filesize: number
   page_count: number
@@ -72,6 +73,8 @@ export interface GenerateSoalRequest {
   include_pembahasan: boolean
   include_kunci: boolean
   include_gambar: boolean
+  page_ranges?: string
+  cp_atp_text?: string
 }
 
 export interface UpdateSoalRequest {

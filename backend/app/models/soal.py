@@ -27,6 +27,8 @@ class GenerateSoalRequest(BaseModel):
     include_pembahasan: bool = True
     include_kunci: bool = True
     include_gambar: bool = False
+    page_ranges: Optional[str] = None
+    cp_atp_text: Optional[str] = None
 
 
 class GenerateSoalResponse(BaseModel):

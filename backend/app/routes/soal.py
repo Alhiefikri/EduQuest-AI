@@ -13,8 +13,28 @@ from app.models.soal import (
     SoalItem,
 )
 from app.services.ai_service import generate_soal, regenerate_single_soal
+from app.services.parser_service import extract_text_from_pdf_by_pages
 
 router = APIRouter(prefix="/api/v1/soal", tags=["soal"])
+
+
+def parse_page_ranges(range_str: str) -> List[int]:
+    if not range_str or not range_str.strip():
+        return []
+    pages = set()
+    try:
+        for part in range_str.split(","):
+            part = part.strip()
+            if not part:
+                continue
+            if "-" in part:
+                start, end = map(int, part.split("-"))
+                pages.update(range(start, end + 1))
+            else:
+                pages.add(int(part))
+    except Exception:
+        raise ValueError(f"Format rentang halaman tidak valid: {range_str}")
+    return sorted(list(pages))
 
 
 @router.post("/generate", response_model=GenerateSoalResponse, status_code=201)
@@ -32,26 +52,48 @@ async def generate_soal_endpoint(request: GenerateSoalRequest):
         fase_kelas = request.kelas
 
     if request.modul_id:
+        # Check both ModulAjar and Document tables
         modul = await db.modulajar.find_unique(where={"id": request.modul_id})
-        if modul:
-            konten_modul = modul.kontenTeks
-            if not request.topik:
-                request.topik = modul.judul
-            if fase_kelas == "umum" and modul.kelas:
-                fase_kelas = modul.kelas
-        else:
-            document = await db.document.find_unique(where={"id": request.modul_id})
-            if document:
-                konten_modul = document.content
-                if not request.topik:
-                    request.topik = document.filename
-            else:
-                raise HTTPException(status_code=404, detail="Modul ajar tidak ditemukan")
+        document = await db.document.find_unique(where={"id": request.modul_id})
+        
+        target_modul = modul or document
+        if not target_modul:
+            raise HTTPException(status_code=404, detail="Modul ajar tidak ditemukan")
+
+        # Handle page-specific extraction if requested
+        if request.page_ranges:
+            page_numbers = parse_page_ranges(request.page_ranges)
+            if page_numbers:
+                # Need absolute file path. Assuming 'filepath' or 'filePath' exists
+                fpath = getattr(target_modul, "filepath", None) or getattr(target_modul, "filePath", None)
+                if fpath:
+                    try:
+                        konten_modul = extract_text_from_pdf_by_pages(fpath, page_numbers)
+                    except Exception as e:
+                        raise HTTPException(status_code=422, detail=f"Gagal ekstrak halaman: {str(e)}")
+                else:
+                    # Fallback to full content if no file path available
+                    konten_modul = getattr(target_modul, "content", None) or getattr(target_modul, "kontenTeks", "")
+        
+        # Fallback to full content if not already set
+        if not konten_modul:
+            konten_modul = getattr(target_modul, "content", None) or getattr(target_modul, "kontenTeks", "")
+            
+        if not request.topik:
+            request.topik = getattr(target_modul, "filename", None) or getattr(target_modul, "judul", "Tanpa Judul")
+            
+        if fase_kelas == "umum" and hasattr(target_modul, "kelas") and target_modul.kelas:
+            fase_kelas = target_modul.kelas
+
+    # Handle CP/ATP text addition
+    if request.cp_atp_text:
+        cp_content = f"SUMBER CP/ATP:\n{request.cp_atp_text}\n"
+        konten_modul = f"{cp_content}\n{konten_modul}" if konten_modul else cp_content
 
     if not konten_modul and not request.topik:
         raise HTTPException(
             status_code=400,
-            detail="Harap pilih modul ajar atau isi topik secara manual",
+            detail="Harap pilih modul ajar, isi CP/ATP, atau isi topik secara manual",
         )
 
     if not konten_modul:
