@@ -31,12 +31,12 @@ export default function DaftarSoal() {
 
   return (
     <div className="space-y-10 animate-in fade-in pb-12 p-4 md:p-8">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
-        <div>
-          <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tighter drop-shadow-md">Daftar Soal</h1>
-          <p className="mt-3 text-lg font-bold border-l-4 border-primary pl-4">Kumpulan bank soal yang telah Anda generate melalui AI.</p>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-8 px-2">
+        <div className="space-y-2">
+          <h1 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tight uppercase leading-none">Daftar Soal</h1>
+          <p className="text-lg font-medium text-slate-500 border-l-4 border-brand-500 pl-4">Kumpulan bank soal yang telah Anda generate melalui bantuan AI.</p>
         </div>
-        <Button asChild size="lg" className="border-4 border-black font-black uppercase text-base h-14 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-y-1 hover:translate-x-1 hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all">
+        <Button asChild size="lg" className="h-14 px-8 rounded-2xl font-bold bg-brand-600 hover:bg-brand-700 shadow-md shadow-brand-200 transition-all hover:translate-y-[-1px]">
           <Link to="/soal/generate">
             <Plus className="w-5 h-5 mr-2" strokeWidth={3} /> Buat Baru
           </Link>
@@ -44,46 +44,48 @@ export default function DaftarSoal() {
       </div>
 
       {isLoading ? (
-        <Card className="border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] rounded-none">
-          <CardContent className="p-16 text-center flex flex-col items-center">
-            <Loader2 className="w-12 h-12 text-black animate-spin mb-4" strokeWidth={3} />
-            <p className="text-xl font-black uppercase tracking-widest">Memuat daftar soal...</p>
+        <Card className="border-2 border-slate-100 shadow-sm rounded-[2rem] overflow-hidden">
+          <CardContent className="p-20 text-center flex flex-col items-center">
+            <Loader2 className="w-12 h-12 text-brand-500 animate-spin mb-4" strokeWidth={3} />
+            <p className="text-lg font-bold text-slate-400 uppercase tracking-widest">Sinkronisasi Basis Data...</p>
           </CardContent>
         </Card>
       ) : error ? (
-        <Card className="bg-red-400 border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] rounded-none">
-          <CardContent className="p-16 text-center flex flex-col items-center">
-            <AlertCircle className="w-12 h-12 text-black mb-4" strokeWidth={3} />
-            <p className="text-xl font-black uppercase tracking-widest">{error instanceof Error ? error.message : 'Gagal memuat data'}</p>
+        <Card className="border-2 border-rose-100 bg-rose-50/30 rounded-[2rem] overflow-hidden">
+          <CardContent className="p-20 text-center flex flex-col items-center">
+            <AlertCircle className="w-12 h-12 text-rose-400 mb-4" strokeWidth={2} />
+            <p className="text-xl font-bold text-rose-700 uppercase tracking-tight">{error instanceof Error ? error.message : 'Gagal memuat data'}</p>
           </CardContent>
         </Card>
       ) : !filtered || filtered.length === 0 ? (
-        <Card className="bg-[#ffc900] border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] rounded-none">
-          <CardContent className="p-16 text-center flex flex-col items-center">
-            <FileDown className="w-16 h-16 text-black mb-6" strokeWidth={2.5} />
-            <p className="text-3xl font-black uppercase tracking-tighter mb-2">Belum ada soal</p>
-            <p className="text-base font-bold mb-8 border-l-4 border-black pl-4">Generate soal pertama Anda untuk memulai</p>
-            <Button asChild size="lg" className="border-4 border-black font-black uppercase text-base h-14 bg-white text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-gray-100 hover:translate-y-1 hover:translate-x-1 hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all">
+        <Card className="bg-slate-50 border-2 border-slate-100 border-dashed rounded-[2rem] overflow-hidden">
+          <CardContent className="p-20 text-center flex flex-col items-center">
+            <div className="w-24 h-24 bg-white rounded-3xl shadow-sm border border-slate-100 flex items-center justify-center mb-8">
+              <FileDown className="w-12 h-12 text-slate-200" strokeWidth={2} />
+            </div>
+            <p className="text-3xl font-black text-slate-900 uppercase tracking-tight mb-3">Bank Soal Kosong</p>
+            <p className="text-lg font-medium text-slate-500 mb-10 border-l-4 border-slate-200 pl-6">Generate soal pertama Anda untuk mulai mengisi library ini.</p>
+            <Button asChild size="lg" className="h-14 px-10 rounded-2xl font-bold bg-brand-600 shadow-lg">
               <Link to="/soal/generate">Generate Sekarang</Link>
             </Button>
           </CardContent>
         </Card>
       ) : (
-        <Card className="border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] rounded-none overflow-hidden bg-white">
-          <div className="p-6 border-b-4 border-black flex flex-wrap gap-4 justify-between items-center bg-[#00f0ff]">
-            <div className="relative w-full max-w-md group">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-black" strokeWidth={3} />
+        <Card className="border-2 border-slate-100 shadow-xl shadow-slate-100 rounded-[2rem] overflow-hidden bg-white">
+          <div className="p-8 border-b-2 border-slate-50 flex flex-wrap gap-6 justify-between items-center bg-slate-50/50">
+            <div className="relative w-full max-w-lg group">
+              <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 transition-colors group-focus-within:text-brand-500" strokeWidth={2.5} />
               <Input
                 type="text"
-                placeholder="Cari berdasarkan mata pelajaran atau topik..."
+                placeholder="Cari mata pelajaran atau topik..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-12 pr-4 h-14 bg-white border-4 border-black rounded-none text-base font-bold placeholder:text-gray-500 placeholder:font-bold focus:ring-0 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+                className="w-full pl-14 pr-6 h-14 bg-white border-2 border-slate-100 rounded-2xl text-base font-bold placeholder:text-slate-300 focus-visible:ring-brand-500/10 focus-visible:border-brand-200 shadow-sm transition-all"
               />
             </div>
             <div className="flex items-center gap-4">
-              <Button variant="outline" className="border-4 border-black font-black uppercase h-14 bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-y-1 hover:translate-x-1 hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-                <Filter className="w-5 h-5 mr-2" strokeWidth={3} /> Filter
+              <Button variant="outline" className="h-14 px-6 rounded-2xl border-2 border-slate-100 font-bold text-slate-600 hover:bg-white hover:border-slate-200 shadow-sm">
+                <Filter className="w-5 h-5 mr-3 text-slate-400" strokeWidth={2.5} /> Filter Pencarian
               </Button>
             </div>
           </div>
@@ -91,54 +93,54 @@ export default function DaftarSoal() {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-white border-b-4 border-black text-sm uppercase text-black font-black tracking-widest">
-                  <th className="px-6 py-5 border-r-4 border-black">Judul Soal</th>
-                  <th className="px-6 py-5 border-r-4 border-black">Mata Pelajaran</th>
-                  <th className="px-6 py-5 border-r-4 border-black text-center">Jumlah</th>
-                  <th className="px-6 py-5 border-r-4 border-black text-center">Tanggal Dibuat</th>
-                  <th className="px-6 py-5 border-r-4 border-black text-center">Status</th>
-                  <th className="px-6 py-5 text-center">Aksi</th>
+                <tr className="bg-slate-50/30 border-b border-slate-100 text-[11px] uppercase text-slate-400 font-black tracking-[0.2em]">
+                  <th className="px-10 py-6">Identitas Soal</th>
+                  <th className="px-8 py-6">Kategori</th>
+                  <th className="px-8 py-6 text-center">Volume</th>
+                  <th className="px-8 py-6 text-center">Kronologi</th>
+                  <th className="px-8 py-6 text-center">Status</th>
+                  <th className="px-10 py-6 text-right">Manajemen</th>
                 </tr>
               </thead>
-              <tbody className="divide-y-4 divide-black">
+              <tbody className="divide-y divide-slate-50">
                 {filtered.map((item) => (
-                  <tr key={item.id} className="hover:bg-gray-100 transition-colors group">
-                    <td className="px-6 py-5 border-r-4 border-black">
-                      <div className="flex items-center gap-4">
-                        <div className={`w-3 h-10 border-2 border-black ${item.status === 'draft' ? 'bg-gray-300' : 'bg-[#ff90e8]'}`}></div>
-                        <span className="text-lg font-black text-black group-hover:underline underline-offset-4 truncate max-w-xs block">
+                  <tr key={item.id} className="hover:bg-slate-50/50 transition-all group">
+                    <td className="px-10 py-6">
+                      <div className="flex items-center gap-5">
+                        <div className={`w-1.5 h-10 rounded-full shadow-inner ${item.status === 'draft' ? 'bg-slate-200' : 'bg-brand-500 shadow-brand-200'}`}></div>
+                        <span className="text-lg font-bold text-slate-900 group-hover:text-brand-600 transition-colors truncate max-w-xs block tracking-tight">
                           {item.topik || item.mata_pelajaran}
                         </span>
                       </div>
                     </td>
-                    <td className="px-6 py-5 border-r-4 border-black">
-                      <span className="text-sm font-black uppercase text-black bg-[#ffc900] border-2 border-black px-3 py-1 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                    <td className="px-8 py-6">
+                      <span className="text-[11px] font-black uppercase text-slate-500 bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200">
                         {item.mata_pelajaran}
                       </span>
                     </td>
-                    <td className="px-6 py-5 border-r-4 border-black text-center">
-                      <span className="text-xl font-black text-black">{item.jumlah_soal}</span>
+                    <td className="px-8 py-6 text-center">
+                      <span className="text-xl font-black text-slate-900 tracking-tighter">{item.jumlah_soal} <span className="text-[10px] text-slate-300 uppercase ml-1">ITEM</span></span>
                     </td>
-                    <td className="px-6 py-5 border-r-4 border-black text-center text-sm font-bold text-gray-700">
+                    <td className="px-8 py-6 text-center text-[13px] font-bold text-slate-400">
                       {new Date(item.created_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })}
                     </td>
-                    <td className="px-6 py-5 border-r-4 border-black text-center">
-                      <span className={`inline-flex items-center px-3 py-1 border-2 border-black text-[11px] font-black tracking-widest uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] ${
-                        item.status === 'draft' ? 'bg-gray-200 text-black' : 'bg-green-400 text-black'
+                    <td className="px-8 py-6 text-center">
+                      <span className={`inline-flex items-center px-4 py-1.5 rounded-full text-[10px] font-black tracking-widest uppercase border ${
+                        item.status === 'draft' ? 'bg-slate-50 border-slate-100 text-slate-400' : 'bg-emerald-50 border-emerald-100 text-emerald-600'
                       }`}>
                         {item.status}
                       </span>
                     </td>
-                    <td className="px-6 py-5">
-                      <div className="flex items-center justify-center gap-3">
-                        <Button asChild variant="outline" size="icon" className="border-2 border-black bg-white hover:bg-[#ffc900] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-transform hover:-translate-y-1">
+                    <td className="px-10 py-6 text-right">
+                      <div className="flex items-center justify-end gap-3 opacity-0 group-hover:opacity-100 transition-all transform group-hover:translate-x-0 translate-x-4">
+                        <Button asChild variant="outline" size="icon" className="h-10 w-10 rounded-xl border-2 border-slate-100 hover:border-brand-200 hover:bg-brand-50 hover:text-brand-600 shadow-sm transition-all">
                           <Link to={`/soal/edit/${item.id}`} title="Edit Soal">
-                            <Edit className="w-5 h-5 text-black" strokeWidth={2.5} />
+                            <Edit className="w-4 h-4" strokeWidth={2.5} />
                           </Link>
                         </Button>
-                        <Button asChild variant="outline" size="icon" className="border-2 border-black bg-white hover:bg-[#00f0ff] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-transform hover:-translate-y-1">
-                          <Link to={`/soal/preview/${item.id}`} title="Preview Word">
-                            <FileDown className="w-5 h-5 text-black" strokeWidth={2.5} />
+                        <Button asChild variant="outline" size="icon" className="h-10 w-10 rounded-xl border-2 border-slate-100 hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-600 shadow-sm transition-all">
+                          <Link to={`/soal/preview/${item.id}`} title="Preview & Download">
+                            <FileDown className="w-4 h-4" strokeWidth={2.5} />
                           </Link>
                         </Button>
                         <Button
@@ -146,10 +148,10 @@ export default function DaftarSoal() {
                           size="icon"
                           onClick={() => handleDelete(item.id)}
                           disabled={deletingId === item.id}
-                          className="border-2 border-black bg-white hover:bg-red-400 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-transform hover:-translate-y-1"
+                          className="h-10 w-10 rounded-xl border-2 border-slate-100 hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600 shadow-sm transition-all disabled:opacity-50"
                           title="Hapus"
                         >
-                          {deletingId === item.id ? <Loader2 className="w-5 h-5 text-black animate-spin" /> : <Trash className="w-5 h-5 text-black" strokeWidth={2.5} /> }
+                          {deletingId === item.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash className="w-4 h-4" strokeWidth={2.5} /> }
                         </Button>
                       </div>
                     </td>
@@ -159,8 +161,8 @@ export default function DaftarSoal() {
             </table>
           </div>
 
-          <div className="p-6 border-t-4 border-black bg-gray-100 flex items-center justify-center">
-            <p className="text-sm font-black text-black uppercase tracking-widest">Total {filtered.length} Soal Tersimpan</p>
+          <div className="p-8 border-t-2 border-slate-50 bg-slate-50/30 flex items-center justify-center">
+            <p className="text-[11px] font-black text-slate-300 uppercase tracking-[0.3em]">Arsip Digital Terverifikasi &bull; {filtered.length} Entri</p>
           </div>
         </Card>
       )}

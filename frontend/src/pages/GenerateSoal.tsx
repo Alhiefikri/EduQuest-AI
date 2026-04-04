@@ -65,185 +65,183 @@ export default function GenerateSoal() {
   }
 
   return (
-    <div className="max-w-[900px] mx-auto space-y-12 pb-20 animate-in fade-in p-4 md:p-8">
+    <div className="max-w-[1000px] mx-auto space-y-12 pb-20 animate-in fade-in p-4 md:p-8">
 
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-8 px-2">
         <div className="flex items-center gap-6">
-          <Button asChild variant="outline" size="icon" className="w-12 h-12 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all">
+          <Button asChild variant="outline" size="icon" className="w-12 h-12 border-2 border-slate-200 shadow-sm hover:bg-slate-50 transition-all rounded-xl">
             <Link to="/soal">
-              <ArrowLeft className="w-6 h-6" strokeWidth={3} />
+              <ArrowLeft className="w-6 h-6 text-slate-600" strokeWidth={2.5} />
             </Link>
           </Button>
-          <div>
+          <div className="space-y-1">
             <div className="flex items-center gap-3">
-              <h1 className="text-3xl font-black uppercase tracking-tighter drop-shadow-md">Generate Soal</h1>
-              <span className="bg-[#ff90e8] border-2 border-black text-black text-xs font-black px-3 py-1 uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+              <h1 className="text-4xl font-black text-slate-900 tracking-tight leading-none uppercase">Generate Soal</h1>
+              <span className="bg-indigo-50 border border-indigo-100 text-indigo-600 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wider shadow-sm">
                 AI Powered
               </span>
             </div>
-            <p className="text-base font-bold mt-2 border-l-4 border-primary pl-3">Transformasikan modul ajar menjadi bank soal berkualitas.</p>
+            <p className="text-lg font-medium text-slate-500 border-l-4 border-brand-500 pl-4">Transformasikan modul ajar menjadi bank soal berkualitas tinggi.</p>
           </div>
         </div>
       </div>
 
       {error && (
-        <div className="flex items-center gap-3 p-4 bg-red-400 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-          <AlertCircle className="w-6 h-6 text-black shrink-0" strokeWidth={2.5} />
-          <p className="text-base font-black uppercase">{error}</p>
+        <div className="flex items-center gap-3 p-5 bg-rose-50 border-2 border-rose-100 rounded-2xl shadow-sm mx-2">
+          <AlertCircle className="w-6 h-6 text-rose-500 shrink-0" strokeWidth={2.5} />
+          <p className="text-sm text-rose-700 font-bold uppercase tracking-wide">{error}</p>
         </div>
       )}
 
-      <div className="grid grid-cols-1 gap-10">
-        <Card className="shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] border-4 border-black group transition-all">
-          <CardContent className="p-8">
-            <div className="flex items-center gap-4 mb-8 border-b-4 border-black pb-4">
-              <div className="bg-[#00f0ff] p-3 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                <Book className="w-8 h-8 text-black" strokeWidth={2.5} />
+      <div className="grid grid-cols-1 gap-12">
+        <Card className="shadow-lg shadow-slate-100 border-2 border-slate-100 rounded-[2rem] overflow-hidden transition-all duration-300">
+          <CardContent className="p-10 space-y-10">
+            <div className="flex items-center gap-6 border-b-2 border-slate-50 pb-8">
+              <div className="bg-sky-50 p-4 rounded-2xl border border-sky-100 shadow-inner">
+                <Book className="w-8 h-8 text-sky-600" strokeWidth={2} />
               </div>
               <div>
-                <h2 className="text-2xl font-black uppercase">1. Sumber Materi</h2>
-                <p className="text-sm font-bold mt-1">Pilih basis data untuk pembuatan soal.</p>
+                <h2 className="text-2xl font-bold text-slate-900">1. Sumber Materi</h2>
+                <p className="text-slate-500 font-medium mt-1">Pilih basis data utama untuk pembuatan soal evaluasi.</p>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
               <div className="space-y-5">
                 <div
                   onClick={() => setSourceType('modul')}
-                  className={`border-4 p-5 cursor-pointer relative transition-all ${
-                    sourceType === 'modul' ? 'border-black bg-[#ffc900] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] -translate-y-1' : 'border-black bg-white hover:bg-gray-50'
+                  className={`border-2 p-6 rounded-2xl cursor-pointer relative transition-all duration-300 ${
+                    sourceType === 'modul' ? 'border-brand-500 bg-brand-50/30 shadow-md ring-4 ring-brand-500/5' : 'border-slate-100 bg-white hover:border-slate-200 hover:bg-slate-50/50'
                   }`}
                 >
-                  <div className="flex items-start gap-4">
-                    {sourceType === 'modul' ? (
-                      <CheckCircle2 className="w-6 h-6 text-black" strokeWidth={3} />
-                    ) : (
-                      <Circle className="w-6 h-6 text-gray-300" strokeWidth={3} />
-                    )}
+                  <div className="flex items-start gap-5">
+                    <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${sourceType === 'modul' ? 'border-brand-500 bg-brand-500' : 'border-slate-200'}`}>
+                      {sourceType === 'modul' && <div className="w-2 h-2 bg-white rounded-full"></div>}
+                    </div>
                     <div>
-                      <h3 className="text-lg font-black uppercase leading-none">Modul Ajar</h3>
-                      <p className="text-xs font-bold mt-2 uppercase tracking-widest bg-white border-2 border-black inline-block px-2 py-0.5 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">Direkomendasikan</p>
+                      <h3 className="text-lg font-bold text-slate-900 leading-none">Gunakan Modul Ajar</h3>
+                      <p className="text-xs font-bold mt-3 uppercase tracking-widest text-brand-600 bg-brand-50 inline-block px-2 py-0.5 rounded-md border border-brand-100">Direkomendasikan</p>
                     </div>
                   </div>
                 </div>
 
                 <div
                   onClick={() => setSourceType('manual')}
-                  className={`border-4 p-5 cursor-pointer transition-all ${
-                    sourceType === 'manual' ? 'border-black bg-[#ffc900] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] -translate-y-1' : 'border-black bg-white hover:bg-gray-50'
+                  className={`border-2 p-6 rounded-2xl cursor-pointer transition-all duration-300 ${
+                    sourceType === 'manual' ? 'border-brand-500 bg-brand-50/30 shadow-md ring-4 ring-brand-500/5' : 'border-slate-100 bg-white hover:border-slate-200 hover:bg-slate-50/50'
                   }`}
                 >
-                  <div className="flex items-start gap-4">
-                    {sourceType === 'manual' ? (
-                      <CheckCircle2 className="w-6 h-6 text-black" strokeWidth={3} />
-                    ) : (
-                      <Circle className="w-6 h-6 text-gray-300" strokeWidth={3} />
-                    )}
+                  <div className="flex items-start gap-5">
+                    <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${sourceType === 'manual' ? 'border-brand-500 bg-brand-500' : 'border-slate-200'}`}>
+                      {sourceType === 'manual' && <div className="w-2 h-2 bg-white rounded-full"></div>}
+                    </div>
                     <div>
-                      <h3 className="text-lg font-black uppercase leading-none">Input Manual</h3>
-                      <p className="text-sm font-bold mt-2">Gunakan deskripsi topik mandiri</p>
+                      <h3 className="text-lg font-bold text-slate-900 leading-none">Input Topik Manual</h3>
+                      <p className="text-sm font-medium text-slate-400 mt-2">Tuliskan deskripsi topik secara mandiri</p>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {sourceType === 'modul' && (
-                <div className="bg-gray-50 border-4 border-black p-6 flex flex-col justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                  <label className="block text-sm font-black uppercase mb-4">Pilih Modul dari Library</label>
-                  <Select value={modulId} onValueChange={setModulId}>
-                    <SelectTrigger className="border-4 border-black font-bold h-14 bg-white text-base shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                      <SelectValue placeholder="-- Pilih Modul --" />
-                    </SelectTrigger>
-                    <SelectContent className="border-4 border-black font-bold">
-                      {documents.map((doc) => (
-                        <SelectItem key={doc.id} value={doc.id}>{doc.filename}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
-
-              {sourceType === 'manual' && (
-                <div className="bg-gray-50 border-4 border-black p-6 flex flex-col justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                  <label className="block text-sm font-black uppercase mb-4">Topik Manual</label>
-                  <Input
-                    type="text"
-                    value={topik}
-                    onChange={(e) => setTopik(e.target.value)}
-                    placeholder="Masukkan topik secara manual..."
-                    className="border-4 border-black font-bold h-14 text-base shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] bg-white"
-                  />
-                </div>
-              )}
+              <div className="bg-slate-50/50 border-2 border-slate-100 p-8 rounded-2xl flex flex-col justify-center space-y-4">
+                {sourceType === 'modul' ? (
+                  <>
+                    <label className="block text-xs font-black text-slate-400 uppercase tracking-widest">Pilih Modul dari Library</label>
+                    <Select value={modulId} onValueChange={setModulId}>
+                      <SelectTrigger className="border-2 border-slate-200 h-14 bg-white text-base font-bold rounded-xl shadow-sm focus:ring-brand-500/20">
+                        <SelectValue placeholder="-- Pilih Modul --" />
+                      </SelectTrigger>
+                      <SelectContent className="border-2 border-slate-100 rounded-xl shadow-xl">
+                        {documents.map((doc) => (
+                          <SelectItem key={doc.id} value={doc.id} className="font-semibold py-3">{doc.filename}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </>
+                ) : (
+                  <>
+                    <label className="block text-xs font-black text-slate-400 uppercase tracking-widest">Tulis Topik Manual</label>
+                    <Input
+                      type="text"
+                      value={topik}
+                      onChange={(e) => setTopik(e.target.value)}
+                      placeholder="Masukkan topik secara manual..."
+                      className="border-2 border-slate-200 h-14 text-base font-bold bg-white rounded-xl shadow-sm focus-visible:ring-brand-500/20"
+                    />
+                  </>
+                )}
+              </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] border-4 border-black">
-          <CardContent className="p-8">
-            <div className="flex items-center gap-4 mb-8 border-b-4 border-black pb-4">
-              <div className="bg-[#ff90e8] p-3 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                <SlidersHorizontal className="w-8 h-8 text-black" strokeWidth={2.5} />
+        <Card className="shadow-lg shadow-slate-100 border-2 border-slate-100 rounded-[2rem] overflow-hidden">
+          <CardContent className="p-10 space-y-12">
+            <div className="flex items-center gap-6 border-b-2 border-slate-50 pb-8">
+              <div className="bg-amber-50 p-4 rounded-2xl border border-amber-100 shadow-inner">
+                <SlidersHorizontal className="w-8 h-8 text-amber-600" strokeWidth={2} />
               </div>
               <div>
-                <h2 className="text-2xl font-black uppercase">2. Konfigurasi Parameter</h2>
-                <p className="text-sm font-bold mt-1">Tentukan spesifikasi soal yang diinginkan.</p>
+                <h2 className="text-2xl font-bold text-slate-900">2. Konfigurasi Parameter</h2>
+                <p className="text-slate-500 font-medium mt-1">Sesuaikan tingkat kesulitan dan format soal.</p>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10">
-              <div className="space-y-8">
-                <div>
-                  <label className="block text-sm font-black uppercase mb-3">Mata Pelajaran</label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-12">
+              <div className="space-y-10">
+                <div className="space-y-4">
+                  <label className="block text-sm font-black text-slate-400 uppercase tracking-widest">Mata Pelajaran</label>
                   <Input
                     type="text"
                     value={mataPelajaran}
                     onChange={(e) => setMataPelajaran(e.target.value)}
                     placeholder="Contoh: Matematika, Fisika, Biologi"
-                    className="w-full bg-white border-4 border-black h-14 text-base font-bold shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+                    className="w-full bg-white border-2 border-slate-200 h-14 text-base font-bold rounded-xl shadow-sm focus-visible:ring-brand-500/20"
                   />
                 </div>
-                <div className="grid grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-black uppercase mb-3">Fase (Ops)</label>
+                <div className="grid grid-cols-2 gap-8">
+                  <div className="space-y-4">
+                    <label className="block text-sm font-black text-slate-400 uppercase tracking-widest">Fase (Ops)</label>
                     <Input
                       type="text"
                       value={fase}
                       onChange={(e) => setFase(e.target.value)}
-                      placeholder="Contoh: Fase D"
-                      className="w-full bg-white border-4 border-black h-14 text-base font-bold shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+                      placeholder="Fase D"
+                      className="w-full bg-white border-2 border-slate-200 h-14 text-base font-bold rounded-xl shadow-sm focus-visible:ring-brand-500/20"
                     />
                   </div>
-                  <div>
-                    <label className="block text-sm font-black uppercase mb-3">Kelas (Ops)</label>
+                  <div className="space-y-4">
+                    <label className="block text-sm font-black text-slate-400 uppercase tracking-widest">Kelas (Ops)</label>
                     <Input
                       type="text"
                       value={kelas}
                       onChange={(e) => setKelas(e.target.value)}
-                      placeholder="Contoh: Kelas 7"
-                      className="w-full bg-white border-4 border-black h-14 text-base font-bold shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+                      placeholder="Kelas 7"
+                      className="w-full bg-white border-2 border-slate-200 h-14 text-base font-bold rounded-xl shadow-sm focus-visible:ring-brand-500/20"
                     />
                   </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-black uppercase mb-4">Tipe Soal</label>
-                  <div className="flex flex-wrap gap-4">
+                <div className="space-y-5">
+                  <label className="block text-sm font-black text-slate-400 uppercase tracking-widest">Tipe Soal</label>
+                  <div className="flex flex-wrap gap-3">
                     {['Pilihan Ganda', 'Isian', 'Essay', 'Campuran'].map((type) => (
                       <Button
                         key={type}
                         variant={tipeMap[type] === tipeSoal ? 'default' : 'outline'}
                         onClick={() => setTipeSoal(tipeMap[type] || type)}
-                        className={`border-4 border-black font-black uppercase h-12 text-sm shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all ${
-                          tipeMap[type] === tipeSoal ? 'bg-black text-white' : 'bg-white text-black hover:bg-gray-100 hover:-translate-y-1'
+                        className={`h-11 px-5 rounded-full font-bold transition-all ${
+                          tipeMap[type] === tipeSoal 
+                            ? 'bg-slate-900 text-white shadow-md' 
+                            : 'border-2 border-slate-100 text-slate-500 hover:bg-slate-50 hover:border-slate-200 shadow-sm'
                         }`}
                       >{type}</Button>
                     ))}
                   </div>
                 </div>
-                <div>
-                  <div className="flex justify-between items-center mb-4">
-                    <label className="block text-sm font-black uppercase">Jumlah Soal</label>
-                    <span className="bg-[#ffc900] border-2 border-black font-black text-lg px-3 py-1 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">{jumlahSoal}</span>
+                <div className="space-y-6">
+                  <div className="flex justify-between items-center border-b border-slate-50 pb-2">
+                    <label className="block text-sm font-black text-slate-400 uppercase tracking-widest">Jumlah Butir Soal</label>
+                    <span className="bg-emerald-50 text-emerald-600 border border-emerald-100 font-black text-xl px-4 py-1 rounded-lg shadow-sm">{jumlahSoal}</span>
                   </div>
                   <input
                     type="range"
@@ -251,50 +249,49 @@ export default function GenerateSoal() {
                     max="50"
                     value={jumlahSoal}
                     onChange={(e) => setJumlahSoal(Number(e.target.value))}
-                    className="w-full h-4 bg-gray-200 border-4 border-black appearance-none cursor-pointer accent-black rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+                    className="w-full h-2 bg-slate-100 rounded-full appearance-none cursor-pointer accent-brand-600"
                   />
                 </div>
               </div>
 
-              <div className="space-y-8">
-                <div>
-                  <label className="block text-sm font-black uppercase mb-3">Topik Spesifik</label>
+              <div className="space-y-10">
+                <div className="space-y-4">
+                  <label className="block text-sm font-black text-slate-400 uppercase tracking-widest">Topik Spesifik (Fokus)</label>
                   <Input
                     type="text"
                     value={topik}
                     onChange={(e) => setTopik(e.target.value)}
-                    className="w-full bg-white border-4 border-black h-14 text-base font-bold shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+                    placeholder="Contoh: Energi Kinetik & Potensial"
+                    className="w-full bg-white border-2 border-slate-200 h-14 text-base font-bold rounded-xl shadow-sm focus-visible:ring-brand-500/20"
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-black uppercase mb-3">Tingkat Kesulitan</label>
+                <div className="space-y-4">
+                  <label className="block text-sm font-black text-slate-400 uppercase tracking-widest">Tingkat Kesulitan</label>
                   <Select value={difficulty} onValueChange={setDifficulty}>
-                    <SelectTrigger className="border-4 border-black font-bold h-14 bg-white text-base shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] uppercase">
+                    <SelectTrigger className="border-2 border-slate-200 h-14 bg-white text-base font-bold rounded-xl shadow-sm uppercase tracking-wide">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent className="border-4 border-black font-bold">
-                      <SelectItem value="mudah" className="uppercase font-bold">Mudah</SelectItem>
-                      <SelectItem value="sedang" className="uppercase font-bold">Sedang</SelectItem>
-                      <SelectItem value="sulit" className="uppercase font-bold">Sulit</SelectItem>
-                      <SelectItem value="campuran" className="uppercase font-bold">Campuran (HOTS)</SelectItem>
+                    <SelectContent className="border-2 border-slate-100 rounded-xl shadow-xl">
+                      <SelectItem value="mudah" className="uppercase font-bold py-3">Mudah</SelectItem>
+                      <SelectItem value="sedang" className="uppercase font-bold py-3">Sedang</SelectItem>
+                      <SelectItem value="sulit" className="uppercase font-bold py-3">Sulit</SelectItem>
+                      <SelectItem value="campuran" className="uppercase font-bold py-3">Campuran (HOTS)</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="pt-4 border-t-4 border-black">
-                  <label className="block text-sm font-black uppercase mb-5">Opsi Tambahan</label>
-                  <div className="space-y-5">
+                <div className="pt-6 border-t border-slate-50 space-y-6">
+                  <label className="block text-sm font-black text-slate-400 uppercase tracking-widest">Opsi Output Tambahan</label>
+                  <div className="grid grid-cols-1 gap-4">
                     {[
-                      { label: 'Sertakan Pembahasan Lengkap', active: includePembahasan, toggle: () => setIncludePembahasan(!includePembahasan) },
-                      { label: 'Halaman Kunci Jawaban', active: includeKunci, toggle: () => setIncludeKunci(!includeKunci) },
-                      { label: 'Generate Gambar AI', active: includeGambar, toggle: () => setIncludeGambar(!includeGambar) }
+                      { label: 'Sertakan Pembahasan Lengkap', active: includePembahasan, toggle: () => setIncludePembahasan(!includePembahasan), color: 'bg-indigo-500' },
+                      { label: 'Halaman Kunci Jawaban', active: includeKunci, toggle: () => setIncludeKunci(!includeKunci), color: 'bg-emerald-500' },
+                      { label: 'Generate Gambar AI', active: includeGambar, toggle: () => setIncludeGambar(!includeGambar), color: 'bg-sky-500' }
                     ].map((opt, i) => (
-                      <div key={i} className="flex items-center gap-4 cursor-pointer group" onClick={opt.toggle}>
-                        <div className={`w-8 h-8 border-4 border-black flex items-center justify-center transition-all ${
-                          opt.active ? 'bg-[#00f0ff] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]' : 'bg-white'
-                        }`}>
-                          {opt.active && <CheckCircle2 className="w-5 h-5 text-black" strokeWidth={4} />}
+                      <div key={i} className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border-2 border-transparent hover:border-slate-100 transition-all cursor-pointer group" onClick={opt.toggle}>
+                        <span className="text-[15px] font-bold text-slate-700 uppercase tracking-tight">{opt.label}</span>
+                        <div className={`w-12 h-7 rounded-full relative transition-all duration-300 shadow-inner ${opt.active ? opt.color : 'bg-slate-200'}`}>
+                          <div className={`absolute top-1 w-5 h-5 bg-white rounded-full shadow-md transition-all duration-300 ${opt.active ? 'right-1' : 'left-1'}`}></div>
                         </div>
-                        <span className="text-base font-black uppercase">{opt.label}</span>
                       </div>
                     ))}
                   </div>
@@ -304,33 +301,33 @@ export default function GenerateSoal() {
           </CardContent>
         </Card>
 
-        <Card className="bg-[#ff90e8] border-4 border-black overflow-hidden relative shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-white rounded-full -mr-20 -mt-20 opacity-20 blur-2xl pointer-events-none"></div>
-          <CardContent className="p-8 md:p-12 flex flex-col md:flex-row items-center gap-10 relative z-10">
-            <div className="p-6 border-4 border-black bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] shrink-0 transform rotate-6">
-              <BrainCircuit className="w-12 h-12 text-black animate-pulse-slow" strokeWidth={2.5} />
+        <Card className="bg-slate-900 shadow-2xl border-none rounded-[2.5rem] overflow-hidden relative">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-brand-500 rounded-full -mr-20 -mt-20 opacity-20 blur-[80px]"></div>
+          <CardContent className="p-10 md:p-14 flex flex-col md:flex-row items-center gap-12 relative z-10">
+            <div className="p-6 rounded-3xl bg-white/5 border border-white/10 shadow-inner shrink-0 rotate-3 group-hover:rotate-0 transition-transform duration-500">
+              <BrainCircuit className="w-14 h-14 text-brand-400 animate-pulse-slow" strokeWidth={2} />
             </div>
-            <div>
-              <h3 className="text-xl font-black uppercase mb-4 tracking-tight">Konsep Pemrosesan AI</h3>
-              <p className="text-lg font-bold leading-relaxed border-l-4 border-black pl-4">
-                "AI akan membuat soal <strong className="bg-white px-2 border-2 border-black">{mataPelajaran || '...'}</strong> dengan topik <strong className="bg-white px-2 border-2 border-black">{topik || 'disesuaikan'}</strong>. Difokuskan pada penalaran kritis ({difficulty}) sebanyak <strong className="bg-white px-2 border-2 border-black">{jumlahSoal} butir</strong>."
+            <div className="space-y-4 flex-1">
+              <h3 className="text-sm font-black text-brand-400 uppercase tracking-[0.2em] mb-4">Konsep Pemrosesan AI</h3>
+              <p className="text-xl font-medium text-slate-200 leading-relaxed italic border-l-4 border-brand-500 pl-8">
+                "Sistem AI akan menyusun soal <strong className="text-white bg-white/10 px-2 py-0.5 rounded">{mataPelajaran || '...'}</strong> dengan fokus materi <strong className="text-white bg-white/10 px-2 py-0.5 rounded">{topik || 'umum'}</strong>. Hasil akhir akan mencakup penalaran tingkat <strong className="text-emerald-400">{difficulty}</strong> sebanyak <strong className="text-brand-400">{jumlahSoal}</strong> butir valid."
               </p>
             </div>
           </CardContent>
         </Card>
 
-        <div className="text-center pt-8">
+        <div className="text-center pt-10 px-2">
           <Button
             size="lg"
             onClick={handleGenerate}
             disabled={generateMutation.isPending || !mataPelajaran}
-            className="w-full h-20 text-2xl font-black uppercase tracking-widest border-4 border-black bg-black text-white hover:bg-black/90 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:translate-y-1 hover:translate-x-1 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all"
+            className="w-full h-20 text-2xl font-black uppercase tracking-[0.1em] rounded-3xl bg-brand-600 hover:bg-brand-700 text-white shadow-xl shadow-brand-200 transition-all hover:translate-y-[-2px] disabled:opacity-50"
           >
             {generateMutation.isPending ? <Loader2 className="w-8 h-8 animate-spin mr-4" /> : <Rocket className="w-8 h-8 mr-4" />}
-            {generateMutation.isPending ? 'GENERATING...' : 'GENERATE BANK SOAL'}
+            {generateMutation.isPending ? 'Mempersiapkan Bank Soal...' : 'Generate Bank Soal'}
           </Button>
-          <p className="text-sm font-bold mt-6 uppercase tracking-widest">
-            Processing time: ~25 Seconds • Free Tier Active
+          <p className="text-[11px] text-slate-400 mt-8 font-black uppercase tracking-[0.3em] bg-slate-50 inline-block px-6 py-2 rounded-full border border-slate-100">
+            ESTIMASI WAKTU: ~25 DETIK &bull; FREE TIER AKTIF
           </p>
         </div>
       </div>
