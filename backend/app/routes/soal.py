@@ -22,8 +22,12 @@ async def generate_soal_endpoint(request: GenerateSoalRequest):
     konten_modul = ""
     fase_kelas = "umum"
 
-    if request.fase or request.kelas:
-        fase_kelas = f"{request.fase or ''} / {request.kelas or ''}".strip(" /")
+    if request.fase and request.kelas:
+        fase_kelas = f"{request.fase} / {request.kelas}"
+    elif request.fase:
+        fase_kelas = request.fase
+    elif request.kelas:
+        fase_kelas = request.kelas
 
     if request.modul_id:
         modul = await db.modulajar.find_unique(where={"id": request.modul_id})
