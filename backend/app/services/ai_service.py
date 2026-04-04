@@ -7,6 +7,18 @@ Buat soal berdasarkan KONTEN MODUL yang diberikan, BUKAN dari pengetahuan umum A
 Pastikan soal relevan dengan materi, akurat, dan sesuai tingkat kesulitan.
 Output HANYA dalam format JSON yang valid, tanpa teks tambahan sebelum atau sesudah JSON."""
 
+MAX_CONTENT_CHARS = 12000
+
+
+def _truncate_content(content: str, max_chars: int = MAX_CONTENT_CHARS) -> str:
+    if len(content) <= max_chars:
+        return content
+    truncated = content[:max_chars]
+    last_period = truncated.rfind(".")
+    if last_period > max_chars * 0.8:
+        truncated = truncated[:last_period + 1]
+    return truncated + "\n\n[Konten diringkas karena terlalu panjang]"
+
 
 def _get_ai_config() -> tuple[str, str]:
     from app.config import get_ai_config as _get_config
@@ -40,7 +52,7 @@ def _build_user_prompt(
     prompt = f"""Buat {jumlah_soal} soal {tipe_label.get(tipe_soal, tipe_soal)} berdasarkan materi berikut:
 
 MATERI:
-{konten_modul}
+{_truncate_content(konten_modul)}
 
 KONFIGURASI:
 - Mata pelajaran: {mata_pelajaran}
