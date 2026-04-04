@@ -32,7 +32,7 @@ class TestExtractTextFromPDF:
 
     def test_extract_text_from_empty_pdf_raises_error(self):
         invalid_pdf = b"not a valid pdf"
-        with pytest.raises(ValueError, match="rusak atau tidak valid"):
+        with pytest.raises(ValueError, match="rusak atau tidak dapat dibaca"):
             extract_text_from_pdf(invalid_pdf)
 
 
@@ -72,7 +72,7 @@ class TestExtractTextFromDocx:
 
     def test_extract_text_from_corrupt_docx_raises_error(self):
         invalid_docx = b"not a valid docx"
-        with pytest.raises(ValueError, match="rusak atau tidak valid"):
+        with pytest.raises(ValueError, match="rusak atau tidak dapat dibaca"):
             extract_text_from_docx(invalid_docx)
 
 

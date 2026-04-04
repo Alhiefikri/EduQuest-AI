@@ -9,7 +9,7 @@ def extract_text_from_pdf(file_content: bytes) -> Tuple[str, int]:
     try:
         doc = fitz.open(stream=file_content, filetype="pdf")
     except Exception as e:
-        raise ValueError(f"File PDF rusak atau tidak valid: {str(e)}")
+        raise ValueError(f"File PDF rusak atau tidak dapat dibaca: {str(e)}")
 
     text_parts = []
     page_count = doc.page_count
@@ -24,7 +24,7 @@ def extract_text_from_pdf(file_content: bytes) -> Tuple[str, int]:
     full_text = "\n".join(text_parts).strip()
 
     if not full_text:
-        raise ValueError("File PDF tidak mengandung teks (mungkin berisi gambar saja)")
+        raise ValueError("File PDF tidak mengandung teks. Kemungkinan file hanya berisi gambar.")
 
     return full_text, page_count
 
@@ -33,7 +33,7 @@ def extract_text_from_docx(file_content: bytes) -> Tuple[str, int]:
     try:
         doc = DocxDocument(io.BytesIO(file_content))
     except Exception as e:
-        raise ValueError(f"File Word rusak atau tidak valid: {str(e)}")
+        raise ValueError(f"File Word rusak atau tidak dapat dibaca: {str(e)}")
 
     text_parts = []
 

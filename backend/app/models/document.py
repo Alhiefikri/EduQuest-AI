@@ -18,7 +18,6 @@ class DocumentResponse(BaseModel):
     id: str
     filename: str
     filetype: str
-    filepath: str
     filesize: int
     page_count: int
     word_count: int
@@ -35,7 +34,6 @@ class DocumentResponse(BaseModel):
             id=doc.id,
             filename=doc.filename,
             filetype=doc.filetype,
-            filepath=doc.filepath,
             filesize=doc.filesize,
             page_count=doc.pageCount,
             word_count=doc.wordCount,
@@ -49,7 +47,6 @@ class DocumentListResponse(BaseModel):
     id: str
     filename: str
     filetype: str
-    filepath: str
     filesize: int
     page_count: int
     word_count: int
@@ -65,7 +62,6 @@ class DocumentListResponse(BaseModel):
             id=doc.id,
             filename=doc.filename,
             filetype=doc.filetype,
-            filepath=doc.filepath,
             filesize=doc.filesize,
             page_count=doc.pageCount,
             word_count=doc.wordCount,

@@ -13,21 +13,21 @@ from app.services.parser_service import count_words, extract_text_from_docx, ext
 
 def validate_file(file: UploadFile) -> None:
     if file.content_type not in ALLOWED_FILE_TYPES:
-        raise ValueError(f"Unsupported file type. Only PDF and DOCX are accepted. Got: {file.content_type}")
+        raise ValueError(f"Tipe file tidak didukung. Hanya PDF dan DOCX yang diterima. Tipe file: {file.content_type}")
 
     content_length = file.size
     if content_length and content_length > MAX_FILE_SIZE:
-        raise ValueError(f"File size exceeds maximum limit of 10MB")
+        raise ValueError(f"Ukuran file melebihi batas maksimum 10MB")
 
 
 async def save_uploaded_file(file: UploadFile) -> Tuple[Path, bytes]:
     content = await file.read()
 
     if len(content) > MAX_FILE_SIZE:
-        raise ValueError(f"File size exceeds maximum limit of 10MB")
+        raise ValueError(f"Ukuran file melebihi batas maksimum 10MB")
 
     if len(content) == 0:
-        raise ValueError("File is empty")
+        raise ValueError("File kosong")
 
     file_ext = ".pdf" if file.content_type == "application/pdf" else ".docx"
     unique_filename = f"{uuid.uuid4().hex}{file_ext}"
@@ -84,7 +84,7 @@ async def upload_document(file: UploadFile) -> DocumentResponse:
     except Exception as e:
         if file_path.exists():
             os.remove(file_path)
-        raise RuntimeError(f"Failed to save document to database: {str(e)}")
+        raise RuntimeError(f"Gagal menyimpan dokumen ke basis data: {str(e)}")
 
     return DocumentResponse.from_prisma(document)
 
