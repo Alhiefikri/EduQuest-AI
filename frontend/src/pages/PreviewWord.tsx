@@ -130,6 +130,33 @@ export default function PreviewWord() {
               </button>
             </div>
           </div>
+
+          <div className="bg-white rounded-3xl border border-gray-100 p-8 space-y-6">
+            <h3 className="text-sm font-black text-gray-900 uppercase tracking-widest">Pratinjau Konten Soal</h3>
+            <div className="space-y-8">
+              {soal.data_soal.slice(0, 3).map((item, idx) => (
+                <div key={idx} className="space-y-3 pb-6 border-b border-gray-50 last:border-0">
+                  <div className="flex items-start gap-3">
+                    <span className="text-brand-600 font-black text-sm">{item.nomor}.</span>
+                    <p className="text-sm font-bold text-gray-800">{item.pertanyaan}</p>
+                  </div>
+                  {item.gambar_prompt && (
+                    <div className="ml-6 p-3 bg-brand-50 rounded-xl border border-brand-100 flex items-center gap-3">
+                      <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center text-brand-500 shadow-sm">
+                        <Info className="w-4 h-4" />
+                      </div>
+                      <p className="text-[11px] font-medium text-brand-700 italic">
+                        <strong>AI Image Prompt:</strong> {item.gambar_prompt}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              ))}
+              {soal.data_soal.length > 3 && (
+                <p className="text-xs text-center text-gray-400 font-bold italic">... {soal.data_soal.length - 3} soal lainnya tidak ditampilkan di pratinjau ...</p>
+              )}
+            </div>
+          </div>
         </div>
 
         <div className="space-y-6">

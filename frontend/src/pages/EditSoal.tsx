@@ -152,24 +152,37 @@ export default function EditSoal() {
                 />
               </div>
 
-              {item.pilihan && item.pilihan.length > 0 && (
+              {item.pilihan && (
                 <div className="space-y-3">
-                  <label className="text-[11px] font-black text-gray-400 tracking-widest uppercase">Pilihan Jawaban</label>
-                  <div className="grid md:grid-cols-2 gap-4">
-                    {item.pilihan.map((opsi, oi) => (
-                      <input
-                        key={oi}
-                        type="text"
-                        value={opsi}
-                        onChange={(e) => {
-                          const newPilihan = [...item.pilihan!]
-                          newPilihan[oi] = e.target.value
-                          updateSoalItem(index, 'pilihan', newPilihan)
-                        }}
-                        className="w-full bg-gray-50 border border-transparent focus:bg-white focus:border-brand-200 focus:ring-4 focus:ring-brand-50/50 rounded-xl px-4 py-3 text-sm font-bold text-gray-900 outline-none transition-all"
-                      />
-                    ))}
+                  <div className="flex justify-between items-center">
+                    <label className="text-[11px] font-black text-gray-400 tracking-widest uppercase">Pilihan Jawaban</label>
+                    <button 
+                      onClick={() => {
+                        const newPilihan = item.pilihan?.length ? [] : ['A. ', 'B. ', 'C. ', 'D. ']
+                        updateSoalItem(index, 'pilihan', newPilihan)
+                      }}
+                      className="text-[10px] font-bold text-brand-500 hover:text-brand-600 uppercase tracking-wider"
+                    >
+                      {item.pilihan?.length ? 'Hapus Pilihan' : 'Tambah Pilihan (PG)'}
+                    </button>
                   </div>
+                  {item.pilihan.length > 0 && (
+                    <div className="grid md:grid-cols-2 gap-4">
+                      {item.pilihan.map((opsi, oi) => (
+                        <input
+                          key={oi}
+                          type="text"
+                          value={opsi}
+                          onChange={(e) => {
+                            const newPilihan = [...item.pilihan!]
+                            newPilihan[oi] = e.target.value
+                            updateSoalItem(index, 'pilihan', newPilihan)
+                          }}
+                          className="w-full bg-gray-50 border border-transparent focus:bg-white focus:border-brand-200 focus:ring-4 focus:ring-brand-50/50 rounded-xl px-4 py-3 text-sm font-bold text-gray-900 outline-none transition-all"
+                        />
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -187,13 +200,24 @@ export default function EditSoal() {
                   />
                 </div>
                 <div className="space-y-3">
-                  <label className="text-[11px] font-black text-gray-400 tracking-widest uppercase">Pembahasan</label>
-                  <textarea
-                    value={item.pembahasan || ''}
-                    onChange={(e) => updateSoalItem(index, 'pembahasan', e.target.value)}
-                    className="w-full bg-gray-50 border border-transparent focus:bg-white focus:border-brand-200 focus:ring-4 focus:ring-brand-50/50 rounded-xl px-4 py-3 text-sm font-medium text-gray-600 outline-none transition-all min-h-[80px]"
+                  <label className="text-[11px] font-black text-gray-400 tracking-widest uppercase">Gambar Prompt (AI)</label>
+                  <input
+                    type="text"
+                    value={item.gambar_prompt || ''}
+                    onChange={(e) => updateSoalItem(index, 'gambar_prompt', e.target.value)}
+                    placeholder="Deskripsi visual untuk generate gambar..."
+                    className="w-full bg-gray-50 border border-transparent focus:bg-white focus:border-brand-200 focus:ring-4 focus:ring-brand-50/50 rounded-xl px-4 py-3 text-sm font-medium text-gray-600 outline-none transition-all"
                   />
                 </div>
+              </div>
+
+              <div className="space-y-3">
+                <label className="text-[11px] font-black text-gray-400 tracking-widest uppercase">Pembahasan</label>
+                <textarea
+                  value={item.pembahasan || ''}
+                  onChange={(e) => updateSoalItem(index, 'pembahasan', e.target.value)}
+                  className="w-full bg-gray-50 border border-transparent focus:bg-white focus:border-brand-200 focus:ring-4 focus:ring-brand-50/50 rounded-xl p-5 text-sm font-medium text-gray-600 outline-none transition-all min-h-[100px]"
+                />
               </div>
             </div>
           </div>

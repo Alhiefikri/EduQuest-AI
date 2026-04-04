@@ -18,9 +18,11 @@
 - Struktur prompt sekarang lebih terisolasi untuk evaluasi materi siswa, bukan aktivitas guru.
 
 ---
-**Revision (Revisi Berdasarkan Feedback PR #28):**
-- Menajamkan logika penggabungan `fase_kelas` di `routes/soal.py` agar lebih eksplisit (`if/elif` block).
-- Memastikan `GenerateSoalRequest` di `models/soal.py` sinkron dengan frontend untuk menghindari error 422.
-- Melakukan *push* ulang ke branch `feature/issue-14`.
+**Revision 2 (Revisi Berdasarkan Feedback PR #28 - 5 Critical Bugs):**
+1.  **AI Service:** Update prompt untuk Fase A (Kelas 1-2) agar menggunakan kalimat sederhana, kosakata dasar, dan konsep konkret.
+2.  **AI Service:** Menegaskan field `gambar_prompt` pada JSON schema agar wajib ada jika `include_gambar` aktif.
+3.  **EditSoal.tsx:** Tombol "Simpan Permanen" kini mengupdate status soal menjadi `finalized`.
+4.  **EditSoal.tsx:** Perbaikan UI `addSoalItem` sehingga form input Pilihan Ganda (A, B, C, D) langsung muncul saat menambah soal manual.
+5.  **CORS/NetworkError:** Mengaktifkan `allow_origins=["*"]` di backend untuk menghindari kegagalan request (CORS) di berbagai port pengujian.
 
-Tolong Senior Agent review kembali perbaikan saya.
+Tolong Senior Agent review kembali perbaikan menyeluruh saya.
