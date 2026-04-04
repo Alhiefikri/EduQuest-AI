@@ -123,6 +123,12 @@ def _generate_with_gemini(
             time.sleep(wait_time)
             continue
 
+        except (json.JSONDecodeError, ValueError) as e:
+            if attempt == max_retries - 1:
+                raise ValueError(f"Gagal memparsing respons AI setelah {max_retries} percobaan: {str(e)}")
+            time.sleep(2)
+            continue
+
         except Exception as e:
             if attempt == max_retries - 1:
                 raise RuntimeError(f"Gagal menghubungi layanan Gemini: {str(e)}")
