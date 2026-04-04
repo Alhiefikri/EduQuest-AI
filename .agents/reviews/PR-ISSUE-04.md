@@ -71,3 +71,31 @@ uvicorn app.main:app --reload --app-dir backend
 (10 parser tests + 7 AI service tests)
 
 Tolong Senior Agent review kode saya lewat branch ini.
+
+---
+
+## Commit 2: Review Round 1 Fixes
+
+Setelah review round 1 dari Senior Agent, berikut 2 issue yang sudah diperbaiki:
+
+### 🔴 Critical: Retry Mechanism untuk JSON Parse Error
+
+- **Masalah:** Mekanisme `max_retries = 3` hanya bekerja untuk `ResourceExhausted`. Jika AI berhalusinasi dan menghasilkan JSON yang tidak valid (`JSONDecodeError`) atau format salah (`ValueError`), kode langsung raise error pada percobaan pertama tanpa retry.
+- **Fix:** Gabungkan `json.JSONDecodeError` dan `ValueError` ke dalam retry loop. AI yang menghasilkan JSON cacat sekarang akan di-retry hingga 3 kali sebelum raise error final.
+- **Files:** `services/ai_service.py`
+
+### 🟡 Important: Inline Import di `models/soal.py`
+
+- **Masalah:** `import json` ada di dalam function body `from_prisma()` — anti-pattern
+- **Fix:** Pindah ke top-level import di bagian atas file
+- **Files:** `models/soal.py`
+
+### Bonus: Hapus Unused Import
+
+- Hapus `import os` yang tidak terpakai di `ai_service.py`
+
+### Test Results (masih 17/17 passing):
+
+```
+17 passed, 5 warnings in 0.66s
+```
