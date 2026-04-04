@@ -46,6 +46,14 @@ class GenerateSoalResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
+    @classmethod
+    def _parse_gaya_soal(cls, value: str | List[str]) -> List[str]:
+        if isinstance(value, list):
+            return value
+        if not value:
+            return ["formal_academic"]
+        return [value]
+
     class Config:
         from_attributes = True
 
@@ -78,6 +86,7 @@ class SoalListResponse(BaseModel):
     topik: Optional[str]
     tipe_soal: str
     difficulty: str
+    gaya_soal: List[str] = Field(default_factory=list)
     jumlah_soal: int
     status: str
     created_at: datetime
@@ -85,6 +94,14 @@ class SoalListResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+    @classmethod
+    def _parse_gaya_soal(cls, value: str | List[str]) -> List[str]:
+        if isinstance(value, list):
+            return value
+        if not value:
+            return ["formal_academic"]
+        return [value]
 
     @classmethod
     def from_prisma(cls, soal) -> "SoalListResponse":
@@ -95,6 +112,7 @@ class SoalListResponse(BaseModel):
             topik=soal.topik,
             tipe_soal=soal.tipeSoal,
             difficulty=soal.difficulty,
+            gaya_soal=cls._parse_gaya_soal(getattr(soal, 'gayaSoal', "formal_academic")),
             jumlah_soal=soal.jumlahSoal,
             status=soal.status,
             created_at=soal.createdAt,
