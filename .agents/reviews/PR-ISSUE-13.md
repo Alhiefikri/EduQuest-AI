@@ -42,3 +42,37 @@ All imports OK
 ```
 
 Tolong Senior Agent review kode saya lewat branch ini.
+
+---
+
+## Commit 2: Review Round 1 Fixes
+
+### 🔴 Critical: Missing `continue` di `_generate_with_groq()` retry loop
+- **Masalah:** Setelah `time.sleep(2)` pada non-rate-limit error, tidak ada `continue` — eksekusi jatuh ke bawah loop dan otomatis raise `RuntimeError` tanpa retry
+- **Fix:** Tambah `continue` setelah `time.sleep(2)` di `_generate_with_groq()`
+- **Files:** `ai_service.py`
+
+### 🟡 Minor: Groq `max_tokens` terlalu tinggi
+- **Masalah:** `max_tokens=8192` bisa timeout pada model `llama-3.3-70b-versatile`
+- **Fix:** Turunkan ke `4096`
+- **Files:** `ai_service.py`
+
+---
+
+## Commit 3: Review Round 2 Fixes
+
+### 🟡 Missing `continue` di `_generate_with_gemini()` retry loop
+- **Masalah:** Bug yang sama persis dengan Groq — handler `Exception` terakhir tidak ada `continue`
+- **Fix:** Tambah `continue` setelah `time.sleep(2)` di `_generate_with_gemini()`
+- **Files:** `ai_service.py`
+
+### 🟡 Settings Tab State Hardcoded
+- **Masalah:** Tab "AI Integration" selalu aktif (`i === 2`), tab lain tidak bisa diklik
+- **Fix:** Tambah `activeTab` state, semua tab sekarang clickable dengan `onClick={() => setActiveTab(i)}`
+- **Files:** `Settings.tsx`
+
+### Test Results:
+```
+npx tsc --noEmit → 0 errors
+All imports OK
+```
