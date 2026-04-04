@@ -60,6 +60,7 @@ Level Kognitif: {difficulty_instruction.get(difficulty, difficulty)}
 Syarat mutlak:
 - Fokus murni pada evaluasi penguasaan materi, bukan aktivitas belajar mengajar di kelas.
 - Bahasa harus disesuaikan untuk anak-anak sekolah/siswa.
+- KHUSUS Fase A (Kelas 1-2): Gunakan kalimat sangat pendek, kosakata dasar, dan konsep konkret yang mudah dibayangkan.
 - Jangan tambahkan teks pengantar atau penutup apa pun.
 - Output HANYA berupa JSON valid dengan skema berikut:
 
@@ -71,12 +72,13 @@ Syarat mutlak:
       "pilihan": ["A. ...", "B. ...", "C. ...", "D. ..."],
       "jawaban": "B",
       "pembahasan": "...",
-      "gambar_prompt": "deskripsi gambar jika perlu"
+      "gambar_prompt": "Deskripsi visual sederhana untuk ilustrasi soal ini (WAJIB ADA jika konfigurasi gambar AKTIF)"
     }}
   ]
 }}
 
 PENTING:
+- Field "gambar_prompt" HARUS diisi dengan deskripsi visual yang relevan jika include_gambar adalah True.
 - Untuk soal isian/essay, field "pilihan" boleh kosong [] dan "jawaban" berisi kunci jawaban singkat
 - Pastikan soal benar-benar berdasarkan materi yang diberikan
 - Jawaban harus akurat dan pembahasan jelas"""

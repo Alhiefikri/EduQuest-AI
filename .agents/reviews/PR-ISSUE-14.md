@@ -17,4 +17,10 @@
 - Type check frontend `tsc --noEmit` lulus.
 - Struktur prompt sekarang lebih terisolasi untuk evaluasi materi siswa, bukan aktivitas guru.
 
-Tolong Senior Agent review kode saya.
+---
+**Revision (Revisi Berdasarkan Feedback PR #28):**
+- Menajamkan logika penggabungan `fase_kelas` di `routes/soal.py` agar lebih eksplisit (`if/elif` block).
+- Memastikan `GenerateSoalRequest` di `models/soal.py` sinkron dengan frontend untuk menghindari error 422.
+- Melakukan *push* ulang ke branch `feature/issue-14`.
+
+Tolong Senior Agent review kembali perbaikan saya.

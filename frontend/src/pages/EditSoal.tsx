@@ -20,15 +20,25 @@ export default function EditSoal() {
     }
   }, [soal])
 
-  const handleSave = async () => {
+  const handleSave = async (finalized: boolean = false) => {
     if (!id) return
     setSaving(true)
     setSaveError(null)
     setSaveSuccess(false)
     try {
-      await updateMutation.mutateAsync({ id, data: { data_soal: editedSoal } })
+      await updateMutation.mutateAsync({ 
+        id, 
+        data: { 
+          data_soal: editedSoal,
+          status: finalized ? 'finalized' : undefined 
+        } 
+      })
       setSaveSuccess(true)
-      setTimeout(() => setSaveSuccess(false), 3000)
+      if (finalized) {
+        setTimeout(() => navigate('/soal'), 1500)
+      } else {
+        setTimeout(() => setSaveSuccess(false), 3000)
+      }
     } catch {
       setSaveError('Gagal menyimpan perubahan')
     } finally {
@@ -36,7 +46,7 @@ export default function EditSoal() {
     }
   }
 
-  const updateSoalItem = (index: number, field: keyof SoalItem, value: string | string[]) => {
+  const updateSoalItem = (index: number, field: keyof SoalItem, value: any) => {
     setEditedSoal((prev) => prev.map((item, i) => (i === index ? { ...item, [field]: value } : item)))
   }
 
@@ -47,7 +57,13 @@ export default function EditSoal() {
   const addSoalItem = () => {
     setEditedSoal((prev) => [
       ...prev,
-      { nomor: prev.length + 1, pertanyaan: '', jawaban: '', pilihan: [], pembahasan: '' },
+      { 
+        nomor: prev.length + 1, 
+        pertanyaan: '', 
+        jawaban: '', 
+        pilihan: ['A. ', 'B. ', 'C. ', 'D. '], 
+        pembahasan: '' 
+      },
     ])
   }
 
@@ -202,7 +218,7 @@ export default function EditSoal() {
         <div className="flex items-center gap-3">
           <button onClick={() => navigate('/soal')} className="px-4 py-2 text-xs font-bold text-white hover:text-brand-300 transition-colors">Batal</button>
           <button
-            onClick={handleSave}
+            onClick={() => handleSave(true)}
             disabled={saving}
             className="bg-brand-500 hover:bg-brand-600 text-white px-6 py-2.5 rounded-xl font-bold text-sm shadow-lg active:scale-95 transition-all disabled:opacity-50 flex items-center gap-2"
           >
