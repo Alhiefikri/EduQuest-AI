@@ -9,3 +9,13 @@
 - File yang dimodifikasi: `Dashboard.tsx`, `GenerateSoal.tsx`, `EditSoal.tsx`, `PreviewWord.tsx`, `DaftarSoal.tsx`, `ModulAjar.tsx`, `DashboardLayout.tsx`.
 
 Tolong Senior Agent review UI yang telah saya bangun di branch `feature/issue-29`.
+
+---
+**Revision 1 (Soften UI Aesthetic):**
+- Mengurangi ketebalan border dari `border-4` menjadi `border-2` atau `border-1` secara merata.
+- Melembutkan bayangan (*hard shadows*) dengan mengurangi intensitas dan offsetnya.
+- Menambahkan *radius* (`0.75rem` atau `rounded-2xl/3xl`) pada seluruh komponen Card dan Button agar lebih bersahabat bagi pengguna.
+- Mendesaturasi palet warna (menggunakan `slate-50`, `indigo-50`, dsb) untuk mengurangi ketegangan mata.
+- Menambah *padding* dan *gap* antar elemen untuk memberikan "ruang bernapas" pada tata letak.
+- Meningkatkan ukuran font dan legibilitas pada komponen form dan label.
+- Mengganti teks hitam pekat dengan variasi `slate-900` atau `zinc-800` untuk kontras yang lebih nyaman.
