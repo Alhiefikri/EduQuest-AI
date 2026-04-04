@@ -3,6 +3,10 @@ import { Save, FileCheck, ArrowLeft, Plus, Trash2, GripVertical, ChevronDown, Ch
 import { Link, useParams, useNavigate } from 'react-router-dom'
 import { useSoalDetail, useUpdateSoal } from '../hooks/useSoal'
 import type { SoalItem } from '../types'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 
 export default function EditSoal() {
   const { id } = useParams()
@@ -69,10 +73,10 @@ export default function EditSoal() {
 
   if (isLoading) {
     return (
-      <div className="max-w-[1000px] mx-auto space-y-8 pb-20 animate-in fade-in">
-        <div className="flex items-center gap-4">
-          <Loader2 className="w-6 h-6 text-brand-500 animate-spin" />
-          <p className="text-sm font-semibold text-gray-700">Memuat data soal...</p>
+      <div className="max-w-[1000px] mx-auto space-y-8 pb-20 animate-in fade-in p-4 md:p-8">
+        <div className="flex flex-col items-center justify-center py-20 space-y-4">
+          <Loader2 className="w-12 h-12 text-brand-500 animate-spin" strokeWidth={2.5} />
+          <p className="text-lg font-bold text-slate-400 uppercase tracking-widest">Sinkronisasi Data...</p>
         </div>
       </div>
     )
@@ -80,174 +84,197 @@ export default function EditSoal() {
 
   if (error || !soal) {
     return (
-      <div className="max-w-[1000px] mx-auto space-y-8 pb-20 animate-in fade-in">
-        <div className="bg-white p-8 rounded-2xl border border-red-100 text-center">
-          <AlertCircle className="w-10 h-10 text-red-400 mx-auto mb-3" />
-          <p className="text-sm font-semibold text-red-700">{error instanceof Error ? error.message : 'Soal tidak ditemukan'}</p>
-          <Link to="/soal" className="mt-3 inline-block text-sm font-bold text-brand-500 hover:text-brand-600">Kembali ke Daftar Soal</Link>
-        </div>
+      <div className="max-w-[1000px] mx-auto space-y-8 pb-20 animate-in fade-in p-4 md:p-8">
+        <Card className="border-2 border-rose-100 shadow-xl rounded-[2rem] overflow-hidden text-center">
+          <CardContent className="p-16">
+            <div className="w-20 h-20 bg-rose-50 rounded-full flex items-center justify-center mx-auto mb-6">
+              <AlertCircle className="w-10 h-10 text-rose-500" strokeWidth={2.5} />
+            </div>
+            <p className="text-2xl font-bold text-slate-900 uppercase tracking-tight">Data Tidak Ditemukan</p>
+            <p className="text-slate-500 mt-2 font-medium mb-10">{error instanceof Error ? error.message : 'Soal tidak ditemukan di basis data'}</p>
+            <Button asChild size="lg" variant="outline" className="rounded-xl border-2 border-slate-200 hover:bg-slate-50 font-bold px-10">
+              <Link to="/soal">Kembali ke Daftar Soal</Link>
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     )
   }
 
   return (
-    <div className="max-w-[1000px] mx-auto space-y-8 pb-20 animate-in fade-in">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div className="flex items-center gap-4">
-          <Link to="/soal" className="group flex items-center justify-center w-10 h-10 bg-white border border-gray-200 rounded-xl text-gray-500 hover:text-brand-500 hover:border-brand-200 hover:shadow-sm transition-all active:scale-95">
-            <ArrowLeft className="w-5 h-5 group-hover:-translate-x-0.5 transition-transform" />
-          </Link>
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Editor Bank Soal</h1>
-            <p className="text-sm font-medium text-gray-500 mt-1">
-              ID: {soal.id} • {soal.mata_pelajaran}{soal.topik ? ` - ${soal.topik}` : ''}
+    <div className="max-w-[1000px] mx-auto space-y-12 pb-40 animate-in fade-in p-2 md:p-8 max-w-full overflow-hidden">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 px-2">
+        <div className="flex items-center gap-6">
+          <Button asChild variant="outline" size="icon" className="w-12 h-12 border-2 border-slate-200 shadow-sm hover:bg-slate-50 rounded-xl transition-all shrink-0">
+            <Link to="/soal">
+              <ArrowLeft className="w-6 h-6 text-slate-600" strokeWidth={2.5} />
+            </Link>
+          </Button>
+          <div className="space-y-1">
+            <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight uppercase leading-none break-words">Editor Soal</h1>
+            <p className="text-sm md:text-base font-bold text-slate-400 border-l-4 border-brand-500 pl-4 uppercase tracking-wider">
+              {soal.mata_pelajaran} {soal.topik ? ` - ${soal.topik}` : ''}
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 md:gap-4 flex-wrap w-full lg:w-auto">
           {saveSuccess && (
-            <span className="text-sm font-bold text-green-600 bg-green-50 px-3 py-1.5 rounded-lg">Tersimpan!</span>
+            <span className="text-[10px] md:text-sm font-black text-emerald-600 bg-emerald-50 border border-emerald-100 shadow-sm px-4 py-2 rounded-full uppercase tracking-wider animate-in fade-in slide-in-from-right-4">Tersimpan!</span>
           )}
-          {saveError && (
-            <span className="text-sm font-bold text-red-600 bg-red-50 px-3 py-1.5 rounded-lg">{saveError}</span>
-          )}
-          <button
-            onClick={handleSave}
+          <Button
+            onClick={() => handleSave(false)}
             disabled={saving}
-            className="flex items-center gap-2 px-5 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl text-sm font-bold hover:bg-gray-50 transition-all shadow-xs active:scale-95 disabled:opacity-50"
+            variant="outline"
+            className="flex-1 lg:flex-none h-12 border-2 border-slate-200 text-slate-700 font-bold uppercase px-6 rounded-xl shadow-sm hover:bg-slate-50 transition-all disabled:opacity-50 text-xs md:text-sm"
           >
-            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Simpan Draft
-          </button>
-          <Link to={`/soal/preview/${id}`} className="flex items-center gap-2 px-5 py-2.5 bg-brand-500 text-white rounded-xl text-sm font-bold hover:bg-brand-600 transition-all shadow-md active:scale-95">
-            <FileCheck className="w-4 h-4" /> Selesai & Preview
-          </Link>
+            {saving ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <Save className="w-5 h-5 mr-2" />} <span className="hidden sm:inline">Simpan</span> Draft
+          </Button>
+          <Button asChild className="flex-1 lg:flex-none h-12 border-none font-bold uppercase px-8 rounded-xl bg-brand-600 hover:bg-brand-700 text-white shadow-lg shadow-brand-200 transition-all hover:translate-y-[-1px] text-xs md:text-sm">
+            <Link to={`/soal/preview/${id}`}>
+              <FileCheck className="w-5 h-5 mr-2" /> Selesai <span className="hidden sm:inline">& Preview</span>
+            </Link>
+          </Button>
         </div>
       </div>
 
-      <div className="space-y-6">
+      <div className="space-y-10">
         {editedSoal.map((item, index) => (
-          <div key={index} className="bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden group hover:border-brand-200 transition-colors">
-            <div className="p-2 bg-gray-50/50 border-b border-gray-100 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="p-2 cursor-grab active:cursor-grabbing text-gray-300 hover:text-gray-500">
-                  <GripVertical className="w-4 h-4" />
+          <Card key={index} className="shadow-md shadow-slate-100 border-2 border-slate-100 rounded-[2rem] overflow-hidden group hover:border-brand-200 transition-all duration-300">
+            <div className="p-4 bg-slate-50 border-b-2 border-slate-100 flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="p-2 cursor-grab active:cursor-grabbing text-slate-300 hover:text-slate-500 transition-colors">
+                  <GripVertical className="w-5 h-5" />
                 </div>
-                <span className="bg-brand-500 text-white text-[10px] font-black px-2.5 py-1 rounded-lg tracking-wider uppercase">Butir {item.nomor}</span>
+                <span className="bg-slate-900 text-white text-[10px] font-black px-4 py-1.5 rounded-full uppercase tracking-[0.2em] shadow-sm">Butir Soal {item.nomor}</span>
               </div>
-              <div className="flex items-center gap-1">
-                <button className="p-2 text-gray-400 hover:text-gray-900 transition-colors"><ChevronUp className="w-4 h-4" /></button>
-                <button className="p-2 text-gray-400 hover:text-gray-900 transition-colors"><ChevronDown className="w-4 h-4" /></button>
-                <div className="w-[1px] h-4 bg-gray-200 mx-1"></div>
-                <button onClick={() => removeSoalItem(index)} className="p-2 text-gray-400 hover:text-red-500 transition-colors"><Trash2 className="w-4 h-4" /></button>
+              <div className="flex items-center gap-2">
+                <Button variant="ghost" size="icon" className="h-9 w-9 hover:bg-slate-200 text-slate-400 rounded-lg">
+                  <ChevronUp className="w-4 h-4" />
+                </Button>
+                <Button variant="ghost" size="icon" className="h-9 w-9 hover:bg-slate-200 text-slate-400 rounded-lg">
+                  <ChevronDown className="w-4 h-4" />
+                </Button>
+                <div className="w-px h-6 bg-slate-200 mx-2"></div>
+                <Button variant="ghost" size="icon" onClick={() => removeSoalItem(index)} className="h-9 w-9 hover:bg-rose-50 hover:text-rose-600 text-slate-300 rounded-lg transition-all">
+                  <Trash2 className="w-4 h-4" />
+                </Button>
               </div>
             </div>
 
-            <div className="p-8 space-y-8">
-              <div className="space-y-3">
-                <label className="text-[11px] font-black text-gray-400 tracking-widest uppercase">Pertanyaan</label>
-                <textarea
-                  className="w-full bg-gray-50 border border-transparent focus:bg-white focus:border-brand-200 focus:ring-4 focus:ring-brand-50/50 rounded-2xl p-5 text-base font-bold text-gray-900 outline-none transition-all min-h-[120px]"
+            <CardContent className="p-10 space-y-12">
+              <div className="space-y-4">
+                <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Deskripsi Pertanyaan</label>
+                <Textarea
+                  className="w-full bg-slate-50/50 border-2 border-transparent focus:bg-white focus:border-brand-200 focus:ring-4 focus:ring-brand-50/50 rounded-2xl p-6 text-lg font-bold text-slate-900 outline-none transition-all min-h-[140px] shadow-inner"
                   value={item.pertanyaan}
                   onChange={(e) => updateSoalItem(index, 'pertanyaan', e.target.value)}
                 />
               </div>
 
               {item.pilihan && (
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center">
-                    <label className="text-[11px] font-black text-gray-400 tracking-widest uppercase">Pilihan Jawaban</label>
-                    <button 
+                <div className="space-y-6 p-8 bg-slate-50/50 rounded-3xl border-2 border-slate-100 shadow-inner">
+                  <div className="flex justify-between items-center border-b border-slate-200 pb-4">
+                    <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Opsi Jawaban (Multi Pilihan)</label>
+                    <Button 
+                      variant="outline"
+                      size="sm"
                       onClick={() => {
                         const newPilihan = item.pilihan?.length ? [] : ['A. ', 'B. ', 'C. ', 'D. ']
                         updateSoalItem(index, 'pilihan', newPilihan)
                       }}
-                      className="text-[10px] font-bold text-brand-500 hover:text-brand-600 uppercase tracking-wider"
+                      className="text-[10px] font-black uppercase rounded-lg border-2 border-slate-200 h-8 px-4"
                     >
-                      {item.pilihan?.length ? 'Hapus Pilihan' : 'Tambah Pilihan (PG)'}
-                    </button>
+                      {item.pilihan?.length ? 'Hapus Pilihan' : 'Aktifkan Pilihan Ganda'}
+                    </Button>
                   </div>
                   {item.pilihan.length > 0 && (
-                    <div className="grid md:grid-cols-2 gap-4">
+                    <div className="grid md:grid-cols-2 gap-6 pt-2">
                       {item.pilihan.map((opsi, oi) => (
-                        <input
-                          key={oi}
-                          type="text"
-                          value={opsi}
-                          onChange={(e) => {
-                            const newPilihan = [...item.pilihan!]
-                            newPilihan[oi] = e.target.value
-                            updateSoalItem(index, 'pilihan', newPilihan)
-                          }}
-                          className="w-full bg-gray-50 border border-transparent focus:bg-white focus:border-brand-200 focus:ring-4 focus:ring-brand-50/50 rounded-xl px-4 py-3 text-sm font-bold text-gray-900 outline-none transition-all"
-                        />
+                        <div key={oi} className="relative group">
+                          <Input
+                            type="text"
+                            value={opsi}
+                            onChange={(e) => {
+                              const newPilihan = [...item.pilihan!]
+                              newPilihan[oi] = e.target.value
+                              updateSoalItem(index, 'pilihan', newPilihan)
+                            }}
+                            className="w-full bg-white border-2 border-slate-100 focus:border-brand-200 focus:ring-0 rounded-xl h-14 pl-12 pr-4 text-sm font-bold shadow-sm transition-all"
+                          />
+                          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xs font-black text-slate-300 group-focus-within:text-brand-500">#{oi + 1}</span>
+                        </div>
                       ))}
                     </div>
                   )}
                 </div>
               )}
 
-              <div className="grid md:grid-cols-2 gap-8">
-                <div className="space-y-3">
-                  <label className="text-[11px] font-black text-gray-400 tracking-widest uppercase flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-brand-500"></div>
-                    Kunci Jawaban
+              <div className="grid md:grid-cols-2 gap-12">
+                <div className="space-y-4">
+                  <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-2">
+                    <div className="w-2 h-2 bg-brand-500 rounded-full"></div>
+                    Kunci Jawaban Valid
                   </label>
-                  <input
+                  <Input
                     type="text"
                     value={item.jawaban}
                     onChange={(e) => updateSoalItem(index, 'jawaban', e.target.value)}
-                    className="w-full bg-gray-50 border border-transparent focus:bg-white focus:border-brand-200 focus:ring-4 focus:ring-brand-50/50 rounded-xl px-4 py-3 text-sm font-bold text-gray-900 outline-none transition-all"
+                    className="w-full bg-slate-50/50 border-2 border-transparent focus:bg-white focus:border-brand-200 focus:ring-4 focus:ring-brand-50/50 rounded-xl h-14 px-6 text-base font-black text-brand-600 transition-all shadow-inner"
                   />
                 </div>
-                <div className="space-y-3">
-                  <label className="text-[11px] font-black text-gray-400 tracking-widest uppercase">Gambar Prompt (AI)</label>
-                  <input
+                <div className="space-y-4">
+                  <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">AI Visual Prompt (Opsional)</label>
+                  <Input
                     type="text"
                     value={item.gambar_prompt || ''}
                     onChange={(e) => updateSoalItem(index, 'gambar_prompt', e.target.value)}
-                    placeholder="Deskripsi visual untuk generate gambar..."
-                    className="w-full bg-gray-50 border border-transparent focus:bg-white focus:border-brand-200 focus:ring-4 focus:ring-brand-50/50 rounded-xl px-4 py-3 text-sm font-medium text-gray-600 outline-none transition-all"
+                    placeholder="Contoh: Ilustrasi sebuah mikroskop cahaya..."
+                    className="w-full bg-slate-50/50 border-2 border-transparent focus:bg-white focus:border-brand-200 focus:ring-4 focus:ring-brand-50/50 rounded-xl h-14 px-6 text-sm font-medium text-slate-500 transition-all shadow-inner"
                   />
                 </div>
               </div>
 
-              <div className="space-y-3">
-                <label className="text-[11px] font-black text-gray-400 tracking-widest uppercase">Pembahasan</label>
-                <textarea
+              <div className="space-y-4">
+                <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Pembahasan & Penjelasan</label>
+                <Textarea
                   value={item.pembahasan || ''}
                   onChange={(e) => updateSoalItem(index, 'pembahasan', e.target.value)}
-                  className="w-full bg-gray-50 border border-transparent focus:bg-white focus:border-brand-200 focus:ring-4 focus:ring-brand-50/50 rounded-xl p-5 text-sm font-medium text-gray-600 outline-none transition-all min-h-[100px]"
+                  className="w-full bg-slate-50/50 border-2 border-transparent focus:bg-white focus:border-brand-200 focus:ring-4 focus:ring-brand-50/50 rounded-2xl p-6 text-sm font-medium text-slate-600 outline-none transition-all min-h-[120px] shadow-inner leading-relaxed"
+                  placeholder="Berikan alasan mengapa jawaban tersebut benar..."
                 />
               </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         ))}
 
-        <button
+        <Button
           onClick={addSoalItem}
-          className="w-full py-8 border-2 border-dashed border-gray-200 rounded-3xl text-gray-400 font-bold hover:border-brand-200 hover:bg-brand-50/10 hover:text-brand-600 flex flex-col items-center justify-center gap-3 transition-all group"
+          variant="outline"
+          className="w-full h-32 border-2 border-dashed border-slate-200 bg-slate-50/30 text-slate-400 font-bold uppercase tracking-widest hover:bg-slate-50 hover:border-brand-300 hover:text-brand-600 transition-all group rounded-[2rem]"
         >
-          <div className="w-12 h-12 rounded-2xl bg-gray-50 flex items-center justify-center group-hover:bg-brand-50 group-hover:text-brand-500 transition-colors">
-            <Plus className="w-6 h-6" strokeWidth={3} />
+          <div className="flex flex-col items-center gap-4">
+            <div className="w-14 h-14 bg-white border-2 border-slate-100 rounded-2xl flex items-center justify-center group-hover:scale-110 group-hover:border-brand-200 group-hover:shadow-md transition-all shadow-sm">
+              <Plus className="w-8 h-8" strokeWidth={2.5} />
+            </div>
+            <span className="text-xs font-black">Tambah Butir Soal Baru</span>
           </div>
-          <span className="text-sm uppercase tracking-widest font-black">Tambah Butir Soal Manual</span>
-        </button>
+        </Button>
       </div>
 
-      <div className="fixed bottom-8 left-1/2 -translate-x-1/2 bg-gray-900/90 backdrop-blur-lg border border-white/10 px-8 py-4 rounded-3xl shadow-2xl z-30 flex items-center gap-8 animate-in slide-in-from-bottom-8">
-        <div className="flex items-center gap-4 border-r border-white/10 pr-8">
-          <p className="text-xs font-black text-gray-400 uppercase tracking-widest">Editor Stats</p>
-          <p className="text-sm font-bold text-white">{editedSoal.length} <span className="text-brand-400">Soal</span></p>
+      <div className="fixed bottom-4 md:bottom-10 left-1/2 -translate-x-1/2 bg-slate-900/90 backdrop-blur-xl border border-white/10 px-6 md:px-10 py-4 md:py-5 rounded-2xl md:rounded-[2.5rem] shadow-2xl z-30 flex flex-col sm:flex-row items-center gap-4 md:gap-10 animate-in slide-in-from-bottom-10 border-t-2 border-t-white/5 w-[95%] max-w-2xl">
+        <div className="flex items-center gap-4 md:gap-6 sm:border-r border-white/10 sm:pr-10">
+          <p className="text-[8px] md:text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Editor Status</p>
+          <p className="text-sm md:text-base font-bold text-white tracking-tight">{editedSoal.length} <span className="text-brand-400">Butir</span></p>
         </div>
-        <div className="flex items-center gap-3">
-          <button onClick={() => navigate('/soal')} className="px-4 py-2 text-xs font-bold text-white hover:text-brand-300 transition-colors">Batal</button>
-          <button
+        <div className="flex items-center gap-3 md:gap-5 w-full sm:w-auto">
+          <button onClick={() => navigate('/soal')} className="flex-1 sm:flex-none px-4 md:px-6 py-2 text-[10px] md:text-xs font-black text-slate-400 hover:text-white uppercase tracking-widest transition-colors">Batal</button>
+          <Button
             onClick={() => handleSave(true)}
             disabled={saving}
-            className="bg-brand-500 hover:bg-brand-600 text-white px-6 py-2.5 rounded-xl font-bold text-sm shadow-lg active:scale-95 transition-all disabled:opacity-50 flex items-center gap-2"
+            className="flex-2 sm:flex-none h-10 md:h-12 bg-white text-slate-950 hover:bg-brand-50 rounded-xl md:rounded-2xl font-black uppercase tracking-widest text-[10px] md:text-xs px-6 md:px-10 shadow-lg active:scale-95 transition-all disabled:opacity-50"
           >
-            {saving && <Loader2 className="w-4 h-4 animate-spin" />} Simpan Permanen
-          </button>
+            {saving && <Loader2 className="w-4 h-4 animate-spin mr-3" />} Simpan Permanen
+          </Button>
         </div>
       </div>
     </div>

@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { Upload, Zap, FileText, BookOpen, LayoutTemplate, ArrowRight, Folder, Lightbulb, Clock, ChevronRight, X, AlertCircle, CheckCircle2 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useDocuments } from '../hooks/useDocuments'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 
 function UploadModal({ isOpen, onClose, onSuccess }: { isOpen: boolean; onClose: () => void; onSuccess: (file: File) => void }) {
   const [dragActive, setDragActive] = useState(false)
@@ -53,55 +55,57 @@ function UploadModal({ isOpen, onClose, onSuccess }: { isOpen: boolean; onClose:
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={onClose}>
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg mx-4 overflow-hidden" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between p-6 border-b border-gray-100">
-          <h2 className="text-lg font-bold text-gray-900">Upload Modul Ajar</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm" onClick={onClose}>
+      <Card className="w-full max-w-lg mx-4 overflow-hidden border-2 border-slate-200 shadow-xl rounded-2xl" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between p-6 border-b border-slate-100">
+          <h2 className="text-xl font-bold tracking-tight text-slate-900">Upload Modul Ajar</h2>
+          <Button variant="ghost" size="icon" onClick={onClose} className="rounded-full">
             <X className="w-5 h-5" />
-          </button>
+          </Button>
         </div>
 
-        <div className="p-6">
+        <CardContent className="p-8">
           {success ? (
-            <div className="flex flex-col items-center py-8 text-center">
-              <div className="w-16 h-16 rounded-full bg-green-50 flex items-center justify-center mb-4">
-                <CheckCircle2 className="w-8 h-8 text-green-600" />
+            <div className="flex flex-col items-center py-10 text-center">
+              <div className="w-20 h-20 rounded-full bg-emerald-50 border-2 border-emerald-100 flex items-center justify-center mb-6 shadow-sm">
+                <CheckCircle2 className="w-10 h-10 text-emerald-500" strokeWidth={2.5} />
               </div>
-              <p className="text-lg font-bold text-gray-900">Upload Berhasil</p>
-              <p className="text-sm text-gray-500 mt-1">Modul ajar telah berhasil ditambahkan</p>
+              <p className="text-2xl font-bold text-slate-900">Upload Berhasil</p>
+              <p className="text-slate-500 mt-2 font-medium">Modul ajar telah ditambahkan ke sistem</p>
             </div>
           ) : (
             <>
               <div
-                className={`border-2 border-dashed rounded-2xl p-10 text-center transition-colors ${
-                  dragActive ? 'border-brand-400 bg-brand-50' : 'border-gray-200 hover:border-gray-300'
+                className={`border-2 border-dashed rounded-2xl p-12 text-center transition-all duration-300 ${
+                  dragActive ? 'border-brand-500 bg-brand-50/50 scale-[1.01]' : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50/50'
                 }`}
                 onDragOver={(e) => { e.preventDefault(); setDragActive(true) }}
                 onDragLeave={() => setDragActive(false)}
                 onDrop={handleDrop}
               >
-                <Upload className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-                <p className="text-sm font-semibold text-gray-700">
-                  Drag & drop file di sini, atau{' '}
-                  <label className="text-brand-500 hover:text-brand-600 cursor-pointer underline">
+                <div className="w-16 h-16 bg-white border border-slate-100 rounded-2xl shadow-sm flex items-center justify-center mx-auto mb-6">
+                  <Upload className="w-8 h-8 text-slate-400" strokeWidth={2} />
+                </div>
+                <p className="text-lg font-semibold text-slate-700">
+                  Tarik & lepas file di sini, atau{' '}
+                  <label className="text-brand-600 hover:text-brand-700 cursor-pointer underline underline-offset-4 decoration-2">
                     pilih file
                     <input type="file" className="hidden" accept=".pdf,.docx" onChange={handleFileSelect} />
                   </label>
                 </p>
-                <p className="text-xs text-gray-400 mt-2">PDF atau DOCX, maksimal 10MB</p>
+                <p className="text-sm font-medium text-slate-400 mt-3 uppercase tracking-wider">PDF atau DOCX &bull; MAKS 10MB</p>
               </div>
 
               {error && (
-                <div className="flex items-center gap-2 mt-4 p-3 bg-red-50 border border-red-100 rounded-xl">
-                  <AlertCircle className="w-4 h-4 text-red-500 shrink-0" />
-                  <p className="text-sm text-red-700 font-medium">{error}</p>
+                <div className="flex items-center gap-3 mt-6 p-4 bg-rose-50 border border-rose-100 rounded-xl">
+                  <AlertCircle className="w-5 h-5 text-rose-500 shrink-0" strokeWidth={2.5} />
+                  <p className="text-sm text-rose-700 font-bold">{error}</p>
                 </div>
               )}
             </>
           )}
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }
@@ -111,172 +115,163 @@ export default function Dashboard() {
   const [uploadOpen, setUploadOpen] = useState(false)
 
   return (
-    <div className="space-y-10 animate-in fade-in pb-12">
+    <div className="space-y-12 animate-in fade-in pb-12">
       {/* Header Section */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Executive Dashboard</h1>
-          <p className="text-gray-500 mt-2 text-base font-medium">Elevating education through cognitive intelligence.</p>
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 px-2">
+        <div className="space-y-2">
+          <h1 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tight leading-none">Dashboard</h1>
+          <p className="text-lg font-medium text-slate-500 max-w-xl">Kelola modul ajar dan generate soal evaluasi dengan cerdas menggunakan bantuan AI.</p>
         </div>
-        <div className="flex items-center gap-3">
-          <button
+        <div className="flex flex-wrap items-center gap-4">
+          <Button
+            variant="outline"
+            size="lg"
             onClick={() => setUploadOpen(true)}
-            className="flex items-center gap-2.5 px-5 py-3 bg-white border border-gray-200 shadow-xs text-gray-700 rounded-xl text-sm font-bold hover:bg-gray-50 hover:text-gray-900 transition-all active:scale-95"
+            className="h-12 px-6 rounded-xl font-bold border-2 border-slate-200 hover:bg-slate-50 shadow-sm"
           >
-            <Upload className="w-4 h-4 text-brand-500" strokeWidth={2.5} />
+            <Upload className="w-5 h-5 mr-2" strokeWidth={2.5} />
             Upload Modul
-          </button>
-          <Link to="/soal/generate" className="flex items-center gap-2.5 px-5 py-3 bg-brand-500 hover:bg-brand-600 text-white rounded-xl text-sm font-bold shadow-md hover:shadow-lg transition-all active:scale-95">
-            <Zap className="w-4 h-4" fill="currentColor" strokeWidth={0} />
-            Generate Soal
-          </Link>
+          </Button>
+          <Button asChild size="lg" className="h-12 px-6 rounded-xl font-bold bg-brand-600 hover:bg-brand-700 shadow-md shadow-brand-200 transition-all hover:translate-y-[-1px]">
+            <Link to="/soal/generate">
+              <Zap className="w-5 h-5 mr-2" fill="currentColor" strokeWidth={0} />
+              Generate Soal
+            </Link>
+          </Button>
         </div>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {[
-          { label: 'TOTAL DOKUMEN', value: loading ? '...' : String(documents.length), icon: FileText, color: 'brand', sub: `${documents.reduce((sum, d) => sum + d.word_count, 0).toLocaleString('id-ID')} kata total` },
-          { label: 'MODUL AJAR', value: loading ? '...' : String(documents.filter(d => d.filetype === 'pdf').length), icon: BookOpen, color: 'orange', sub: 'File PDF terupload' },
-          { label: 'FILE WORD', value: loading ? '...' : String(documents.filter(d => d.filetype === 'docx').length), icon: LayoutTemplate, color: 'gray', sub: 'File DOCX terupload' },
+          { label: 'TOTAL DOKUMEN', value: loading ? '...' : String(documents.length), icon: FileText, color: 'text-indigo-600', bg: 'bg-indigo-50', sub: `${documents.reduce((sum, d) => sum + d.word_count, 0).toLocaleString('id-ID')} kata total` },
+          { label: 'MODUL AJAR', value: loading ? '...' : String(documents.filter(d => d.filetype === 'pdf').length), icon: BookOpen, color: 'text-amber-600', bg: 'bg-amber-50', sub: 'File PDF terupload' },
+          { label: 'FILE WORD', value: loading ? '...' : String(documents.filter(d => d.filetype === 'docx').length), icon: LayoutTemplate, color: 'text-sky-600', bg: 'bg-sky-50', sub: 'File DOCX terupload' },
         ].map((stat, i) => (
-          <div key={i} className="bg-white p-7 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-all group cursor-default">
-            <div className="flex justify-between items-start mb-4">
-              <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${
-                stat.color === 'brand' ? 'bg-brand-50 text-brand-500' :
-                stat.color === 'orange' ? 'bg-orange-50 text-orange-600' : 'bg-gray-50 text-gray-600'
-              }`}>
-                <stat.icon className="w-6 h-6" />
+          <Card key={i} className="border-2 border-slate-100 shadow-sm hover:shadow-md transition-all duration-300 rounded-2xl overflow-hidden group">
+            <CardHeader className="pb-4 flex flex-row items-center justify-between">
+              <CardTitle className="text-xs font-black text-slate-400 uppercase tracking-[0.15em]">{stat.label}</CardTitle>
+              <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${stat.bg} ${stat.color} transition-transform group-hover:scale-110`}>
+                <stat.icon className="w-6 h-6" strokeWidth={2.5} />
               </div>
-            </div>
-            <div>
-              <p className="text-[11px] font-bold text-gray-400 tracking-[0.15em] uppercase mb-1">{stat.label}</p>
-              <div className="flex items-baseline gap-2">
-                <p className="text-3xl font-bold text-gray-900 leading-none">{stat.value}</p>
-                <p className="text-[13px] font-semibold text-gray-500">{stat.sub}</p>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-baseline gap-3">
+                <p className="text-5xl font-black text-slate-900">{stat.value}</p>
               </div>
-            </div>
-          </div>
+              <p className="text-[13px] font-bold text-slate-500 mt-2 uppercase tracking-wide">{stat.sub}</p>
+            </CardContent>
+          </Card>
         ))}
       </div>
 
       {/* Main Content */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
         {/* Left Column: Dokumen Terbaru */}
-        <section>
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-              <Clock className="w-5 h-5 text-brand-500" />
+        <section className="space-y-6">
+          <div className="flex justify-between items-center px-2">
+            <h2 className="text-2xl font-bold text-slate-900 flex items-center gap-3">
+              <Clock className="w-6 h-6 text-brand-500" strokeWidth={2.5} />
               Dokumen Terbaru
             </h2>
-            <Link to="/modul" className="text-sm font-bold text-brand-500 hover:text-brand-600 transition-colors">Kelola Modul</Link>
+            <Link to="/modul" className="text-sm font-bold text-brand-600 hover:text-brand-700 underline underline-offset-4 decoration-2">Kelola Semua</Link>
           </div>
 
           {loading ? (
             <div className="space-y-4">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm animate-pulse">
-                  <div className="flex items-center gap-5">
-                    <div className="w-14 h-14 rounded-xl bg-gray-100 shrink-0" />
-                    <div className="flex-1 space-y-2">
-                      <div className="h-4 bg-gray-100 rounded w-3/4" />
-                      <div className="h-3 bg-gray-100 rounded w-1/2" />
-                    </div>
-                  </div>
-                </div>
+                <div key={i} className="h-24 bg-slate-50 border-2 border-slate-100 rounded-2xl animate-pulse" />
               ))}
             </div>
           ) : error ? (
-            <div className="bg-white p-8 rounded-2xl border border-red-100 text-center">
-              <AlertCircle className="w-10 h-10 text-red-400 mx-auto mb-3" />
-              <p className="text-sm font-semibold text-red-700">{error}</p>
-              <button onClick={refetch} className="mt-3 text-sm font-bold text-brand-500 hover:text-brand-600">Coba Lagi</button>
-            </div>
+            <Card className="border-2 border-rose-100 bg-rose-50/30 rounded-2xl overflow-hidden">
+              <CardContent className="p-10 text-center flex flex-col items-center">
+                <AlertCircle className="w-12 h-12 text-rose-400 mb-4" strokeWidth={2} />
+                <p className="text-lg font-bold text-rose-700">{error}</p>
+                <Button onClick={refetch} variant="outline" className="mt-6 border-rose-200 text-rose-700 hover:bg-rose-100 rounded-xl">Coba Lagi</Button>
+              </CardContent>
+            </Card>
           ) : documents.length === 0 ? (
-            <div className="bg-white p-8 rounded-2xl border border-gray-100 text-center">
-              <Folder className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-              <p className="text-sm font-semibold text-gray-700">Belum ada dokumen</p>
-              <p className="text-xs text-gray-400 mt-1 mb-4">Upload modul ajar pertama Anda untuk mulai</p>
-              <button
-                onClick={() => setUploadOpen(true)}
-                className="text-sm font-bold text-brand-500 hover:text-brand-600"
-              >
-                Upload Sekarang
-              </button>
-            </div>
+            <Card className="border-2 border-slate-100 border-dashed rounded-2xl bg-slate-50/50">
+              <CardContent className="p-12 text-center flex flex-col items-center">
+                <Folder className="w-12 h-12 text-slate-300 mb-4" strokeWidth={2} />
+                <p className="text-xl font-bold text-slate-900 mb-2">Belum ada dokumen</p>
+                <p className="text-slate-500 mb-8 max-w-[240px]">Mulai dengan mengupload modul ajar pertama Anda.</p>
+                <Button onClick={() => setUploadOpen(true)} className="rounded-xl px-8 bg-brand-600 shadow-md">Upload Sekarang</Button>
+              </CardContent>
+            </Card>
           ) : (
             <div className="space-y-4">
               {documents.slice(0, 5).map((doc) => (
-                <div key={doc.id} className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-5 hover:border-brand-200 transition-all group cursor-pointer">
-                  <div className={`p-3.5 rounded-xl shrink-0 transition-colors ${
-                    doc.filetype === 'pdf'
-                      ? 'bg-red-50 text-red-600 group-hover:bg-red-600 group-hover:text-white'
-                      : 'bg-blue-50 text-blue-600 group-hover:bg-blue-600 group-hover:text-white'
-                  }`}>
-                    <FileText className="w-6 h-6" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="text-base font-bold text-gray-900 leading-tight truncate">{doc.filename}</h3>
-                    <div className="flex items-center gap-3 mt-2">
-                      <span className="text-[13px] font-medium text-gray-400">
-                        {doc.page_count} halaman &bull; {doc.word_count.toLocaleString('id-ID')} kata
-                      </span>
-                      <span className={`text-[10px] font-black px-2 py-0.5 rounded-md tracking-wider uppercase ${
-                        doc.filetype === 'pdf' ? 'bg-red-50 text-red-600' : 'bg-blue-50 text-blue-600'
-                      }`}>{doc.filetype}</span>
+                <Card key={doc.id} className="border-2 border-slate-100 shadow-sm hover:border-brand-200 hover:shadow-md transition-all duration-200 group cursor-pointer rounded-2xl">
+                  <CardContent className="p-5 flex items-center gap-5">
+                    <div className={`p-4 rounded-xl shrink-0 transition-colors ${
+                      doc.filetype === 'pdf' ? 'bg-rose-50 text-rose-600' : 'bg-sky-50 text-sky-600'
+                    }`}>
+                      <FileText className="w-6 h-6" strokeWidth={2.5} />
                     </div>
-                  </div>
-                  <ChevronRight className="w-5 h-5 text-gray-300 group-hover:text-brand-500 transition-colors" />
-                </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-lg font-bold text-slate-900 leading-tight truncate group-hover:text-brand-600 transition-colors">{doc.filename}</h3>
+                      <div className="flex items-center gap-3 mt-2">
+                        <span className="text-sm font-semibold text-slate-400">
+                          {doc.page_count} hal &bull; {doc.word_count.toLocaleString('id-ID')} kata
+                        </span>
+                        <span className={`text-[10px] font-black px-2 py-0.5 rounded-md border tracking-wider uppercase ${
+                          doc.filetype === 'pdf' ? 'bg-rose-50 border-rose-100 text-rose-600' : 'bg-sky-50 border-sky-100 text-sky-600'
+                        }`}>{doc.filetype}</span>
+                      </div>
+                    </div>
+                    <ChevronRight className="w-6 h-6 text-slate-200 group-hover:text-brand-500 group-hover:translate-x-1 transition-all" strokeWidth={3} />
+                  </CardContent>
+                </Card>
               ))}
             </div>
           )}
         </section>
 
-        {/* Right Column: Modul Ajar Terbaru */}
-        <section>
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-              <Folder className="w-5 h-5 text-orange-500" />
+        {/* Right Column: Statistik Dokumen */}
+        <section className="space-y-6">
+          <div className="flex justify-between items-center px-2">
+            <h2 className="text-2xl font-bold text-slate-900 flex items-center gap-3">
+              <Folder className="w-6 h-6 text-amber-500" strokeWidth={2.5} />
               Statistik Dokumen
             </h2>
           </div>
 
           {loading ? (
-            <div className="space-y-5">
+            <div className="space-y-4">
               {[1, 2].map((i) => (
-                <div key={i} className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm animate-pulse">
-                  <div className="h-4 bg-gray-100 rounded w-1/3 mb-3" />
-                  <div className="h-5 bg-gray-100 rounded w-2/3 mb-2" />
-                  <div className="h-3 bg-gray-100 rounded w-1/2" />
-                </div>
+                <div key={i} className="h-40 bg-slate-50 border-2 border-slate-100 rounded-2xl animate-pulse" />
               ))}
             </div>
           ) : documents.length === 0 ? (
-            <div className="bg-white p-6 rounded-2xl border border-gray-100 text-center">
-              <BookOpen className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-              <p className="text-sm font-semibold text-gray-700">Belum ada modul ajar</p>
-              <p className="text-xs text-gray-400 mt-1">Upload file PDF atau DOCX untuk memulai</p>
-            </div>
+            <Card className="border-2 border-slate-100 border-dashed rounded-2xl bg-slate-50/50 h-[400px] flex items-center justify-center">
+              <CardContent className="p-10 text-center flex flex-col items-center">
+                <BookOpen className="w-12 h-12 text-slate-300 mb-4" strokeWidth={2} />
+                <p className="text-lg font-bold text-slate-400">Data modul kosong</p>
+              </CardContent>
+            </Card>
           ) : (
-            <div className="grid grid-cols-1 gap-5">
+            <div className="grid grid-cols-1 gap-6">
               {documents.slice(0, 4).map((doc) => (
-                <div key={doc.id} className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col relative overflow-hidden group hover:shadow-md transition-all">
-                  <div className="flex justify-between items-start mb-4">
-                    <span className={`text-[10px] font-black px-2.5 py-1 rounded-lg tracking-wider uppercase ${
-                      doc.filetype === 'pdf' ? 'bg-red-50 text-red-600' : 'bg-blue-50 text-blue-600'
-                    }`}>{doc.filetype}</span>
-                  </div>
-                  <h3 className="text-lg font-bold text-gray-900 leading-snug group-hover:text-brand-500 transition-colors truncate">{doc.filename}</h3>
-                  <p className="text-[13px] font-medium text-gray-400 mt-2 mb-6">
-                    {doc.page_count} halaman &bull; {doc.word_count.toLocaleString('id-ID')} kata &bull; {(doc.filesize / 1024 / 1024).toFixed(1)} MB
-                  </p>
-                  <div className="flex items-center gap-3 mt-auto">
-                    <Link to="/soal/generate" className="flex-1 bg-brand-500 hover:bg-brand-600 text-white flex justify-center items-center gap-2 py-3 rounded-xl text-sm font-bold transition-all shadow-sm active:scale-95">
-                      <Zap className="w-4 h-4" fill="currentColor" strokeWidth={0} /> Generate Soal
-                    </Link>
-                  </div>
-                </div>
+                <Card key={doc.id} className="border-2 border-slate-100 shadow-sm rounded-2xl overflow-hidden group hover:border-brand-100">
+                  <CardContent className="p-6 flex flex-col h-full">
+                    <div className="flex justify-between items-start mb-4">
+                      <span className={`text-[10px] font-black px-2.5 py-1 rounded-lg border uppercase tracking-widest ${
+                        doc.filetype === 'pdf' ? 'bg-rose-50 border-rose-100 text-rose-600' : 'bg-sky-50 border-sky-100 text-sky-600'
+                      }`}>{doc.filetype}</span>
+                    </div>
+                    <h3 className="text-xl font-bold text-slate-900 leading-tight mb-2 truncate group-hover:text-brand-600 transition-colors">{doc.filename}</h3>
+                    <p className="text-sm font-semibold text-slate-400 mb-6">
+                      {doc.page_count} hal &bull; {doc.word_count.toLocaleString('id-ID')} kata &bull; {(doc.filesize / 1024 / 1024).toFixed(1)} MB
+                    </p>
+                    <Button asChild variant="outline" className="w-full mt-auto border-2 border-slate-200 hover:bg-brand-50 hover:border-brand-200 hover:text-brand-600 font-bold rounded-xl transition-all h-11">
+                      <Link to="/soal/generate">
+                        <Zap className="w-4 h-4 mr-2" fill="currentColor" strokeWidth={0} /> Generate Soal
+                      </Link>
+                    </Button>
+                  </CardContent>
+                </Card>
               ))}
             </div>
           )}
@@ -284,26 +279,28 @@ export default function Dashboard() {
       </div>
 
       {/* AI Insight Card */}
-      <div className="bg-brand-900 rounded-3xl p-8 md:p-10 flex flex-col md:flex-row items-center gap-8 relative overflow-hidden shadow-xl">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-brand-800 rounded-full -mr-20 -mt-20 opacity-50 blur-3xl"></div>
-        <div className="absolute bottom-0 left-0 w-48 h-48 bg-brand-700 rounded-full -ml-16 -mb-16 opacity-30 blur-2xl"></div>
-
-        <div className="bg-brand-800/50 p-5 rounded-2xl shadow-inner shrink-0 relative z-10">
-          <Lightbulb className="w-8 h-8 text-brand-300 animate-pulse" />
-        </div>
-        <div className="relative z-10 text-center md:text-left">
-          <h2 className="text-2xl font-bold text-white mb-3">AI Insight: Optimal Performance</h2>
-          <p className="text-brand-200 text-base leading-relaxed mb-6 max-w-2xl font-medium">
-            Berdasarkan modul ajar terbaru Anda, AI menyarankan pembuatan <strong className="text-white font-bold">+3 set soal</strong> dengan tingkat kesulitan HOTS untuk meningkatkan daya kritis siswa.
-          </p>
-          <Link to="/soal/generate" className="bg-white text-brand-900 px-6 py-3 rounded-xl font-bold text-sm hover:bg-brand-50 transition-all flex items-center gap-2 mx-auto md:mx-0 shadow-lg active:scale-95">
-            Mulai Generator Rekomendasi <ArrowRight className="w-4 h-4" />
-          </Link>
-        </div>
-      </div>
-
-      {/* Upload Modal */}
-      <UploadModal isOpen={uploadOpen} onClose={() => setUploadOpen(false)} onSuccess={uploadDocument} />
+      <Card className="bg-slate-900 border-none shadow-2xl rounded-[2.5rem] overflow-hidden relative mt-16 group">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-brand-500 rounded-full -mr-32 -mt-32 opacity-20 blur-[100px] group-hover:opacity-30 transition-opacity"></div>
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-emerald-500 rounded-full -ml-24 -mb-24 opacity-10 blur-[80px]"></div>
+        <CardContent className="p-10 md:p-16 flex flex-col md:flex-row items-center gap-12 relative z-10">
+          <div className="p-8 rounded-[2rem] bg-white/5 backdrop-blur-sm border border-white/10 shadow-inner shrink-0 transform transition-transform group-hover:scale-105 duration-500">
+            <Lightbulb className="w-16 h-16 text-brand-400 animate-pulse-slow" strokeWidth={2} />
+          </div>
+          <div className="text-center md:text-left flex-1 space-y-6">
+            <h2 className="text-3xl md:text-4xl font-black text-white tracking-tight leading-tight">AI Insight: Optimal Performance</h2>
+            <p className="text-lg md:text-xl text-slate-400 leading-relaxed font-medium max-w-3xl">
+              Berdasarkan modul ajar terbaru Anda, AI menyarankan pembuatan <strong className="text-white bg-brand-600 px-3 py-1 rounded-lg">+3 set soal</strong> dengan tingkat kesulitan <strong className="text-white underline underline-offset-4 decoration-emerald-400">HOTS</strong> untuk meningkatkan daya kritis siswa secara signifikan.
+            </p>
+            <div className="pt-4">
+              <Button asChild size="lg" className="h-14 px-10 rounded-2xl bg-white text-slate-950 hover:bg-brand-50 font-black uppercase tracking-widest text-base shadow-xl active:scale-95 transition-all">
+                <Link to="/soal/generate">
+                  Mulai Generator <ArrowRight className="w-5 h-5 ml-3" strokeWidth={3} />
+                </Link>
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }

@@ -3,6 +3,8 @@ import { ArrowLeft, Download, FileText, Info, Loader2, AlertCircle, CheckCircle2
 import { Link, useParams } from 'react-router-dom'
 import { useSoalDetail } from '../hooks/useSoal'
 import { generateWord, downloadWord } from '../services/soal'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
 
 export default function PreviewWord() {
   const { id } = useParams()
@@ -49,162 +51,187 @@ export default function PreviewWord() {
 
   if (isLoading) {
     return (
-      <div className="max-w-[1100px] mx-auto space-y-8 pb-20 animate-in fade-in">
-        <div className="flex items-center gap-4">
-          <Loader2 className="w-6 h-6 text-brand-500 animate-spin" />
-          <p className="text-sm font-semibold text-gray-700">Memuat data soal...</p>
-        </div>
+      <div className="max-w-[1100px] mx-auto space-y-8 pb-20 animate-in fade-in p-4 md:p-8">
+        <Card className="border-2 border-slate-100 shadow-sm rounded-[2rem] overflow-hidden">
+          <CardContent className="p-20 text-center flex flex-col items-center">
+            <Loader2 className="w-12 h-12 text-brand-500 animate-spin mb-4" strokeWidth={3} />
+            <p className="text-lg font-bold text-slate-400 uppercase tracking-widest">Mempersiapkan Dokumen...</p>
+          </CardContent>
+        </Card>
       </div>
     )
   }
 
   if (error || !soal) {
     return (
-      <div className="max-w-[1100px] mx-auto space-y-8 pb-20 animate-in fade-in">
-        <div className="bg-white p-8 rounded-2xl border border-red-100 text-center">
-          <AlertCircle className="w-10 h-10 text-red-400 mx-auto mb-3" />
-          <p className="text-sm font-semibold text-red-700">{error instanceof Error ? error.message : 'Soal tidak ditemukan'}</p>
-          <Link to="/soal" className="mt-3 inline-block text-sm font-bold text-brand-500 hover:text-brand-600">Kembali ke Daftar Soal</Link>
-        </div>
+      <div className="max-w-[1100px] mx-auto space-y-8 pb-20 animate-in fade-in p-4 md:p-8">
+        <Card className="bg-rose-50 border-2 border-rose-100 shadow-lg rounded-[2rem] overflow-hidden text-center">
+          <CardContent className="p-16">
+            <AlertCircle className="w-12 h-12 text-rose-500 mx-auto mb-4" strokeWidth={2.5} />
+            <p className="text-xl font-bold text-rose-700 uppercase tracking-tight">{error instanceof Error ? error.message : 'Soal tidak ditemukan'}</p>
+            <Button asChild variant="outline" className="mt-8 border-2 border-rose-200 text-rose-700 hover:bg-rose-100 rounded-xl px-10 h-12">
+              <Link to="/soal">Kembali ke Daftar Soal</Link>
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     )
   }
 
   return (
-    <div className="max-w-[1100px] mx-auto space-y-8 pb-20 animate-in fade-in">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div className="flex items-center gap-4">
-          <Link to="/soal" className="group flex items-center justify-center w-10 h-10 bg-white border border-gray-200 rounded-xl text-gray-500 hover:text-brand-500 hover:border-brand-200 hover:shadow-sm transition-all active:scale-95">
-            <ArrowLeft className="w-5 h-5 group-hover:-translate-x-0.5 transition-transform" />
-          </Link>
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Pratinjau Dokumen</h1>
-            <p className="text-sm font-medium text-gray-500 mt-1">
-              {soal.mata_pelajaran}{soal.topik ? ` - ${soal.topik}` : ''} • {soal.jumlah_soal} soal
+    <div className="max-w-[1100px] mx-auto space-y-10 pb-20 animate-in fade-in p-4 md:p-8">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 px-2">
+        <div className="flex items-center gap-6">
+          <Button asChild variant="outline" size="icon" className="w-12 h-12 border-2 border-slate-200 shadow-sm hover:bg-slate-50 transition-all rounded-xl">
+            <Link to="/soal">
+              <ArrowLeft className="w-6 h-6 text-slate-600" strokeWidth={2.5} />
+            </Link>
+          </Button>
+          <div className="space-y-1">
+            <h1 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tight uppercase leading-none">Pratinjau</h1>
+            <p className="mt-2 text-base font-bold border-l-4 border-brand-500 pl-4 uppercase tracking-wider text-slate-400">
+              {soal.mata_pelajaran} {soal.topik ? ` - ${soal.topik}` : ''} • {soal.jumlah_soal} SOAL
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
           {genSuccess && (
-            <span className="text-sm font-bold text-green-600 bg-green-50 px-3 py-1.5 rounded-lg flex items-center gap-1">
-              <CheckCircle2 className="w-4 h-4" /> Dokumen siap diunduh
+            <span className="text-sm font-black text-emerald-600 bg-emerald-50 px-5 py-2.5 border-2 border-emerald-100 shadow-sm flex items-center gap-2 uppercase tracking-widest rounded-full animate-in fade-in">
+              <CheckCircle2 className="w-5 h-5" strokeWidth={3} /> Siap Unduh
             </span>
           )}
-          <button
+          <Button
             onClick={handleDownload}
             disabled={downloading}
-            className="flex items-center gap-2 px-6 py-3 bg-brand-500 text-white rounded-xl font-bold text-sm hover:bg-brand-600 transition-all shadow-md active:scale-95 disabled:opacity-50"
+            className="h-14 px-8 rounded-2xl bg-brand-600 hover:bg-brand-700 text-white shadow-lg shadow-brand-200 font-bold uppercase transition-all hover:translate-y-[-1px]"
           >
-            {downloading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />} Unduh DOCX
-          </button>
+            {downloading ? <Loader2 className="w-5 h-5 animate-spin mr-3" /> : <Download className="w-5 h-5 mr-3" strokeWidth={3} />} Unduh DOCX
+          </Button>
         </div>
       </div>
 
       {genError && (
-        <div className="flex items-center gap-2 p-4 bg-red-50 border border-red-100 rounded-xl">
-          <AlertCircle className="w-5 h-5 text-red-500 shrink-0" />
-          <p className="text-sm text-red-700 font-medium">{genError}</p>
+        <div className="flex items-center gap-3 p-5 bg-rose-50 border-2 border-rose-100 rounded-2xl shadow-sm mx-2">
+          <AlertCircle className="w-6 h-6 text-rose-500 shrink-0" strokeWidth={2.5} />
+          <p className="text-sm text-rose-700 font-bold uppercase tracking-wide">{genError}</p>
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-        <div className="lg:col-span-2 space-y-6">
-          <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-12 min-h-[600px] relative overflow-hidden group">
-            <div className="absolute inset-x-12 top-12 bottom-12 bg-gray-50 border-2 border-dashed border-gray-200 rounded-2xl flex flex-col items-center justify-center space-y-6 group-hover:bg-brand-50/20 group-hover:border-brand-100 transition-all">
-              <div className="w-20 h-20 bg-white rounded-3xl shadow-md flex items-center justify-center text-brand-500">
-                <FileText className="w-10 h-10" />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+        <div className="lg:col-span-2 space-y-10">
+          <Card className="border-2 border-slate-100 shadow-sm rounded-[2.5rem] min-h-[600px] flex items-center justify-center bg-slate-50/50 p-8 overflow-hidden group">
+            <div className="w-full max-w-lg bg-white border-2 border-slate-100 rounded-[2rem] p-12 flex flex-col items-center justify-center space-y-10 shadow-xl transition-all duration-500 group-hover:shadow-2xl">
+              <div className="w-24 h-24 bg-brand-50 border border-brand-100 rounded-3xl shadow-inner flex items-center justify-center transform group-hover:scale-110 transition-transform duration-500">
+                <FileText className="w-12 h-12 text-brand-500" strokeWidth={2} />
               </div>
-              <div className="text-center max-w-sm space-y-2">
-                <h3 className="text-lg font-bold text-gray-900">Preview Dokumen Word</h3>
-                <p className="text-sm font-medium text-gray-400 leading-relaxed">
-                  Dokumen akan di-generate menggunakan template Word di server. Klik tombol "Generate & Unduh" untuk membuat file .docx.
+              <div className="text-center space-y-4">
+                <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight">Dokumen Microsoft Word</h3>
+                <p className="text-base font-medium text-slate-500 leading-relaxed border-l-4 border-brand-500 pl-6 text-left">
+                  Klik tombol di bawah untuk menyusun dokumen final dengan tata letak resmi sekolah.
                 </p>
               </div>
-              <button
+              <Button
                 onClick={handleGenerate}
                 disabled={generating}
-                className="px-6 py-3 bg-brand-500 text-white rounded-xl text-sm font-bold hover:bg-brand-600 transition-all shadow-sm disabled:opacity-50 flex items-center gap-2"
+                className="h-16 px-10 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-black uppercase tracking-widest shadow-xl transition-all w-full active:scale-95"
               >
-                {generating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
-                {generating ? 'Generating...' : 'Generate & Unduh'}
-              </button>
+                {generating ? <Loader2 className="w-6 h-6 animate-spin mr-3" /> : <Download className="w-6 h-6 mr-3" strokeWidth={3} />}
+                {generating ? 'Memproses...' : 'Generate Dokumen'}
+              </Button>
             </div>
-          </div>
+          </Card>
 
-          <div className="bg-white rounded-3xl border border-gray-100 p-8 space-y-6">
-            <h3 className="text-sm font-black text-gray-900 uppercase tracking-widest">Pratinjau Konten Soal</h3>
-            <div className="space-y-8">
-              {soal.data_soal.slice(0, 3).map((item, idx) => (
-                <div key={idx} className="space-y-3 pb-6 border-b border-gray-50 last:border-0">
-                  <div className="flex items-start gap-3">
-                    <span className="text-brand-600 font-black text-sm">{item.nomor}.</span>
-                    <p className="text-sm font-bold text-gray-800">{item.pertanyaan}</p>
-                  </div>
-                  {item.gambar_prompt && (
-                    <div className="ml-6 p-3 bg-brand-50 rounded-xl border border-brand-100 flex items-center gap-3">
-                      <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center text-brand-500 shadow-sm">
-                        <Info className="w-4 h-4" />
-                      </div>
-                      <p className="text-[11px] font-medium text-brand-700 italic">
-                        <strong>AI Image Prompt:</strong> {item.gambar_prompt}
-                      </p>
+          <Card className="border-2 border-slate-100 shadow-sm rounded-[2rem] bg-white overflow-hidden">
+            <CardContent className="p-10">
+              <h3 className="text-xs font-black text-slate-400 uppercase tracking-[0.3em] border-b-2 border-slate-50 pb-6 mb-10">Struktur Konten Utama (Sampel)</h3>
+              <div className="space-y-12">
+                {soal.data_soal.slice(0, 3).map((item, idx) => (
+                  <div key={idx} className="space-y-6 pb-10 border-b border-slate-50 last:border-0 last:pb-0">
+                    <div className="flex items-start gap-6">
+                      <span className="bg-slate-900 text-white w-10 h-10 rounded-xl flex items-center justify-center font-black text-lg shrink-0 shadow-md shadow-slate-200">{item.nomor}</span>
+                      <p className="text-lg font-bold text-slate-800 leading-tight pt-1">{item.pertanyaan}</p>
                     </div>
-                  )}
-                </div>
-              ))}
-              {soal.data_soal.length > 3 && (
-                <p className="text-xs text-center text-gray-400 font-bold italic">... {soal.data_soal.length - 3} soal lainnya tidak ditampilkan di pratinjau ...</p>
-              )}
-            </div>
-          </div>
-        </div>
-
-        <div className="space-y-6">
-          <div className="bg-white rounded-3xl border border-gray-200 shadow-sm p-8 space-y-8">
-            <div>
-              <h3 className="text-[11px] font-black text-gray-400 tracking-widest uppercase mb-4">Metadata Dokumen</h3>
-              <div className="space-y-4">
-                {[
-                  { label: 'Mata Pelajaran', value: soal.mata_pelajaran },
-                  { label: 'Topik', value: soal.topik || '-' },
-                  { label: 'Tipe Soal', value: soal.tipe_soal },
-                  { label: 'Jumlah Soal', value: `${soal.jumlah_soal} butir` },
-                  { label: 'Tingkat Kesulitan', value: soal.difficulty },
-                  { label: 'Status', value: soal.status },
-                ].map((meta, i) => (
-                  <div key={i} className="flex justify-between items-center py-2 border-b border-gray-50">
-                    <span className="text-xs font-bold text-gray-500">{meta.label}</span>
-                    <span className="text-xs font-black text-gray-900 capitalize">{meta.value}</span>
+                    {item.gambar_prompt && (
+                      <div className="ml-16 p-6 bg-amber-50/50 border-2 border-amber-100 rounded-2xl flex items-start gap-5 shadow-inner">
+                        <div className="w-10 h-10 bg-white border border-amber-200 rounded-xl flex items-center justify-center shrink-0 shadow-sm">
+                          <Info className="w-6 h-6 text-amber-500" strokeWidth={2} />
+                        </div>
+                        <p className="text-[13px] font-bold text-amber-800 leading-relaxed italic">
+                          <span className="uppercase tracking-widest text-[10px] font-black opacity-50 block mb-1">AI Image Generation Prompt</span>
+                          {item.gambar_prompt}
+                        </p>
+                      </div>
+                    )}
                   </div>
                 ))}
+                {soal.data_soal.length > 3 && (
+                  <div className="text-center pt-4">
+                    <span className="bg-slate-50 text-slate-400 font-black text-[10px] uppercase tracking-[0.4em] px-6 py-2.5 rounded-full border border-slate-100">
+                      ... {soal.data_soal.length - 3} ITEM LAINNYA DIARSIPKAN ...
+                    </span>
+                  </div>
+                )}
               </div>
-            </div>
+            </CardContent>
+          </Card>
+        </div>
 
-            <div className="pt-4">
-              <h3 className="text-[11px] font-black text-gray-400 tracking-widest uppercase mb-6">Konfigurasi Output</h3>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between group cursor-pointer" onClick={() => setIncludeKunci(!includeKunci)}>
-                  <span className="text-sm font-bold text-gray-600 group-hover:text-gray-900 transition-colors">Halaman Kunci Jawaban</span>
-                  <div className={`w-10 h-5 rounded-full relative transition-colors ${includeKunci ? 'bg-brand-500' : 'bg-gray-200'}`}>
-                    <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow-sm transition-all ${includeKunci ? 'right-0.5' : 'left-0.5'}`}></div>
+        <div className="space-y-10">
+          <Card className="border-2 border-slate-100 shadow-sm rounded-[2rem] bg-white overflow-hidden">
+            <CardContent className="p-10 space-y-12">
+              <div>
+                <h3 className="text-[10px] font-black text-slate-300 tracking-[0.3em] uppercase mb-8 flex items-center gap-4">
+                  <div className="w-2 h-2 bg-sky-400 rounded-full"></div> Metadata
+                </h3>
+                <div className="space-y-2">
+                  {[
+                    { label: 'Subjek', value: soal.mata_pelajaran },
+                    { label: 'Topik', value: soal.topik || 'Umum' },
+                    { label: 'Tipe', value: soal.tipe_soal },
+                    { label: 'Total', value: `${soal.jumlah_soal} Butir` },
+                    { label: 'Kesulitan', value: soal.difficulty },
+                    { label: 'Status', value: soal.status },
+                  ].map((meta, i) => (
+                    <div key={i} className="flex justify-between items-center py-3.5 border-b border-slate-50 group transition-colors hover:bg-slate-50/50 px-2 rounded-lg">
+                      <span className="text-[11px] font-black uppercase text-slate-400 tracking-wider">{meta.label}</span>
+                      <span className="text-sm font-bold text-slate-900 capitalize text-right max-w-[140px] truncate" title={meta.value}>{meta.value}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="pt-4">
+                <h3 className="text-[10px] font-black text-slate-300 tracking-[0.3em] uppercase mb-10 flex items-center gap-4">
+                  <div className="w-2 h-2 bg-indigo-400 rounded-full"></div> Konfigurasi
+                </h3>
+                <div className="space-y-6">
+                  <div className="flex items-center justify-between group cursor-pointer p-2 hover:bg-slate-50 rounded-xl transition-colors" onClick={() => setIncludeKunci(!includeKunci)}>
+                    <span className="text-sm font-bold text-slate-600 group-hover:text-slate-900 transition-colors uppercase tracking-tight">Kunci Jawaban</span>
+                    <div className={`w-12 h-7 rounded-full relative transition-all duration-300 shadow-inner ${includeKunci ? 'bg-brand-500' : 'bg-slate-200'}`}>
+                      <div className={`absolute top-1 w-5 h-5 bg-white rounded-full shadow-md transition-all duration-300 ${includeKunci ? 'right-1' : 'left-1'}`}></div>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between group cursor-pointer p-2 hover:bg-slate-50 rounded-xl transition-colors" onClick={() => setIncludePembahasan(!includePembahasan)}>
+                    <span className="text-sm font-bold text-slate-600 group-hover:text-slate-900 transition-colors uppercase tracking-tight">Pembahasan</span>
+                    <div className={`w-12 h-7 rounded-full relative transition-all duration-300 shadow-inner ${includePembahasan ? 'bg-brand-500' : 'bg-slate-200'}`}>
+                      <div className={`absolute top-1 w-5 h-5 bg-white rounded-full shadow-md transition-all duration-300 ${includePembahasan ? 'right-1' : 'left-1'}`}></div>
+                    </div>
                   </div>
                 </div>
-                <div className="flex items-center justify-between group cursor-pointer" onClick={() => setIncludePembahasan(!includePembahasan)}>
-                  <span className="text-sm font-bold text-gray-600 group-hover:text-gray-900 transition-colors">Halaman Pembahasan</span>
-                  <div className={`w-10 h-5 rounded-full relative transition-colors ${includePembahasan ? 'bg-brand-500' : 'bg-gray-200'}`}>
-                    <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow-sm transition-all ${includePembahasan ? 'right-0.5' : 'left-0.5'}`}></div>
-                  </div>
-                </div>
               </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
 
-          <div className="bg-orange-50 rounded-3xl p-6 border border-orange-100 flex gap-4">
-            <Info className="w-5 h-5 text-orange-600 shrink-0 mt-0.5" />
-            <p className="text-[12px] font-bold text-orange-800 leading-relaxed">
-              Pastikan Anda telah memeriksa kunci jawaban di tahap Editor sebelum melakukan export final.
-            </p>
-          </div>
+          <Card className="bg-amber-50 border-2 border-amber-100 shadow-sm rounded-[2rem] overflow-hidden">
+            <CardContent className="p-8 flex gap-6">
+              <div className="bg-white p-3 rounded-2xl shadow-sm border border-amber-100 self-start">
+                <Info className="w-6 h-6 text-amber-500" strokeWidth={2.5} />
+              </div>
+              <p className="text-[13px] font-bold text-amber-900/70 leading-relaxed uppercase tracking-wide">
+                Validasi final sangat disarankan sebelum melakukan cetak fisik atau distribusi digital.
+              </p>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>
