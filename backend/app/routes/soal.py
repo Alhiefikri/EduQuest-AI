@@ -45,7 +45,7 @@ async def generate_soal_endpoint(request: GenerateSoalRequest):
         konten_modul = f"Mata pelajaran: {request.mata_pelajaran}. Topik: {request.topik}"
 
     try:
-        soal_list = generate_soal(
+        soal_list = await generate_soal(
             jumlah_soal=request.jumlah_soal,
             tipe_soal=request.tipe_soal,
             mata_pelajaran=request.mata_pelajaran,
@@ -62,10 +62,12 @@ async def generate_soal_endpoint(request: GenerateSoalRequest):
 
     data_soal_json = json.dumps(soal_list, ensure_ascii=False)
 
+    is_from_modul_ajar = await db.modulajar.find_unique(where={"id": request.modul_id}) is not None if request.modul_id else False
+
     try:
         soal = await db.soal.create(
             data={
-                "modulId": request.modul_id,
+                "modulId": request.modul_id if is_from_modul_ajar else None,
                 "mataPelajaran": request.mata_pelajaran,
                 "topik": request.topik,
                 "tipeSoal": request.tipe_soal,

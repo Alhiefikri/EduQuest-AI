@@ -2,12 +2,27 @@ import json
 import time
 from typing import List
 
-from app.config import AI_PROVIDER, GEMINI_API_KEY, GROQ_API_KEY
-
 SYSTEM_PROMPT = """Anda adalah guru berpengalaman yang ahli dalam membuat soal pelajaran.
 Buat soal berdasarkan KONTEN MODUL yang diberikan, BUKAN dari pengetahuan umum Anda.
 Pastikan soal relevan dengan materi, akurat, dan sesuai tingkat kesulitan.
 Output HANYA dalam format JSON yang valid, tanpa teks tambahan sebelum atau sesudah JSON."""
+
+MAX_CONTENT_CHARS = 12000
+
+
+def _truncate_content(content: str, max_chars: int = MAX_CONTENT_CHARS) -> str:
+    if len(content) <= max_chars:
+        return content
+    truncated = content[:max_chars]
+    last_period = truncated.rfind(".")
+    if last_period > max_chars * 0.8:
+        truncated = truncated[:last_period + 1]
+    return truncated + "\n\n[Konten diringkas karena terlalu panjang]"
+
+
+async def _get_ai_config() -> tuple[str, str]:
+    from app.config import get_ai_config as _get_config
+    return await _get_config()
 
 
 def _build_user_prompt(
@@ -37,7 +52,7 @@ def _build_user_prompt(
     prompt = f"""Buat {jumlah_soal} soal {tipe_label.get(tipe_soal, tipe_soal)} berdasarkan materi berikut:
 
 MATERI:
-{konten_modul}
+{_truncate_content(konten_modul)}
 
 KONFIGURASI:
 - Mata pelajaran: {mata_pelajaran}
@@ -94,13 +109,14 @@ def _parse_ai_response(response_text: str) -> List[dict]:
 
 def _generate_with_gemini(
     prompt: str,
+    api_key: str,
     max_retries: int = 3,
 ) -> str:
     from google import genai
     from google.genai import types
     from google.genai.errors import ServerError
 
-    client = genai.Client(api_key=GEMINI_API_KEY)
+    client = genai.Client(api_key=api_key)
 
     config = types.GenerateContentConfig(
         system_instruction=SYSTEM_PROMPT,
@@ -133,17 +149,19 @@ def _generate_with_gemini(
             if attempt == max_retries - 1:
                 raise RuntimeError(f"Gagal menghubungi layanan Gemini: {str(e)}")
             time.sleep(2)
+            continue
 
     raise RuntimeError("Gagal menghasilkan respons dari Gemini setelah beberapa percobaan")
 
 
 def _generate_with_groq(
     prompt: str,
+    api_key: str,
     max_retries: int = 3,
 ) -> str:
     from groq import Groq
 
-    client = Groq(api_key=GROQ_API_KEY)
+    client = Groq(api_key=api_key)
 
     messages = [
         {"role": "system", "content": SYSTEM_PROMPT},
@@ -156,7 +174,7 @@ def _generate_with_groq(
                 model="llama-3.3-70b-versatile",
                 messages=messages,
                 temperature=0.7,
-                max_tokens=8192,
+                max_tokens=4096,
                 response_format={"type": "json_object"},
             )
             return response.choices[0].message.content or ""
@@ -171,11 +189,12 @@ def _generate_with_groq(
             if attempt == max_retries - 1:
                 raise RuntimeError(f"Gagal menghubungi layanan Groq: {str(e)}")
             time.sleep(2)
+            continue
 
     raise RuntimeError("Gagal menghasilkan respons dari Groq setelah beberapa percobaan")
 
 
-def generate_soal(
+async def generate_soal(
     jumlah_soal: int,
     tipe_soal: str,
     mata_pelajaran: str,
@@ -197,10 +216,15 @@ def generate_soal(
         konten_modul=konten_modul,
     )
 
-    if AI_PROVIDER == "groq":
-        response_text = _generate_with_groq(prompt, max_retries)
+    provider, api_key = await _get_ai_config()
+
+    if not api_key:
+        raise RuntimeError("API key belum dikonfigurasi. Silakan atur di halaman Settings.")
+
+    if provider == "groq":
+        response_text = _generate_with_groq(prompt, api_key, max_retries)
     else:
-        response_text = _generate_with_gemini(prompt, max_retries)
+        response_text = _generate_with_gemini(prompt, api_key, max_retries)
 
     soal_list = _parse_ai_response(response_text)
 
@@ -208,3 +232,15 @@ def generate_soal(
         raise ValueError("AI menghasilkan daftar soal kosong")
 
     return soal_list
+
+
+def test_ai_connection(provider: str, api_key: str) -> str:
+    if not api_key:
+        raise ValueError("API key tidak boleh kosong")
+
+    if provider == "groq":
+        _generate_with_groq("Respond with exactly: {\"status\": \"ok\"}", api_key, max_retries=1)
+    else:
+        _generate_with_gemini("Respond with exactly: {\"status\": \"ok\"}", api_key, max_retries=1)
+
+    return "Koneksi berhasil"
