@@ -1,15 +1,15 @@
 import os
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
+from fastapi import FastAPI, HTTPException  # type: ignore
+from fastapi.middleware.cors import CORSMiddleware  # type: ignore
+from fastapi.staticfiles import StaticFiles  # type: ignore
 
-from app.database.connection import connect_db, disconnect_db
-from app.routes.documents import router as documents_router
-from app.routes.settings import router as settings_router
-from app.routes.soal import router as soal_router
-from app.routes.word import router as word_router
+from app.database.connection import connect_db, disconnect_db  # type: ignore
+from app.routes.documents import router as documents_router  # type: ignore
+from app.routes.settings import router as settings_router  # type: ignore
+from app.routes.soal import router as soal_router  # type: ignore
+from app.routes.word import router as word_router  # type: ignore
 
 
 @asynccontextmanager

@@ -2,7 +2,7 @@ from datetime import datetime
 import json
 from typing import List, Optional
 
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field, ConfigDict  # type: ignore
 
 
 class SoalItem(BaseModel):
@@ -76,7 +76,7 @@ class GenerateSoalResponse(BaseModel):
             status=soal.status,
             created_at=soal.createdAt,
             updated_at=soal.updatedAt,
-        )
+        )  # type: ignore
 
 
 class SoalListResponse(BaseModel):
@@ -115,7 +115,7 @@ class SoalListResponse(BaseModel):
             status=soal.status,
             created_at=soal.createdAt,
             updated_at=soal.updatedAt,
-        )
+        )  # type: ignore
 
 
 class UpdateSoalRequest(BaseModel):

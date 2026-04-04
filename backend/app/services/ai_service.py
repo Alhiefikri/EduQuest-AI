@@ -11,7 +11,7 @@ MAX_CONTENT_CHARS = 8000
 def _truncate_content(content: str, max_chars: int = MAX_CONTENT_CHARS) -> str:
     if len(content) <= max_chars:
         return content
-    truncated = content[:max_chars]
+    truncated = str(content)[:max_chars]
     last_period = truncated.rfind(".")
     if last_period > max_chars * 0.8:
         truncated = str(truncated)[:last_period + 1]
@@ -112,11 +112,11 @@ def _parse_ai_response(response_text: str) -> List[dict]:
     cleaned = response_text.strip()
 
     if cleaned.startswith("```json"):
-        cleaned = cleaned[7:]
+        cleaned = cleaned[7:]  # type: ignore
     if cleaned.startswith("```"):
-        cleaned = cleaned[3:]
+        cleaned = cleaned[3:]  # type: ignore
     if cleaned.endswith("```"):
-        cleaned = cleaned[:-3]
+        cleaned = cleaned[:-3]  # type: ignore
 
     cleaned = cleaned.strip()
 
@@ -127,7 +127,7 @@ def _parse_ai_response(response_text: str) -> List[dict]:
         start = cleaned.find("{")
         end = cleaned.rfind("}")
         if start != -1 and end != -1:
-            data = json.loads(cleaned[start:end+1])
+            data = json.loads(cleaned[start:end+1])  # type: ignore
         else:
             raise
 
@@ -233,7 +233,7 @@ async def _generate_with_openrouter(
     api_key: str,
     max_retries: int = 3,
 ) -> str:
-    from openrouter import OpenRouter
+    from openrouter import OpenRouter  # type: ignore
     
     # Model specified in ISSUE-39
     model = "qwen/qwen3.6-plus:free"

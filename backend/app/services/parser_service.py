@@ -1,8 +1,8 @@
 import io
 from typing import List, Tuple
 
-import fitz
-from docx import Document as DocxDocument
+import fitz  # type: ignore
+from docx import Document as DocxDocument  # type: ignore
 
 
 def extract_text_from_pdf(file_content: bytes) -> Tuple[str, int]:
