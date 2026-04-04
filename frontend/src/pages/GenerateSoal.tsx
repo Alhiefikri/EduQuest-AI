@@ -2,16 +2,18 @@ import { useState } from 'react'
 import { ArrowLeft, Book, CheckCircle2, Circle, Settings2, SlidersHorizontal, BrainCircuit, Rocket, FileText, ChevronRight, Loader2, AlertCircle } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useGenerateSoal } from '../hooks/useSoal'
+import { useDocuments } from '../hooks/useDocuments'
 
 export default function GenerateSoal() {
   const navigate = useNavigate()
   const generateMutation = useGenerateSoal()
+  const { documents } = useDocuments()
   const [error, setError] = useState<string | null>(null)
 
   const [sourceType, setSourceType] = useState<'modul' | 'manual'>('modul')
   const [modulId, setModulId] = useState('')
-  const [mataPelajaran, setMataPelajaran] = useState('Matematika')
-  const [topik, setTopik] = useState('Persamaan Linear Satu Variabel')
+  const [mataPelajaran, setMataPelajaran] = useState('')
+  const [topik, setTopik] = useState('')
   const [tipeSoal, setTipeSoal] = useState('pilihan_ganda')
   const [jumlahSoal, setJumlahSoal] = useState(20)
   const [difficulty, setDifficulty] = useState('sedang')
@@ -146,9 +148,9 @@ export default function GenerateSoal() {
                     className="w-full bg-white border border-gray-200 text-gray-900 text-sm font-bold rounded-xl focus:ring-2 focus:ring-brand-100 focus:border-brand-500 block px-4 py-3 outline-none shadow-xs appearance-none cursor-pointer"
                   >
                     <option value="">-- Pilih Modul --</option>
-                    <option value="modul-1">Matematika Kls 7 - Aljabar</option>
-                    <option value="modul-2">Fisika Kls 10 - Gerak Lurus</option>
-                    <option value="modul-3">Biologi Kls 11 - Sel & Genetika</option>
+                    {documents.map((doc) => (
+                      <option key={doc.id} value={doc.id}>{doc.filename}</option>
+                    ))}
                   </select>
                   <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
                     <ChevronRight className="w-4 h-4 rotate-90" />
@@ -191,7 +193,8 @@ export default function GenerateSoal() {
                   type="text"
                   value={mataPelajaran}
                   onChange={(e) => setMataPelajaran(e.target.value)}
-                  className="w-full bg-gray-50 border border-gray-100 text-gray-900 text-sm font-bold rounded-xl focus:ring-2 focus:ring-brand-100 focus:border-brand-500 block px-4 py-3 outline-none transition-all"
+                  placeholder="Contoh: Matematika, Fisika, Biologi"
+                  className="w-full bg-gray-50 border border-gray-100 text-gray-900 text-sm font-bold rounded-xl focus:ring-2 focus:ring-brand-100 focus:border-brand-500 block px-4 py-3 outline-none transition-all placeholder:text-gray-400 placeholder:font-normal"
                 />
               </div>
               <div>
