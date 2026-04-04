@@ -258,13 +258,13 @@ export default function EditSoal() {
           onDragEnd={handleDragEnd}
         >
           <SortableContext 
-            items={editedSoal.map(i => `soal-${i.nomor}-${i.pertanyaan.substring(0, 10)}`)}
+            items={editedSoal.map(i => i.id)}
             strategy={verticalListSortingStrategy}
           >
             {editedSoal.map((item, index) => (
               <SortableSoalItem
-                key={`soal-${item.nomor}-${item.pertanyaan.substring(0, 10)}`}
-                id={`soal-${item.nomor}-${item.pertanyaan.substring(0, 10)}`}
+                key={item.id}
+                id={item.id}
                 index={index}
                 item={item}
                 totalLength={editedSoal.length}
