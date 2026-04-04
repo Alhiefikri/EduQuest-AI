@@ -20,13 +20,13 @@ class TestConnectionRequest(BaseModel):
 
 @router.get("/ai")
 async def get_ai_settings():
-    return get_ai_settings_response()
+    return await get_ai_settings_response()
 
 
 @router.post("/ai")
 async def update_ai_settings(request: AISettingsRequest):
     try:
-        settings = save_ai_settings(
+        settings = await save_ai_settings(
             provider=request.provider,
             gemini_api_key=request.gemini_api_key,
             groq_api_key=request.groq_api_key,
@@ -36,7 +36,7 @@ async def update_ai_settings(request: AISettingsRequest):
 
     return {
         "message": "Pengaturan AI berhasil disimpan",
-        "provider": settings.get("provider"),
+        "provider": settings.get("ai_provider"),
     }
 
 

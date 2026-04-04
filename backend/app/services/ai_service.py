@@ -194,7 +194,7 @@ def _generate_with_groq(
     raise RuntimeError("Gagal menghasilkan respons dari Groq setelah beberapa percobaan")
 
 
-def generate_soal(
+async def generate_soal(
     jumlah_soal: int,
     tipe_soal: str,
     mata_pelajaran: str,
@@ -216,7 +216,7 @@ def generate_soal(
         konten_modul=konten_modul,
     )
 
-    provider, api_key = _get_ai_config()
+    provider, api_key = await _get_ai_config()
 
     if not api_key:
         raise RuntimeError("API key belum dikonfigurasi. Silakan atur di halaman Settings.")

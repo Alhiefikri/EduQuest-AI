@@ -1,4 +1,3 @@
-import json
 import os
 from pathlib import Path
 
@@ -12,8 +11,6 @@ DATABASE_URL = os.getenv("DATABASE_URL", f"file:{BASE_DIR}/data/soal.db")
 MAX_FILE_SIZE = 10 * 1024 * 1024
 ALLOWED_FILE_TYPES = ["application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"]
 
-SETTINGS_FILE = BASE_DIR / "data" / "ai_settings.json"
-
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 TEMPLATES_DIR = BASE_DIR / "templates"
 OUTPUTS_DIR = BASE_DIR / "outputs"
@@ -21,46 +18,61 @@ TEMPLATES_DIR.mkdir(parents=True, exist_ok=True)
 OUTPUTS_DIR.mkdir(parents=True, exist_ok=True)
 
 
-def _load_runtime_settings() -> dict:
-    if SETTINGS_FILE.exists():
-        try:
-            with open(SETTINGS_FILE) as f:
-                return json.load(f)
-        except (json.JSONDecodeError, OSError):
-            pass
-    return {}
+async def _get_db_settings() -> dict:
+    from app.database.connection import get_db
+    db = await get_db()
+    settings = {}
+    try:
+        rows = await db.appsettings.find_many()
+        for row in rows:
+            settings[row.key] = row.value
+    except Exception:
+        pass
+    return settings
 
 
-def get_ai_config() -> tuple[str, str]:
-    settings = _load_runtime_settings()
-    provider = settings.get("provider") or os.getenv("AI_PROVIDER", "gemini")
+async def _save_db_setting(key: str, value: str) -> None:
+    from app.database.connection import get_db
+    db = await get_db()
+    await db.appsettings.upsert(
+        where={"key": key},
+        data={
+            "update": {"value": value},
+            "create": {"key": key, "value": value},
+        },
+    )
+
+
+async def get_ai_config() -> tuple[str, str]:
+    settings = await _get_db_settings()
+    provider = settings.get("ai_provider") or os.getenv("AI_PROVIDER", "gemini")
     gemini_key = settings.get("gemini_api_key") or os.getenv("GEMINI_API_KEY", "")
     groq_key = settings.get("groq_api_key") or os.getenv("GROQ_API_KEY", "")
     api_key = groq_key if provider == "groq" else gemini_key
     return provider, api_key
 
 
-def save_ai_settings(provider: str, gemini_api_key: str = "", groq_api_key: str = "") -> dict:
-    settings = _load_runtime_settings()
+async def save_ai_settings(provider: str, gemini_api_key: str = "", groq_api_key: str = "") -> dict:
+    settings = await _get_db_settings()
     if provider == "groq":
-        settings["provider"] = "groq"
+        settings["ai_provider"] = "groq"
+        await _save_db_setting("ai_provider", "groq")
         if groq_api_key:
             settings["groq_api_key"] = groq_api_key
+            await _save_db_setting("groq_api_key", groq_api_key)
     else:
-        settings["provider"] = "gemini"
+        settings["ai_provider"] = "gemini"
+        await _save_db_setting("ai_provider", "gemini")
         if gemini_api_key:
             settings["gemini_api_key"] = gemini_api_key
-
-    SETTINGS_FILE.parent.mkdir(parents=True, exist_ok=True)
-    with open(SETTINGS_FILE, "w") as f:
-        json.dump(settings, f)
+            await _save_db_setting("gemini_api_key", gemini_api_key)
 
     return settings
 
 
-def get_ai_settings_response() -> dict:
-    settings = _load_runtime_settings()
-    provider = settings.get("provider") or os.getenv("AI_PROVIDER", "gemini")
+async def get_ai_settings_response() -> dict:
+    settings = await _get_db_settings()
+    provider = settings.get("ai_provider") or os.getenv("AI_PROVIDER", "gemini")
     gemini_key = os.getenv("GEMINI_API_KEY", "")
     groq_key = os.getenv("GROQ_API_KEY", "")
 
