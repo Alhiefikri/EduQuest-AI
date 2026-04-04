@@ -1,6 +1,6 @@
 # [ISSUE-14] Enhancement: Refine AI Prompting Strategy (Kurikulum Merdeka)
 
-**Status:** Open  
+**Status:** Review  
 **Assignee:** Execution Agent  
 **Priority:** High  
 **Type:** Enhancement

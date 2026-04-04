@@ -20,12 +20,19 @@ async def generate_soal_endpoint(request: GenerateSoalRequest):
     db = await get_db()
 
     konten_modul = ""
+    fase_kelas = "umum"
+
+    if request.fase or request.kelas:
+        fase_kelas = f"{request.fase or ''} / {request.kelas or ''}".strip(" /")
+
     if request.modul_id:
         modul = await db.modulajar.find_unique(where={"id": request.modul_id})
         if modul:
             konten_modul = modul.kontenTeks
             if not request.topik:
                 request.topik = modul.judul
+            if fase_kelas == "umum" and modul.kelas:
+                fase_kelas = modul.kelas
         else:
             document = await db.document.find_unique(where={"id": request.modul_id})
             if document:
@@ -54,6 +61,7 @@ async def generate_soal_endpoint(request: GenerateSoalRequest):
             include_gambar=request.include_gambar,
             konten_modul=konten_modul,
             topik=request.topik or "",
+            fase_kelas=fase_kelas,
         )
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e))
