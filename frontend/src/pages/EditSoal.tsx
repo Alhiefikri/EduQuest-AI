@@ -8,6 +8,8 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 
 export default function EditSoal() {
@@ -23,14 +25,16 @@ export default function EditSoal() {
   
   const [regenerateIndex, setRegenerateIndex] = useState<number | null>(null)
   const [regenerateFeedback, setRegenerateFeedback] = useState('')
-  const [regenerateGayaSoal, setRegenerateGayaSoal] = useState('formal_academic')
+  const [regenerateGayaSoal, setRegenerateGayaSoal] = useState<string[]>(['formal_academic'])
 
   useEffect(() => {
     if (soal?.data_soal) {
       setEditedSoal(soal.data_soal)
     }
     if (soal?.gaya_soal) {
-      setRegenerateGayaSoal(soal.gaya_soal)
+      // Ensure it's an array for the state
+      const gaya = Array.isArray(soal.gaya_soal) ? soal.gaya_soal : [soal.gaya_soal]
+      setRegenerateGayaSoal(gaya)
     }
   }, [soal])
 
@@ -233,19 +237,49 @@ export default function EditSoal() {
                     </Button>
                   </div>
                   <CardContent className="p-6 bg-slate-50 space-y-4 rounded-b-2xl">
-                    <div className="space-y-3">
-                      <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Gaya Soal (Context)</label>
-                      <Select value={regenerateGayaSoal} onValueChange={setRegenerateGayaSoal}>
-                        <SelectTrigger className="border-2 border-slate-200 h-12 bg-white text-sm font-bold rounded-xl shadow-sm uppercase tracking-wide focus:ring-brand-500/20">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent className="border-2 border-slate-100 rounded-xl shadow-xl">
-                          <SelectItem value="light_story" className="font-bold py-2">CERITA RINGAN</SelectItem>
-                          <SelectItem value="formal_academic" className="font-bold py-2">AKADEMIK FORMAL</SelectItem>
-                          <SelectItem value="case_study" className="font-bold py-2">STUDI KASUS</SelectItem>
-                          <SelectItem value="standard_exam" className="font-bold py-2">UJIAN STANDAR</SelectItem>
-                        </SelectContent>
-                      </Select>
+                    <div className="space-y-4">
+                      <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Gaya Soal (Multi-Select)</label>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {[
+                          { id: "light_story", label: "Cerita Ringan" },
+                          { id: "formal_academic", label: "Akademik Formal" },
+                          { id: "case_study", label: "Studi Kasus" },
+                          { id: "standard_exam", label: "Ujian Standar" },
+                          { id: "hots", label: "Tingkat Tinggi (HOTS)" },
+                        ].map((style) => (
+                          <div 
+                            key={style.id} 
+                            className={`flex items-center space-x-2.5 p-3 rounded-xl border-2 transition-all cursor-pointer ${
+                              regenerateGayaSoal.includes(style.id) 
+                                ? 'bg-brand-50 border-brand-200' 
+                                : 'bg-white border-slate-200 hover:border-slate-300'
+                            }`}
+                            onClick={() => {
+                              if (regenerateGayaSoal.includes(style.id)) {
+                                setRegenerateGayaSoal(regenerateGayaSoal.filter(id => id !== style.id))
+                              } else {
+                                setRegenerateGayaSoal([...regenerateGayaSoal, style.id])
+                              }
+                            }}
+                          >
+                            <Checkbox 
+                              id={`reg-${style.id}`} 
+                              checked={regenerateGayaSoal.includes(style.id)}
+                              onCheckedChange={(checked) => {
+                                if (checked) {
+                                  setRegenerateGayaSoal([...regenerateGayaSoal, style.id])
+                                } else {
+                                  setRegenerateGayaSoal(regenerateGayaSoal.filter(id => id !== style.id))
+                                }
+                              }}
+                              className="border-2 border-slate-300 data-[state=checked]:bg-brand-500 data-[state=checked]:border-brand-500 w-4 h-4"
+                            />
+                            <Label htmlFor={`reg-${style.id}`} className="text-xs font-bold text-slate-700 cursor-pointer select-none">
+                              {style.label}
+                            </Label>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                     <div className="space-y-3">
                       <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Instruksi Tambahan (Opsional)</label>

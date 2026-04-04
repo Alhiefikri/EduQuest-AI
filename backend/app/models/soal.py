@@ -23,7 +23,7 @@ class GenerateSoalRequest(BaseModel):
     tipe_soal: str = Field(..., pattern="^(pilihan_ganda|isian|essay|campuran)$")
     jumlah_soal: int = Field(..., ge=1, le=100)
     difficulty: str = Field(..., pattern="^(mudah|sedang|sulit|campuran)$")
-    gaya_soal: str = "formal"
+    gaya_soal: List[str] = Field(default_factory=lambda: ["formal_academic"])
     include_pembahasan: bool = True
     include_kunci: bool = True
     include_gambar: bool = False
@@ -36,7 +36,7 @@ class GenerateSoalResponse(BaseModel):
     topik: Optional[str]
     tipe_soal: str
     difficulty: str
-    gaya_soal: Optional[str] = "formal"
+    gaya_soal: List[str] = Field(default_factory=list)
     jumlah_soal: int
     include_pembahasan: bool
     include_kunci: bool
@@ -58,10 +58,8 @@ class GenerateSoalResponse(BaseModel):
             topik=soal.topik,
             tipe_soal=soal.tipeSoal,
             difficulty=soal.difficulty,
-            # We use .get() or getattr safely if Prisma schema doesn't have it yet, 
-            # or default it if we don't plan to save it to DB immediately.
-            # Assuming we might not have added it to Prisma schema yet, defaulting is safer.
-            gaya_soal=getattr(soal, 'gayaSoal', "formal"), 
+            # Handle gaya_soal if it's a string (legacy) or missing
+            gaya_soal=cls._parse_gaya_soal(getattr(soal, 'gayaSoal', "formal_academic")),
             jumlah_soal=soal.jumlahSoal,
             include_pembahasan=soal.includePembahasan,
             include_kunci=soal.includeKunci,
@@ -112,7 +110,7 @@ class UpdateSoalRequest(BaseModel):
 
 class RegenerateSingleSoalRequest(BaseModel):
     nomor_soal: int
-    gaya_soal: str = "formal"
+    gaya_soal: List[str] = Field(default_factory=lambda: ["formal_academic"])
     feedback: Optional[str] = None
 
 

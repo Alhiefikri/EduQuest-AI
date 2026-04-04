@@ -26,14 +26,27 @@ async def _get_ai_config() -> tuple[str, str]:
     return await _get_config()
 
 
-def _get_gaya_instruction(gaya_soal: str) -> str:
+def _get_gaya_instruction(gaya_soal: List[str]) -> str:
     gaya_map = {
-        "light_story": "Gaya: Cerita Ringan. Berikan konteks berupa cerita atau skenario sehari-hari yang ringan sebelum masuk ke inti pertanyaan.",
-        "formal_academic": "Gaya: Akademik Formal. Gunakan bahasa yang baku, lugas, dan berfokus pada fakta atau teori tanpa narasi tambahan.",
-        "case_study": "Gaya: Studi Kasus. Sajikan pertanyaan dalam bentuk analisis situasi atau kasus nyata yang relevan dengan materi.",
-        "standard_exam": "Gaya: Ujian Standar. Gunakan format pertanyaan ujian langsung (seperti UN/SNBT) yang singkat, padat, dan jelas."
+        "light_story": "Cerita Ringan (berikan konteks berupa cerita/skenario sehari-hari)",
+        "formal_academic": "Akademik Formal (bahasa baku, lugas, fokus teori/fakta)",
+        "case_study": "Studi Kasus (analisis situasi/kasus nyata relevan)",
+        "standard_exam": "Ujian Standar (singkat, padat, jelas seperti UN/SNBT)",
+        "hots": "HOTS (Higher Order Thinking Skills - menguji analisis, evaluasi, dan kreasi)"
     }
-    return gaya_map.get(gaya_soal, gaya_map["formal_academic"])
+    
+    if not gaya_soal:
+        return gaya_map["formal_academic"]
+        
+    instructions = []
+    for g in gaya_soal:
+        if g in gaya_map:
+            instructions.append(gaya_map[g])
+    
+    if not instructions:
+        return gaya_map["formal_academic"]
+        
+    return "Gabungan Gaya: " + ", ".join(instructions) + ". Pastikan soal mencerminkan kombinasi elemen-elemen tersebut."
 
 
 def _build_user_prompt(
@@ -42,7 +55,7 @@ def _build_user_prompt(
     mata_pelajaran: str,
     topik: str,
     difficulty: str,
-    gaya_soal: str,
+    gaya_soal: List[str],
     include_pembahasan: bool,
     include_gambar: bool,
     konten_modul: str,
@@ -236,6 +249,7 @@ async def generate_soal(
     tipe_soal: str,
     mata_pelajaran: str,
     difficulty: str,
+    gaya_soal: List[str],
     include_pembahasan: bool,
     include_gambar: bool,
     konten_modul: str,
@@ -249,6 +263,7 @@ async def generate_soal(
         mata_pelajaran=mata_pelajaran,
         topik=topik,
         difficulty=difficulty,
+        gaya_soal=gaya_soal,
         include_pembahasan=include_pembahasan,
         include_gambar=include_gambar,
         konten_modul=konten_modul,
@@ -279,7 +294,7 @@ def _build_regenerate_prompt(
     mata_pelajaran: str,
     topik: str,
     difficulty: str,
-    gaya_soal: str,
+    gaya_soal: List[str],
     include_pembahasan: bool,
     include_gambar: bool,
     konten_modul: str,
@@ -363,7 +378,7 @@ async def regenerate_single_soal(
     tipe_soal: str,
     mata_pelajaran: str,
     difficulty: str,
-    gaya_soal: str,
+    gaya_soal: List[str],
     include_pembahasan: bool,
     include_gambar: bool,
     konten_modul: str,

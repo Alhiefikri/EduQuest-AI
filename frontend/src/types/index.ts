@@ -33,7 +33,7 @@ export interface SoalResponse {
   topik: string | null
   tipe_soal: string
   difficulty: string
-  gaya_soal?: string
+  gaya_soal?: string[]
   jumlah_soal: number
   include_pembahasan: boolean
   include_kunci: boolean
@@ -51,7 +51,7 @@ export interface SoalListResponse {
   topik: string | null
   tipe_soal: string
   difficulty: string
-  gaya_soal?: string
+  gaya_soal?: string[]
   jumlah_soal: number
   status: string
   created_at: string
@@ -67,7 +67,7 @@ export interface GenerateSoalRequest {
   tipe_soal: string
   jumlah_soal: number
   difficulty: string
-  gaya_soal?: string
+  gaya_soal?: string[]
   include_pembahasan: boolean
   include_kunci: boolean
   include_gambar: boolean
@@ -97,7 +97,7 @@ export interface GenerateWordResponse {
 
 export interface RegenerateSingleSoalRequest {
   nomor_soal: number
-  gaya_soal?: string
+  gaya_soal?: string[]
   feedback?: string
 }
 

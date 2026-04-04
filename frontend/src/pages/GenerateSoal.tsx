@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ArrowLeft, Book, CheckCircle2, Circle, Settings2, SlidersHorizontal, BrainCircuit, Rocket, FileText, ChevronRight, Loader2, AlertCircle } from 'lucide-react'
+import { ArrowLeft, Book, CheckCircle2, Circle, Settings2, SlidersHorizontal, BrainCircuit, Rocket, FileText, ChevronRight, Loader2, AlertCircle, Wand2 } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useGenerateSoal } from '../hooks/useSoal'
 import { useDocuments } from '../hooks/useDocuments'
@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 
 export default function GenerateSoal() {
@@ -22,7 +24,7 @@ export default function GenerateSoal() {
   const [fase, setFase] = useState('')
   const [kelas, setKelas] = useState('')
   const [tipeSoal, setTipeSoal] = useState('pilihan_ganda')
-  const [gayaSoal, setGayaSoal] = useState('formal_academic')
+  const [gayaSoal, setGayaSoal] = useState<string[]>(['formal_academic'])
   const [jumlahSoal, setJumlahSoal] = useState(20)
   const [difficulty, setDifficulty] = useState('sedang')
   const [includePembahasan, setIncludePembahasan] = useState(true)
@@ -297,19 +299,49 @@ export default function GenerateSoal() {
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-4">
-                  <label className="block text-sm font-black text-slate-400 uppercase tracking-widest">Gaya Soal (Context)</label>
-                  <Select value={gayaSoal} onValueChange={setGayaSoal}>
-                    <SelectTrigger className="border-2 border-slate-200 h-14 bg-white text-base font-bold rounded-xl shadow-sm uppercase tracking-wide">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="border-2 border-slate-100 rounded-xl shadow-xl">
-                      <SelectItem value="light_story" className="font-bold py-3">CERITA RINGAN</SelectItem>
-                      <SelectItem value="formal_academic" className="font-bold py-3">AKADEMIK FORMAL</SelectItem>
-                      <SelectItem value="case_study" className="font-bold py-3">STUDI KASUS</SelectItem>
-                      <SelectItem value="standard_exam" className="font-bold py-3">UJIAN STANDAR</SelectItem>
-                    </SelectContent>
-                  </Select>
+                <div className="space-y-6">
+                  <label className="block text-sm font-black text-slate-400 uppercase tracking-widest">Gaya Soal (Multi-Select)</label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {[
+                      { id: "light_story", label: "Cerita Ringan" },
+                      { id: "formal_academic", label: "Akademik Formal" },
+                      { id: "case_study", label: "Studi Kasus" },
+                      { id: "standard_exam", label: "Ujian Standar" },
+                      { id: "hots", label: "Tingkat Tinggi (HOTS)" },
+                    ].map((style) => (
+                      <div 
+                        key={style.id} 
+                        className={`flex items-center space-x-3 p-4 rounded-xl border-2 transition-all cursor-pointer ${
+                          gayaSoal.includes(style.id) 
+                            ? 'bg-brand-50 border-brand-200' 
+                            : 'bg-slate-50/50 border-slate-100 hover:border-slate-200'
+                        }`}
+                        onClick={() => {
+                          if (gayaSoal.includes(style.id)) {
+                            setGayaSoal(gayaSoal.filter(id => id !== style.id))
+                          } else {
+                            setGayaSoal([...gayaSoal, style.id])
+                          }
+                        }}
+                      >
+                        <Checkbox 
+                          id={style.id} 
+                          checked={gayaSoal.includes(style.id)}
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              setGayaSoal([...gayaSoal, style.id])
+                            } else {
+                              setGayaSoal(gayaSoal.filter(id => id !== style.id))
+                            }
+                          }}
+                          className="border-2 border-slate-300 data-[state=checked]:bg-brand-500 data-[state=checked]:border-brand-500 w-5 h-5"
+                        />
+                        <Label htmlFor={style.id} className="text-sm font-bold text-slate-700 cursor-pointer select-none">
+                          {style.label}
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
                 </div>
                 <div className="pt-6 border-t border-slate-50 space-y-6">
                   <label className="block text-sm font-black text-slate-400 uppercase tracking-widest">Opsi Output Tambahan</label>
