@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
-import { Save, FileCheck, ArrowLeft, Plus, Trash2, GripVertical, ChevronDown, ChevronUp, Loader2, AlertCircle } from 'lucide-react'
+import { Save, FileCheck, ArrowLeft, Plus, Trash2, GripVertical, ChevronDown, ChevronUp, Loader2, AlertCircle, RefreshCcw, X } from 'lucide-react'
 import { Link, useParams, useNavigate } from 'react-router-dom'
-import { useSoalDetail, useUpdateSoal } from '../hooks/useSoal'
+import { useSoalDetail, useUpdateSoal, useRegenerateSingleSoal } from '../hooks/useSoal'
 import type { SoalItem } from '../types'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -13,10 +13,15 @@ export default function EditSoal() {
   const navigate = useNavigate()
   const { data: soal, isLoading, error } = useSoalDetail(id || '')
   const updateMutation = useUpdateSoal()
+  const regenerateMutation = useRegenerateSingleSoal()
   const [editedSoal, setEditedSoal] = useState<SoalItem[]>([])
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
   const [saveSuccess, setSaveSuccess] = useState(false)
+  
+  const [regenerateIndex, setRegenerateIndex] = useState<number | null>(null)
+  const [regenerateFeedback, setRegenerateFeedback] = useState('')
+
 
   useEffect(() => {
     if (soal?.data_soal) {
@@ -62,13 +67,36 @@ export default function EditSoal() {
     setEditedSoal((prev) => [
       ...prev,
       { 
-        nomor: prev.length + 1, 
+        nomor: prev.length > 0 ? Math.max(...prev.map(i => i.nomor)) + 1 : 1, 
         pertanyaan: '', 
         jawaban: '', 
         pilihan: ['A. ', 'B. ', 'C. ', 'D. '], 
         pembahasan: '' 
       },
     ])
+  }
+
+  const handleRegenerate = async () => {
+    if (regenerateIndex === null || !id) return
+    const itemToRegenerate = editedSoal[regenerateIndex]
+    
+    try {
+      const newSoalItem = await regenerateMutation.mutateAsync({
+        id,
+        data: {
+          nomor_soal: itemToRegenerate.nomor,
+          feedback: regenerateFeedback || undefined,
+        },
+      })
+      
+      setEditedSoal(prev => 
+        prev.map((item, i) => (i === regenerateIndex ? newSoalItem : item))
+      )
+      setRegenerateIndex(null)
+      setRegenerateFeedback('')
+    } catch (err) {
+      alert('Gagal regenerate soal. ' + (err instanceof Error ? err.message : ''))
+    }
   }
 
   if (isLoading) {
@@ -148,20 +176,72 @@ export default function EditSoal() {
                 <span className="bg-slate-900 text-white text-[10px] font-black px-4 py-1.5 rounded-full uppercase tracking-[0.2em] shadow-sm">Butir Soal {item.nomor}</span>
               </div>
               <div className="flex items-center gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => setRegenerateIndex(index)}
+                  className="h-9 px-3 hover:bg-brand-50 text-brand-600 border-brand-200 rounded-lg flex items-center gap-2 text-[10px] font-black uppercase tracking-wider"
+                >
+                  <RefreshCcw className="w-3.5 h-3.5" strokeWidth={2.5} />
+                  <span className="hidden sm:inline">Regenerate</span>
+                </Button>
+                <div className="w-px h-6 bg-slate-200 mx-2"></div>
                 <Button variant="ghost" size="icon" className="h-9 w-9 hover:bg-slate-200 text-slate-400 rounded-lg">
                   <ChevronUp className="w-4 h-4" />
                 </Button>
                 <Button variant="ghost" size="icon" className="h-9 w-9 hover:bg-slate-200 text-slate-400 rounded-lg">
                   <ChevronDown className="w-4 h-4" />
                 </Button>
-                <div className="w-px h-6 bg-slate-200 mx-2"></div>
                 <Button variant="ghost" size="icon" onClick={() => removeSoalItem(index)} className="h-9 w-9 hover:bg-rose-50 hover:text-rose-600 text-slate-300 rounded-lg transition-all">
                   <Trash2 className="w-4 h-4" />
                 </Button>
               </div>
             </div>
 
-            <CardContent className="p-10 space-y-12">
+            {/* Regenerate Modal for this item */}
+            {regenerateIndex === index && (
+              <div className="absolute inset-0 z-10 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm rounded-[2rem] p-6 animate-in fade-in">
+                <Card className="w-full max-w-lg border-2 border-slate-200 shadow-2xl rounded-2xl">
+                  <div className="flex items-center justify-between p-5 border-b border-slate-100 bg-white rounded-t-2xl">
+                    <h3 className="font-bold text-slate-900 flex items-center gap-2">
+                      <RefreshCcw className="w-5 h-5 text-brand-500" />
+                      Regenerate Soal {item.nomor}
+                    </h3>
+                    <Button variant="ghost" size="icon" onClick={() => {
+                      setRegenerateIndex(null); 
+                      setRegenerateFeedback('');
+                    }}>
+                      <X className="w-5 h-5 text-slate-400" />
+                    </Button>
+                  </div>
+                  <CardContent className="p-6 bg-slate-50 space-y-4 rounded-b-2xl">
+                    <p className="text-sm font-medium text-slate-600">
+                      Berikan instruksi spesifik ke AI tentang bagaimana soal ini harus diubah (opsional).
+                    </p>
+                    <Textarea 
+                      placeholder="Contoh: Buat lebih sulit, ganti ke konteks bermain bola, gunakan bahasa yang lebih sederhana..."
+                      value={regenerateFeedback}
+                      onChange={(e) => setRegenerateFeedback(e.target.value)}
+                      className="bg-white border-2 border-slate-200 rounded-xl focus-visible:ring-brand-500/20"
+                      rows={3}
+                    />
+                    <div className="flex justify-end gap-3 pt-2">
+                      <Button variant="outline" onClick={() => setRegenerateIndex(null)} className="rounded-xl font-bold">Batal</Button>
+                      <Button 
+                        onClick={handleRegenerate}
+                        disabled={regenerateMutation.isPending}
+                        className="rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-bold px-6"
+                      >
+                        {regenerateMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <RefreshCcw className="w-4 h-4 mr-2" />}
+                        Generate Ulang
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+
+            <CardContent className="p-10 space-y-12 relative z-0">
               <div className="space-y-4">
                 <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Deskripsi Pertanyaan</label>
                 <Textarea

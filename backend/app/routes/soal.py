@@ -9,8 +9,10 @@ from app.models.soal import (
     GenerateSoalResponse,
     SoalListResponse,
     UpdateSoalRequest,
+    RegenerateSingleSoalRequest,
+    SoalItem,
 )
-from app.services.ai_service import generate_soal
+from app.services.ai_service import generate_soal, regenerate_single_soal
 
 router = APIRouter(prefix="/api/v1/soal", tags=["soal"])
 
@@ -191,6 +193,62 @@ async def update_soal(soal_id: str, request: UpdateSoalRequest):
         )
 
     return GenerateSoalResponse.from_prisma(updated_soal)
+
+
+@router.post("/{soal_id}/regenerate", response_model=SoalItem)
+async def regenerate_soal_item(soal_id: str, request: RegenerateSingleSoalRequest):
+    db = await get_db()
+    
+    try:
+        soal = await db.soal.find_unique(where={"id": soal_id})
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Gagal mengambil soal: {str(e)}")
+
+    if not soal:
+        raise HTTPException(status_code=404, detail="Soal tidak ditemukan")
+
+    data_soal = json.loads(soal.dataSoal)
+    
+    target_item = next((item for item in data_soal if item["nomor"] == request.nomor_soal), None)
+    if not target_item:
+        raise HTTPException(status_code=404, detail=f"Soal nomor {request.nomor_soal} tidak ditemukan")
+
+    konten_modul = ""
+    fase_kelas = "umum"
+
+    if soal.modulId:
+        modul = await db.modulajar.find_unique(where={"id": soal.modulId})
+        if modul:
+            konten_modul = modul.kontenTeks
+            if modul.kelas:
+                fase_kelas = modul.kelas
+        else:
+            document = await db.document.find_unique(where={"id": soal.modulId})
+            if document:
+                konten_modul = document.content
+                
+    if not konten_modul:
+        konten_modul = f"Mata pelajaran: {soal.mataPelajaran}. Topik: {soal.topik}"
+
+    try:
+        new_soal = await regenerate_single_soal(
+            soal_lama=target_item,
+            tipe_soal=soal.tipeSoal,
+            mata_pelajaran=soal.mataPelajaran,
+            difficulty=soal.difficulty,
+            include_pembahasan=soal.includePembahasan,
+            include_gambar=soal.includeGambar,
+            konten_modul=konten_modul,
+            topik=soal.topik or "",
+            fase_kelas=fase_kelas,
+            feedback_user=request.feedback,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=422, detail=str(e))
+    except RuntimeError as e:
+        raise HTTPException(status_code=503, detail=str(e))
+
+    return new_soal
 
 
 @router.delete("/{soal_id}", status_code=204)

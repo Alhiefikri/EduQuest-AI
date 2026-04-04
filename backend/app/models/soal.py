@@ -104,6 +104,11 @@ class UpdateSoalRequest(BaseModel):
     topik: Optional[str] = None
 
 
+class RegenerateSingleSoalRequest(BaseModel):
+    nomor_soal: int
+    feedback: Optional[str] = None
+
+
 class ErrorResponse(BaseModel):
     detail: str
     error_code: Optional[str] = None

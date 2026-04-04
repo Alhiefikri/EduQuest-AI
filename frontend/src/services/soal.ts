@@ -1,4 +1,4 @@
-import type { GenerateSoalRequest, GenerateWordRequest, GenerateWordResponse, SoalListResponse, SoalResponse, UpdateSoalRequest } from '../types'
+import type { GenerateSoalRequest, GenerateWordRequest, GenerateWordResponse, SoalListResponse, SoalResponse, UpdateSoalRequest, SoalItem, RegenerateSingleSoalRequest } from '../types'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
@@ -84,4 +84,11 @@ export const downloadWord = async (soalId: string): Promise<void> => {
   a.click()
   window.URL.revokeObjectURL(url)
   document.body.removeChild(a)
+}
+
+export const regenerateSingleSoal = async (id: string, data: RegenerateSingleSoalRequest): Promise<SoalItem> => {
+  return request<SoalItem>(`/api/v1/soal/${id}/regenerate`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  })
 }

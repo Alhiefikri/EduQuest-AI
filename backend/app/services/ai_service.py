@@ -259,6 +259,131 @@ async def generate_soal(
     return soal_list
 
 
+def _build_regenerate_prompt(
+    soal_lama: dict,
+    tipe_soal: str,
+    mata_pelajaran: str,
+    topik: str,
+    difficulty: str,
+    include_pembahasan: bool,
+    include_gambar: bool,
+    konten_modul: str,
+    fase_kelas: str = "umum",
+    feedback_user: str = None,
+) -> str:
+    tipe_label = {
+        "pilihan_ganda": "pilihan ganda (4 opsi: A, B, C, D)",
+        "isian": "isian singkat",
+        "essay": "essay/uraian",
+        "campuran": "campuran pilihan ganda, isian, dan essay",
+    }
+
+    difficulty_instruction = {
+        "mudah": "tingkat dasar, menguji pemahaman konsep sederhana",
+        "sedang": "tingkat menengah, menguji penerapan konsep",
+        "sulit": "tingkat lanjut, menguji analisis dan evaluasi",
+        "campuran": "distribusi merata antara mudah, sedang, dan sulit",
+    }
+
+    # Dynamic JSON Schema
+    json_item = {
+        "nomor": soal_lama.get("nomor", 1),
+        "pertanyaan": "...",
+    }
+    if tipe_soal in ["pilihan_ganda", "campuran"]:
+        json_item["pilihan"] = ["A. ...", "B. ...", "C. ...", "D. ..."]
+    
+    json_item["jawaban"] = "..."
+    
+    if include_pembahasan:
+        json_item["pembahasan"] = "..."
+    
+    if include_gambar:
+        json_item["gambar_prompt"] = "Deskripsi visual sederhana untuk ilustrasi soal ini"
+
+    schema_str = json.dumps({"soal": [json_item]}, indent=2)
+    
+    soal_lama_str = json.dumps(soal_lama, indent=2, ensure_ascii=False)
+    
+    feedback_section = f"\nInstruksi Khusus dari Guru (Wajib Diikuti):\n{feedback_user}\n" if feedback_user else ""
+
+    prompt = f"""Buat 1 soal BARU yang BERBEDA dari soal lama berikut, tetap berdasarkan materi yang sama.
+
+Soal Lama:
+{soal_lama_str}
+
+Parameter Soal Baru:
+Fase/Kelas: {fase_kelas}
+Mata Pelajaran: {mata_pelajaran}
+Tujuan Pembelajaran / Topik: {topik if topik else "Sesuaikan dengan materi"}
+Level Kognitif: {difficulty_instruction.get(difficulty, difficulty)}
+Tipe Soal: {tipe_label.get(tipe_soal, tipe_soal)}
+{feedback_section}
+Ringkasan Materi:
+{_truncate_content(konten_modul)}
+
+Instruksi Khusus (Wajib Dipatuhi):
+1. **DILARANG KERAS** membuat soal tentang kegiatan belajar di kelas, metode mengajar guru, langkah-langkah pembelajaran, atau alat peraga yang digunakan guru.
+2. **FOKUS HANYA** pada materi/fakta/konsep yang harus dikuasai oleh siswa.
+3. **Contextual Storytelling**: Bungkus soal dalam skenario atau cerita pendek sehari-hari yang relevan dengan usia siswa (misal: saat bermain, membantu orang tua, atau berbelanja di kantin).
+4. Bahasa harus disesuaikan untuk anak-anak sekolah/siswa.
+5. KHUSUS Fase A (Kelas 1-2): Gunakan kalimat sangat pendek, kosakata dasar, dan konsep konkret.
+6. Output HANYA berupa JSON valid sesuai skema berikut:
+
+{schema_str}
+
+PENTING:
+- Jangan tambahkan teks pengantar atau penutup apa pun.
+- Pastikan soal benar-benar berdasarkan materi yang diberikan.
+- Jawaban harus akurat dan pembahasan jelas."""
+
+    return prompt
+
+
+async def regenerate_single_soal(
+    soal_lama: dict,
+    tipe_soal: str,
+    mata_pelajaran: str,
+    difficulty: str,
+    include_pembahasan: bool,
+    include_gambar: bool,
+    konten_modul: str,
+    topik: str = "",
+    fase_kelas: str = "umum",
+    feedback_user: str = None,
+    max_retries: int = 3,
+) -> dict:
+    prompt = _build_regenerate_prompt(
+        soal_lama=soal_lama,
+        tipe_soal=tipe_soal,
+        mata_pelajaran=mata_pelajaran,
+        topik=topik,
+        difficulty=difficulty,
+        include_pembahasan=include_pembahasan,
+        include_gambar=include_gambar,
+        konten_modul=konten_modul,
+        fase_kelas=fase_kelas,
+        feedback_user=feedback_user,
+    )
+
+    provider, api_key = await _get_ai_config()
+
+    if not api_key:
+        raise RuntimeError("API key belum dikonfigurasi. Silakan atur di halaman Settings.")
+
+    if provider == "groq":
+        response_text = await _generate_with_groq(prompt, api_key, max_retries)
+    else:
+        response_text = await _generate_with_gemini(prompt, api_key, max_retries)
+
+    soal_list = _parse_ai_response(response_text)
+
+    if not soal_list or len(soal_list) == 0:
+        raise ValueError("AI gagal menghasilkan soal pengganti")
+
+    return soal_list[0]
+
+
 async def test_ai_connection(provider: str, api_key: str) -> str:
     if not api_key:
         raise ValueError("API key tidak boleh kosong")

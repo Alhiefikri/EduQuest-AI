@@ -92,6 +92,11 @@ export interface GenerateWordResponse {
   message: string
 }
 
+export interface RegenerateSingleSoalRequest {
+  nomor_soal: number
+  feedback?: string
+}
+
 export interface ApiError {
   detail: string
   error_code?: string

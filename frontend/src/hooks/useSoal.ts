@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { generateSoal, getSoalList, getSoalDetail, updateSoal, deleteSoal } from '../services/soal'
-import type { GenerateSoalRequest, UpdateSoalRequest } from '../types'
+import { generateSoal, getSoalList, getSoalDetail, updateSoal, deleteSoal, regenerateSingleSoal } from '../services/soal'
+import type { GenerateSoalRequest, UpdateSoalRequest, RegenerateSingleSoalRequest, SoalItem } from '../types'
 
 export const useSoalList = () => {
   return useQuery({
@@ -48,5 +48,12 @@ export const useDeleteSoal = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['soal-list'] })
     },
+  })
+}
+
+export const useRegenerateSingleSoal = () => {
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: RegenerateSingleSoalRequest }) =>
+      regenerateSingleSoal(id, data),
   })
 }

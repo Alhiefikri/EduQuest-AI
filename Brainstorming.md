@@ -1,37 +1,60 @@
-Tugas: Refactoring Arsitektur & Kode Python untuk Sistem Generator Soal AI
+Tugas: Bangun alur kerja (workflow) sistem pembuatan soal dengan fitur Step-by-Step, Modal Page Selector, dan Single Question Regeneration.
+1. Alur Wizard (Frontend State Management)
 
-Saat ini, sistem penghasil soal evaluasi kita (ai_service.py) menghasilkan output yang berhalusinasi. Hal ini terjadi karena kita memberikan context berupa "Modul Ajar" (Lesson Plan) secara utuh. AI malah membuat soal tentang "kegiatan mengajar di kelas" (seperti tanya jawab guru-siswa), bukan menguji pemahaman materi siswanya. Selain itu, soal terasa kaku dan ada isu konkurensi di kode Python kita.
+Implementasikan sistem stepper dengan 4 tahap utama:
 
-Tolong bantu saya merombak sistem ini dengan memahami prinsip berikut dan mengimplementasikan perbaikannya:
+    Step 1: Source Selection. User memilih sumber materi: "Upload PDF" atau "Input Manual".
 
-A. PEMAHAMAN KONSEP (The Right Way)
-Agar soal yang dihasilkan akurat, menarik, dan sesuai usia anak (Kurikulum Merdeka):
+    Step 2: Context Filtering. * Jika PDF: Munculkan Modal Preview. User memilih range halaman. Sistem melakukan ekstraksi teks hanya pada halaman terpilih.
 
-    Data Grounding: Berhenti menggunakan "Modul Ajar" (RPP). Ganti dengan "Buku Siswa" (Bahan Bacaan Murni) atau ringkasan materi khusus siswa. AI hanya butuh fakta materinya, bukan instruksi pedagogi gurunya.
+        Jika Manual: Tampilkan textarea untuk copy-paste materi.
 
-    Persona & Usia: AI harus diberikan instruksi spesifik terkait target usia. Untuk Fase A (Kelas 1-2 SD / usia 6-8 tahun), kalimat harus sangat pendek, kosakata konkret (benda nyata), dan hindari majas atau kalimat majemuk.
+    Step 3: AI Configuration. User memilih: Mata Pelajaran, Fase/Kelas, Jumlah Soal, dan Level Kognitif (L1/L2/HOTS).
 
-    Contextual Storytelling: Agar soal tidak membosankan, prompt harus menginstruksikan AI untuk membungkus pertanyaan dengan skenario dunia nyata yang dekat dengan anak (misal: bermain di taman, jajan di kantin).
+    Step 4: Review & Editor. Menampilkan daftar soal hasil generate. Setiap soal memiliki tombol "Regenerate" sendiri.
 
-B. INSTRUKSI PERBAIKAN KODE (ai_service.py)
-Lakukan refactoring pada kode dengan detail berikut:
+2. Fitur Modal Preview & Page Extraction
 
-    Perbaiki Isu Konkurensi (Blocking Async):
+    Buat fungsi di Python (menggunakan PyMuPDF atau pdfplumber) yang menerima file_path dan list_halaman.
 
-        Saat ini _generate_with_groq dan _generate_with_gemini menggunakan time.sleep() dan pemanggilan client secara sinkronus di dalam environment async. Ini memblokir event loop server.
+    Fungsi harus mengembalikan gabungan teks (string) hanya dari halaman-halaman tersebut untuk dikirim sebagai konten_modul ke AI.
 
-        Tugas: Ubah menggunakan library AsyncGroq, ganti semua time.sleep() menjadi await asyncio.sleep(), dan jadikan fungsi-fungsinya async def.
+3. Arsitektur API: Single vs. Bulk Generation
 
-    Rombak Fungsi _build_user_prompt:
+Modifikasi ai_service.py agar mendukung dua skenario:
 
-        Tambahkan Negative Prompt yang sangat tegas: "DILARANG KERAS membuat pertanyaan tentang kegiatan di dalam kelas, metode guru mengajar, alat peraga, atau isi dokumen Modul Ajar."
+    Bulk Generate: Fungsi generate_soal yang sudah ada (menghasilkan n soal sekaligus).
 
-        Tambahkan instruksi Storytelling/Tema: "Bungkus pertanyaan dengan skenario/cerita pendek yang relevan dengan kehidupan sehari-hari anak seusia target kelas."
+    Single Regenerate: Buat fungsi regenerate_single_soal.
 
-        Buat format output JSON untuk pembahasan dan gambar_prompt bersifat dinamis. Jangan paksa key tersebut ada di struktur JSON jika variabel include_pembahasan atau include_gambar bernilai False untuk menghemat token.
+        Input: Parameter awal (Kelas/Materi) + soal_lama + feedback_user (opsional).
 
-    Solusi Context Window (Ganti _truncate_content):
+        Prompt Logic: Instruksikan AI untuk membuat soal baru yang berbeda dari soal_lama namun tetap merujuk pada konten_modul yang sama.
 
-        Fungsi _truncate_content saat ini berisiko memotong bagian materi penting jika file PDF-nya panjang (karena bagian awal biasanya berisi cover/pengantar).
+4. Logic Frontend untuk Per Soal (Next.js/Laravel context)
 
-        Tugas: Jangan lakukan pemotongan statis di service ini. Buatlah catatan/TODO di kode agar kita nanti membuat fitur "Ekstraksi PDF Berdasarkan Rentang Halaman" di fungsi controller sebelum data masuk ke konten_modul. AI hanya boleh menerima teks materi murni maksimal 2000-3000 kata.
+    Simpan daftar soal dalam sebuah array of objects di state (misal: questions).
+
+    Saat tombol "Regenerate" pada Soal #3 ditekan:
+
+        Kirim ID soal dan konteksnya ke API.
+
+        Saat API merespons dengan 1 soal baru, lakukan update hanya pada questions[2] (index ke-2).
+
+        Tampilkan loading spinner hanya pada kartu soal yang sedang diperbarui.
+
+5. UI/UX Requirement
+
+    Gunakan komponen Modal yang responsive untuk preview PDF.
+
+    Tampilkan pesan indikator: "Sedang memproses halaman [x, y, z]..." agar guru tahu sistem bekerja sesuai pilihannya.
+
+    Pada tombol Regenerate per soal, tambahkan opsi cepat: "Sederhanakan Bahasa" atau "Ganti Konsep".
+
+Review & Feedback:
+Review alur di atas. Jika ada kendala pada library PDF atau limitasi token pada Groq/Gemini saat proses regenerasi, berikan saran perbaikan sebelum mulai menulis kode.
+Sedikit Saran Tambahan untuk Kamu:
+
+    Penyimpanan Sementara (Cache): Saat guru memilih halaman PDF di Step 2, sebaiknya teks hasil ekstraksinya disimpan di state atau session sementara. Jadi, saat guru menekan tombol "Regenerate" di Step 4, kamu tidak perlu memproses ulang file PDF dari nol—cukup kirim teks yang sudah diekstrak tadi.
+
+    User Feedback: Untuk tombol regenerasi per soal, saran saya sediakan input teks kecil yang opsional. Terkadang guru ingin bilang: "Soal ini terlalu panjang, ringkas jadi 1 kalimat saja". Jika AI menerima instruksi spesifik seperti itu, hasilnya akan jauh lebih memuaskan.
