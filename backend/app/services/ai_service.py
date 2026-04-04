@@ -2,12 +2,13 @@ import json
 import time
 from typing import List
 
-import google.generativeai as genai
-from google.api_core.exceptions import ResourceExhausted
+from google import genai
+from google.genai import types
+from google.genai.errors import ServerError
 
 from app.config import GEMINI_API_KEY
 
-genai.configure(api_key=GEMINI_API_KEY)
+client = genai.Client(api_key=GEMINI_API_KEY)
 
 SYSTEM_PROMPT = """Anda adalah guru berpengalaman yang ahli dalam membuat soal pelajaran.
 Buat soal berdasarkan KONTEN MODUL yang diberikan, BUKAN dari pengetahuan umum Anda.
@@ -119,20 +120,19 @@ def generate_soal(
         konten_modul=konten_modul,
     )
 
-    model = genai.GenerativeModel(
-        model_name="gemini-1.5-flash-latest",
+    config = types.GenerateContentConfig(
         system_instruction=SYSTEM_PROMPT,
+        temperature=0.7,
+        max_output_tokens=8192,
+        response_mime_type="application/json",
     )
 
     for attempt in range(max_retries):
         try:
-            response = model.generate_content(
-                prompt,
-                generation_config=genai.types.GenerationConfig(
-                    temperature=0.7,
-                    max_output_tokens=8192,
-                    response_mime_type="application/json",
-                ),
+            response = client.models.generate_content(
+                model="gemini-2.0-flash",
+                contents=prompt,
+                config=config,
             )
 
             response_text = response.text
@@ -143,7 +143,7 @@ def generate_soal(
 
             return soal_list
 
-        except ResourceExhausted:
+        except ServerError:
             wait_time = 2 ** (attempt + 1)
             time.sleep(wait_time)
             continue
