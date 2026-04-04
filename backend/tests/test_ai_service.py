@@ -14,6 +14,7 @@ class TestBuildUserPrompt:
             mata_pelajaran="IPAS",
             topik="Energi",
             difficulty="sedang",
+            gaya_soal="light_story",
             include_pembahasan=True,
             include_gambar=False,
             konten_modul="Energi tidak dapat dimusnahkan.",
@@ -24,7 +25,7 @@ class TestBuildUserPrompt:
         assert "Buat 5 soal pilihan ganda" in prompt
         assert "Energi tidak dapat dimusnahkan" in prompt
         assert "DILARANG KERAS" in prompt
-        assert "Contextual Storytelling" in prompt
+        assert "Gaya: Cerita Ringan" in prompt
 
     def test_build_user_prompt_default_fase_kelas(self):
         prompt = _build_user_prompt(
@@ -33,6 +34,7 @@ class TestBuildUserPrompt:
             mata_pelajaran="Bahasa Indonesia",
             topik="",
             difficulty="mudah",
+            gaya_soal="formal_academic",
             include_pembahasan=False,
             include_gambar=True,
             konten_modul="Kancil dan Buaya.",

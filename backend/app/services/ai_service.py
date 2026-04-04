@@ -26,12 +26,36 @@ async def _get_ai_config() -> tuple[str, str]:
     return await _get_config()
 
 
+def _get_gaya_instruction(gaya_soal: List[str]) -> str:
+    gaya_map = {
+        "light_story": "Cerita Ringan (berikan konteks berupa cerita/skenario sehari-hari)",
+        "formal_academic": "Akademik Formal (bahasa baku, lugas, fokus teori/fakta)",
+        "case_study": "Studi Kasus (analisis situasi/kasus nyata relevan)",
+        "standard_exam": "Ujian Standar (singkat, padat, jelas seperti UN/SNBT)",
+        "hots": "HOTS (Higher Order Thinking Skills - menguji analisis, evaluasi, dan kreasi)"
+    }
+    
+    if not gaya_soal:
+        return gaya_map["formal_academic"]
+        
+    instructions = []
+    for g in gaya_soal:
+        if g in gaya_map:
+            instructions.append(gaya_map[g])
+    
+    if not instructions:
+        return gaya_map["formal_academic"]
+        
+    return "Gabungan Gaya: " + ", ".join(instructions) + ". Pastikan soal mencerminkan kombinasi elemen-elemen tersebut."
+
+
 def _build_user_prompt(
     jumlah_soal: int,
     tipe_soal: str,
     mata_pelajaran: str,
     topik: str,
     difficulty: str,
+    gaya_soal: List[str],
     include_pembahasan: bool,
     include_gambar: bool,
     konten_modul: str,
@@ -50,6 +74,8 @@ def _build_user_prompt(
         "sulit": "tingkat lanjut, menguji analisis dan evaluasi",
         "campuran": "distribusi merata antara mudah, sedang, dan sulit",
     }
+
+    gaya_instruction = _get_gaya_instruction(gaya_soal)
 
     # Dynamic JSON Schema
     json_item = {
@@ -74,17 +100,18 @@ def _build_user_prompt(
 Fase/Kelas: {fase_kelas}
 Mata Pelajaran: {mata_pelajaran}
 Tujuan Pembelajaran / Topik: {topik if topik else "Sesuaikan dengan materi"}
+Gaya Soal: {gaya_instruction}
+Level Kognitif: {difficulty_instruction.get(difficulty, difficulty)}
+
 Ringkasan Materi:
 {_truncate_content(konten_modul)}
-
-Level Kognitif: {difficulty_instruction.get(difficulty, difficulty)}
 
 Instruksi Khusus (Wajib Dipatuhi):
 1. **DILARANG KERAS** membuat soal tentang kegiatan belajar di kelas, metode mengajar guru, langkah-langkah pembelajaran, atau alat peraga yang digunakan guru.
 2. **FOKUS HANYA** pada materi/fakta/konsep yang harus dikuasai oleh siswa.
-3. **Contextual Storytelling**: Bungkus setiap soal dalam skenario atau cerita pendek sehari-hari yang relevan dengan usia siswa (misal: saat bermain, membantu orang tua, atau berbelanja di kantin).
-4. Bahasa harus disesuaikan untuk anak-anak sekolah/siswa.
-5. KHUSUS Fase A (Kelas 1-2): Gunakan kalimat sangat pendek, kosakata dasar, dan konsep konkret.
+3. Bahasa harus disesuaikan untuk anak-anak sekolah/siswa.
+4. KHUSUS Fase A (Kelas 1-2): Gunakan kalimat sangat pendek, kosakata dasar, dan konsep konkret.
+5. Terapkan instruksi "Gaya Soal" yang tercantum pada Parameter Soal secara konsisten pada pertanyaan.
 6. Output HANYA berupa JSON valid sesuai skema berikut:
 
 {schema_str}
@@ -222,6 +249,7 @@ async def generate_soal(
     tipe_soal: str,
     mata_pelajaran: str,
     difficulty: str,
+    gaya_soal: List[str],
     include_pembahasan: bool,
     include_gambar: bool,
     konten_modul: str,
@@ -235,6 +263,7 @@ async def generate_soal(
         mata_pelajaran=mata_pelajaran,
         topik=topik,
         difficulty=difficulty,
+        gaya_soal=gaya_soal,
         include_pembahasan=include_pembahasan,
         include_gambar=include_gambar,
         konten_modul=konten_modul,
@@ -265,6 +294,7 @@ def _build_regenerate_prompt(
     mata_pelajaran: str,
     topik: str,
     difficulty: str,
+    gaya_soal: List[str],
     include_pembahasan: bool,
     include_gambar: bool,
     konten_modul: str,
@@ -284,6 +314,8 @@ def _build_regenerate_prompt(
         "sulit": "tingkat lanjut, menguji analisis dan evaluasi",
         "campuran": "distribusi merata antara mudah, sedang, dan sulit",
     }
+
+    gaya_instruction = _get_gaya_instruction(gaya_soal)
 
     # Dynamic JSON Schema
     json_item = {
@@ -316,6 +348,7 @@ Parameter Soal Baru:
 Fase/Kelas: {fase_kelas}
 Mata Pelajaran: {mata_pelajaran}
 Tujuan Pembelajaran / Topik: {topik if topik else "Sesuaikan dengan materi"}
+Gaya Soal: {gaya_instruction}
 Level Kognitif: {difficulty_instruction.get(difficulty, difficulty)}
 Tipe Soal: {tipe_label.get(tipe_soal, tipe_soal)}
 {feedback_section}
@@ -325,9 +358,9 @@ Ringkasan Materi:
 Instruksi Khusus (Wajib Dipatuhi):
 1. **DILARANG KERAS** membuat soal tentang kegiatan belajar di kelas, metode mengajar guru, langkah-langkah pembelajaran, atau alat peraga yang digunakan guru.
 2. **FOKUS HANYA** pada materi/fakta/konsep yang harus dikuasai oleh siswa.
-3. **Contextual Storytelling**: Bungkus soal dalam skenario atau cerita pendek sehari-hari yang relevan dengan usia siswa (misal: saat bermain, membantu orang tua, atau berbelanja di kantin).
-4. Bahasa harus disesuaikan untuk anak-anak sekolah/siswa.
-5. KHUSUS Fase A (Kelas 1-2): Gunakan kalimat sangat pendek, kosakata dasar, dan konsep konkret.
+3. Bahasa harus disesuaikan untuk anak-anak sekolah/siswa.
+4. KHUSUS Fase A (Kelas 1-2): Gunakan kalimat sangat pendek, kosakata dasar, dan konsep konkret.
+5. Terapkan instruksi "Gaya Soal" yang tercantum pada Parameter Soal secara konsisten pada pertanyaan.
 6. Output HANYA berupa JSON valid sesuai skema berikut:
 
 {schema_str}
@@ -345,6 +378,7 @@ async def regenerate_single_soal(
     tipe_soal: str,
     mata_pelajaran: str,
     difficulty: str,
+    gaya_soal: List[str],
     include_pembahasan: bool,
     include_gambar: bool,
     konten_modul: str,
@@ -359,6 +393,7 @@ async def regenerate_single_soal(
         mata_pelajaran=mata_pelajaran,
         topik=topik,
         difficulty=difficulty,
+        gaya_soal=gaya_soal,
         include_pembahasan=include_pembahasan,
         include_gambar=include_gambar,
         konten_modul=konten_modul,

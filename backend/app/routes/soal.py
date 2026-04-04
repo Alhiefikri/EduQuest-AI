@@ -63,6 +63,7 @@ async def generate_soal_endpoint(request: GenerateSoalRequest):
             tipe_soal=request.tipe_soal,
             mata_pelajaran=request.mata_pelajaran,
             difficulty=request.difficulty,
+            gaya_soal=request.gaya_soal,
             include_pembahasan=request.include_pembahasan,
             include_gambar=request.include_gambar,
             konten_modul=konten_modul,
@@ -94,6 +95,7 @@ async def generate_soal_endpoint(request: GenerateSoalRequest):
                 "status": "draft",
             }
         )
+
     except Exception as e:
         raise HTTPException(
             status_code=500,
@@ -236,6 +238,7 @@ async def regenerate_soal_item(soal_id: str, request: RegenerateSingleSoalReques
             tipe_soal=soal.tipeSoal,
             mata_pelajaran=soal.mataPelajaran,
             difficulty=soal.difficulty,
+            gaya_soal=request.gaya_soal,
             include_pembahasan=soal.includePembahasan,
             include_gambar=soal.includeGambar,
             konten_modul=konten_modul,

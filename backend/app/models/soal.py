@@ -23,6 +23,7 @@ class GenerateSoalRequest(BaseModel):
     tipe_soal: str = Field(..., pattern="^(pilihan_ganda|isian|essay|campuran)$")
     jumlah_soal: int = Field(..., ge=1, le=100)
     difficulty: str = Field(..., pattern="^(mudah|sedang|sulit|campuran)$")
+    gaya_soal: List[str] = Field(default_factory=lambda: ["formal_academic"])
     include_pembahasan: bool = True
     include_kunci: bool = True
     include_gambar: bool = False
@@ -35,6 +36,7 @@ class GenerateSoalResponse(BaseModel):
     topik: Optional[str]
     tipe_soal: str
     difficulty: str
+    gaya_soal: List[str] = Field(default_factory=list)
     jumlah_soal: int
     include_pembahasan: bool
     include_kunci: bool
@@ -43,6 +45,14 @@ class GenerateSoalResponse(BaseModel):
     status: str
     created_at: datetime
     updated_at: datetime
+
+    @classmethod
+    def _parse_gaya_soal(cls, value: str | List[str]) -> List[str]:
+        if isinstance(value, list):
+            return value
+        if not value:
+            return ["formal_academic"]
+        return [value]
 
     class Config:
         from_attributes = True
@@ -56,6 +66,8 @@ class GenerateSoalResponse(BaseModel):
             topik=soal.topik,
             tipe_soal=soal.tipeSoal,
             difficulty=soal.difficulty,
+            # Handle gaya_soal if it's a string (legacy) or missing
+            gaya_soal=cls._parse_gaya_soal(getattr(soal, 'gayaSoal', "formal_academic")),
             jumlah_soal=soal.jumlahSoal,
             include_pembahasan=soal.includePembahasan,
             include_kunci=soal.includeKunci,
@@ -74,6 +86,7 @@ class SoalListResponse(BaseModel):
     topik: Optional[str]
     tipe_soal: str
     difficulty: str
+    gaya_soal: List[str] = Field(default_factory=list)
     jumlah_soal: int
     status: str
     created_at: datetime
@@ -81,6 +94,14 @@ class SoalListResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+    @classmethod
+    def _parse_gaya_soal(cls, value: str | List[str]) -> List[str]:
+        if isinstance(value, list):
+            return value
+        if not value:
+            return ["formal_academic"]
+        return [value]
 
     @classmethod
     def from_prisma(cls, soal) -> "SoalListResponse":
@@ -91,6 +112,7 @@ class SoalListResponse(BaseModel):
             topik=soal.topik,
             tipe_soal=soal.tipeSoal,
             difficulty=soal.difficulty,
+            gaya_soal=cls._parse_gaya_soal(getattr(soal, 'gayaSoal', "formal_academic")),
             jumlah_soal=soal.jumlahSoal,
             status=soal.status,
             created_at=soal.createdAt,
@@ -106,6 +128,7 @@ class UpdateSoalRequest(BaseModel):
 
 class RegenerateSingleSoalRequest(BaseModel):
     nomor_soal: int
+    gaya_soal: List[str] = Field(default_factory=lambda: ["formal_academic"])
     feedback: Optional[str] = None
 
 
