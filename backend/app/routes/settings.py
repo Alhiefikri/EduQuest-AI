@@ -45,7 +45,7 @@ async def update_ai_settings(request: AISettingsRequest):
 @router.post("/ai/test")
 async def test_ai_connection_endpoint(request: TestConnectionRequest):
     try:
-        result = await asyncio.to_thread(test_ai_connection, request.provider, request.api_key)
+        result = await test_ai_connection(request.provider, request.api_key)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except RuntimeError as e:

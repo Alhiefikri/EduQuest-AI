@@ -1,10 +1,14 @@
 import json
-import time
+import asyncio
 from typing import List
 
-SYSTEM_PROMPT = """Kamu adalah pendidik profesional yang ahli dalam evaluasi pembelajaran Kurikulum Merdeka. Tugasmu adalah membuat soal evaluasi yang valid, berpusat pada materi pokok, sesuai dengan perkembangan kognitif siswa, dan menggunakan bahasa yang mudah dipahami sesuai tingkat kelas yang diminta."""
+SYSTEM_PROMPT = """Kamu adalah pendidik profesional yang ahli dalam evaluasi pembelajaran Kurikulum Merdeka. 
+Tugasmu adalah membuat soal evaluasi yang valid, berpusat pada materi pokok, sesuai dengan perkembangan kognitif siswa, 
+dan menggunakan bahasa yang mudah dipahami sesuai tingkat kelas yang diminta. 
+Gunakan nada yang memotivasi dan edukatif."""
 
-MAX_CONTENT_CHARS = 12000
+# TODO: Implementasi ekstraksi PDF berdasarkan rentang halaman di layer controller untuk optimasi lebih lanjut
+MAX_CONTENT_CHARS = 8000
 
 
 def _truncate_content(content: str, max_chars: int = MAX_CONTENT_CHARS) -> str:
@@ -14,7 +18,7 @@ def _truncate_content(content: str, max_chars: int = MAX_CONTENT_CHARS) -> str:
     last_period = truncated.rfind(".")
     if last_period > max_chars * 0.8:
         truncated = truncated[:last_period + 1]
-    return truncated + "\n\n[Konten diringkas karena terlalu panjang]"
+    return truncated + "\n\n[Konten diringkas agar fokus pada materi inti]"
 
 
 async def _get_ai_config() -> tuple[str, str]:
@@ -47,6 +51,24 @@ def _build_user_prompt(
         "campuran": "distribusi merata antara mudah, sedang, dan sulit",
     }
 
+    # Dynamic JSON Schema
+    json_item = {
+        "nomor": 1,
+        "pertanyaan": "...",
+    }
+    if tipe_soal in ["pilihan_ganda", "campuran"]:
+        json_item["pilihan"] = ["A. ...", "B. ...", "C. ...", "D. ..."]
+    
+    json_item["jawaban"] = "..."
+    
+    if include_pembahasan:
+        json_item["pembahasan"] = "..."
+    
+    if include_gambar:
+        json_item["gambar_prompt"] = "Deskripsi visual sederhana untuk ilustrasi soal ini"
+
+    schema_str = json.dumps({"soal": [json_item]}, indent=2)
+
     prompt = f"""Buat {jumlah_soal} soal {tipe_label.get(tipe_soal, tipe_soal)} berdasarkan parameter berikut:
 
 Fase/Kelas: {fase_kelas}
@@ -57,31 +79,20 @@ Ringkasan Materi:
 
 Level Kognitif: {difficulty_instruction.get(difficulty, difficulty)}
 
-Syarat mutlak:
-- Fokus murni pada evaluasi penguasaan materi, bukan aktivitas belajar mengajar di kelas.
-- Bahasa harus disesuaikan untuk anak-anak sekolah/siswa.
-- KHUSUS Fase A (Kelas 1-2): Gunakan kalimat sangat pendek, kosakata dasar, dan konsep konkret yang mudah dibayangkan.
-- Jangan tambahkan teks pengantar atau penutup apa pun.
-- Output HANYA berupa JSON valid dengan skema berikut:
+Instruksi Khusus (Wajib Dipatuhi):
+1. **DILARANG KERAS** membuat soal tentang kegiatan belajar di kelas, metode mengajar guru, langkah-langkah pembelajaran, atau alat peraga yang digunakan guru.
+2. **FOKUS HANYA** pada materi/fakta/konsep yang harus dikuasai oleh siswa.
+3. **Contextual Storytelling**: Bungkus setiap soal dalam skenario atau cerita pendek sehari-hari yang relevan dengan usia siswa (misal: saat bermain, membantu orang tua, atau berbelanja di kantin).
+4. Bahasa harus disesuaikan untuk anak-anak sekolah/siswa.
+5. KHUSUS Fase A (Kelas 1-2): Gunakan kalimat sangat pendek, kosakata dasar, dan konsep konkret.
+6. Output HANYA berupa JSON valid sesuai skema berikut:
 
-{{
-  "soal": [
-    {{
-      "nomor": 1,
-      "pertanyaan": "...",
-      "pilihan": ["A. ...", "B. ...", "C. ...", "D. ..."],
-      "jawaban": "B",
-      "pembahasan": "...",
-      "gambar_prompt": "Deskripsi visual sederhana untuk ilustrasi soal ini (WAJIB ADA jika konfigurasi gambar AKTIF)"
-    }}
-  ]
-}}
+{schema_str}
 
 PENTING:
-- Field "gambar_prompt" HARUS diisi dengan deskripsi visual yang relevan jika include_gambar adalah True.
-- Untuk soal isian/essay, field "pilihan" boleh kosong [] dan "jawaban" berisi kunci jawaban singkat
-- Pastikan soal benar-benar berdasarkan materi yang diberikan
-- Jawaban harus akurat dan pembahasan jelas"""
+- Jangan tambahkan teks pengantar atau penutup apa pun.
+- Pastikan soal benar-benar berdasarkan materi yang diberikan.
+- Jawaban harus akurat dan pembahasan jelas."""
 
     return prompt
 
@@ -98,7 +109,16 @@ def _parse_ai_response(response_text: str) -> List[dict]:
 
     cleaned = cleaned.strip()
 
-    data = json.loads(cleaned)
+    try:
+        data = json.loads(cleaned)
+    except json.JSONDecodeError:
+        # Fallback: coba cari JSON di dalam string jika model cerewet
+        start = cleaned.find("{")
+        end = cleaned.rfind("}")
+        if start != -1 and end != -1:
+            data = json.loads(cleaned[start:end+1])
+        else:
+            raise
 
     if isinstance(data, dict) and "soal" in data:
         return data["soal"]
@@ -109,7 +129,7 @@ def _parse_ai_response(response_text: str) -> List[dict]:
     raise ValueError("Format respons AI tidak dikenali")
 
 
-def _generate_with_gemini(
+async def _generate_with_gemini(
     prompt: str,
     api_key: str,
     max_retries: int = 3,
@@ -129,7 +149,8 @@ def _generate_with_gemini(
 
     for attempt in range(max_retries):
         try:
-            response = client.models.generate_content(
+            # Menggunakan client.aio untuk async request
+            response = await client.aio.models.generate_content(
                 model="gemini-1.5-flash",
                 contents=prompt,
                 config=config,
@@ -138,32 +159,32 @@ def _generate_with_gemini(
 
         except ServerError:
             wait_time = 2 ** (attempt + 1)
-            time.sleep(wait_time)
+            await asyncio.sleep(wait_time)
             continue
 
         except (json.JSONDecodeError, ValueError) as e:
             if attempt == max_retries - 1:
                 raise ValueError(f"Gagal memparsing respons AI setelah {max_retries} percobaan: {str(e)}")
-            time.sleep(2)
+            await asyncio.sleep(2)
             continue
 
         except Exception as e:
             if attempt == max_retries - 1:
                 raise RuntimeError(f"Gagal menghubungi layanan Gemini: {str(e)}")
-            time.sleep(2)
+            await asyncio.sleep(2)
             continue
 
     raise RuntimeError("Gagal menghasilkan respons dari Gemini setelah beberapa percobaan")
 
 
-def _generate_with_groq(
+async def _generate_with_groq(
     prompt: str,
     api_key: str,
     max_retries: int = 3,
 ) -> str:
-    from groq import Groq
+    from groq import AsyncGroq
 
-    client = Groq(api_key=api_key)
+    client = AsyncGroq(api_key=api_key)
 
     messages = [
         {"role": "system", "content": SYSTEM_PROMPT},
@@ -172,7 +193,7 @@ def _generate_with_groq(
 
     for attempt in range(max_retries):
         try:
-            response = client.chat.completions.create(
+            response = await client.chat.completions.create(
                 model="llama-3.3-70b-versatile",
                 messages=messages,
                 temperature=0.7,
@@ -185,12 +206,12 @@ def _generate_with_groq(
             error_msg = str(e).lower()
             if "rate_limit" in error_msg or "429" in error_msg:
                 wait_time = 2 ** (attempt + 1)
-                time.sleep(wait_time)
+                await asyncio.sleep(wait_time)
                 continue
 
             if attempt == max_retries - 1:
                 raise RuntimeError(f"Gagal menghubungi layanan Groq: {str(e)}")
-            time.sleep(2)
+            await asyncio.sleep(2)
             continue
 
     raise RuntimeError("Gagal menghasilkan respons dari Groq setelah beberapa percobaan")
@@ -226,9 +247,9 @@ async def generate_soal(
         raise RuntimeError("API key belum dikonfigurasi. Silakan atur di halaman Settings.")
 
     if provider == "groq":
-        response_text = _generate_with_groq(prompt, api_key, max_retries)
+        response_text = await _generate_with_groq(prompt, api_key, max_retries)
     else:
-        response_text = _generate_with_gemini(prompt, api_key, max_retries)
+        response_text = await _generate_with_gemini(prompt, api_key, max_retries)
 
     soal_list = _parse_ai_response(response_text)
 
@@ -238,13 +259,13 @@ async def generate_soal(
     return soal_list
 
 
-def test_ai_connection(provider: str, api_key: str) -> str:
+async def test_ai_connection(provider: str, api_key: str) -> str:
     if not api_key:
         raise ValueError("API key tidak boleh kosong")
 
     if provider == "groq":
-        _generate_with_groq("Respond with exactly: {\"status\": \"ok\"}", api_key, max_retries=1)
+        await _generate_with_groq("Respond with exactly: {\"status\": \"ok\"}", api_key, max_retries=1)
     else:
-        _generate_with_gemini("Respond with exactly: {\"status\": \"ok\"}", api_key, max_retries=1)
+        await _generate_with_gemini("Respond with exactly: {\"status\": \"ok\"}", api_key, max_retries=1)
 
     return "Koneksi berhasil"

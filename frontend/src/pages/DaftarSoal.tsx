@@ -98,7 +98,7 @@ export default function DaftarSoal() {
                     <th className="px-6 md:px-10 py-6 min-w-[200px]">Identitas Soal</th>
                     <th className="px-4 md:px-8 py-6 text-center w-32 md:w-48">Kategori</th>
                     <th className="px-4 md:px-8 py-6 text-center w-24 md:w-32">Volume</th>
-                    <th className="hidden md:table-cell px-8 py-6 text-center">Kronologi</th>
+                    
                     <th className="px-4 md:px-8 py-6 text-center w-28 md:w-36">Status</th>
                     <th className="px-6 md:px-10 py-6 text-right w-40 md:w-56">Manajemen</th>
                   </tr>
@@ -109,7 +109,7 @@ export default function DaftarSoal() {
                       <td className="px-6 md:px-10 py-6">
                         <div className="flex items-center gap-4">
                           <div className={`w-1.5 h-10 rounded-full shadow-inner shrink-0 ${item.status === 'draft' ? 'bg-slate-200' : 'bg-brand-500 shadow-brand-200'}`}></div>
-                          <span className="text-base md:text-lg font-bold text-slate-900 group-hover:text-brand-600 transition-colors truncate block tracking-tight" title={item.topik || item.mata_pelajaran}>
+                          <span className="text-base md:text-sm font-bold text-slate-900 group-hover:text-brand-600 transition-colors truncate block tracking-tight" title={item.topik || item.mata_pelajaran}>
                             {item.topik || item.mata_pelajaran}
                           </span>
                         </div>
@@ -121,9 +121,6 @@ export default function DaftarSoal() {
                       </td>
                       <td className="px-4 md:px-8 py-6 text-center">
                         <span className="text-lg md:text-xl font-black text-slate-900 tracking-tighter shrink-0">{item.jumlah_soal} <span className="hidden sm:inline text-[10px] text-slate-300 uppercase ml-1">ITEM</span></span>
-                      </td>
-                      <td className="hidden md:table-cell px-8 py-6 text-center text-[13px] font-bold text-slate-400">
-                        {new Date(item.created_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })}
                       </td>
                       <td className="px-4 md:px-8 py-6 text-center">
                         <span className={`inline-flex items-center px-3 md:px-4 py-1.5 rounded-full text-[10px] font-black tracking-widest uppercase border ${

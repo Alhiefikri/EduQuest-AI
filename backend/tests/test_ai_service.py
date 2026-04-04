@@ -23,6 +23,8 @@ class TestBuildUserPrompt:
         assert "Mata Pelajaran: IPAS" in prompt
         assert "Buat 5 soal pilihan ganda" in prompt
         assert "Energi tidak dapat dimusnahkan" in prompt
+        assert "DILARANG KERAS" in prompt
+        assert "Contextual Storytelling" in prompt
 
     def test_build_user_prompt_default_fase_kelas(self):
         prompt = _build_user_prompt(
@@ -85,6 +87,12 @@ class TestParseAIResponse:
         result = _parse_ai_response(response)
         assert len(result) == 1
         assert result[0]["nomor"] == 1
+
+    def test_parse_json_with_chatter_around(self):
+        response = "Tentu, ini soalnya: {\"soal\": [{\"nomor\": 1, \"pertanyaan\": \"Test?\", \"jawaban\": \"A\"}]} Semoga membantu!"
+        result = _parse_ai_response(response)
+        assert len(result) == 1
+        assert result[0]["pertanyaan"] == "Test?"
 
     def test_parse_invalid_json_raises_error(self):
         with pytest.raises(json.JSONDecodeError):
