@@ -161,7 +161,7 @@ def _generate_with_groq(
                 model="llama-3.3-70b-versatile",
                 messages=messages,
                 temperature=0.7,
-                max_tokens=8192,
+                max_tokens=4096,
                 response_format={"type": "json_object"},
             )
             return response.choices[0].message.content or ""
@@ -176,6 +176,7 @@ def _generate_with_groq(
             if attempt == max_retries - 1:
                 raise RuntimeError(f"Gagal menghubungi layanan Groq: {str(e)}")
             time.sleep(2)
+            continue
 
     raise RuntimeError("Gagal menghasilkan respons dari Groq setelah beberapa percobaan")
 
