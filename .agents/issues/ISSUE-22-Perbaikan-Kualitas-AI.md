@@ -1,6 +1,6 @@
 # [ISSUE-22] Perbaikan Kualitas Generasi Soal — `ai_service.py`
 
-**Status:** Open  
+**Status:** Done  
 **Assignee:** Junior Execution Agent  
 **Prioritas:** High  
 **File utama:** `backend/app/services/ai_service.py`  
