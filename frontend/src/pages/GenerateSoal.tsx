@@ -156,16 +156,23 @@ export default function GenerateSoal() {
       <div className="px-4 max-w-4xl mx-auto">
         <div className="relative flex items-center justify-between">
           <div className="absolute top-1/2 left-0 w-full h-1 bg-slate-100 -translate-y-1/2 z-0 rounded-full"></div>
-          <div className="absolute top-1/2 left-0 h-1 bg-brand-500 -translate-y-1/2 z-0 rounded-full transition-all duration-500" style={{ width: `${((step - 1) / 2) * 100}%` }}></div>
+          <div 
+            className="absolute top-1/2 left-0 h-1 bg-brand-500 -translate-y-1/2 z-0 rounded-full transition-all duration-500" 
+            style={{ 
+              width: sourceType === 'modul' 
+                ? `${((step - 1) / 2) * 100}%` 
+                : step === 1 ? '0%' : '100%' 
+            }}
+          ></div>
           
-          {[1, 2, 3].map((s) => (
+          {(sourceType === 'modul' ? [1, 2, 3] : [1, 3]).map((s, idx) => (
             <div key={s} className="relative z-10 flex flex-col items-center gap-3">
               <div 
                 className={`w-12 h-12 rounded-2xl border-4 flex items-center justify-center transition-all duration-500 ${
                   step >= s ? 'bg-brand-500 border-white shadow-xl scale-110' : 'bg-white border-slate-100 text-slate-300'
                 }`}
               >
-                {step > s ? <Check className="w-6 h-6 text-white" strokeWidth={3} /> : <span className={`text-lg font-black ${step >= s ? 'text-white' : 'text-slate-300'}`}>{s}</span>}
+                {step > s ? <Check className="w-6 h-6 text-white" strokeWidth={3} /> : <span className={`text-lg font-black ${step >= s ? 'text-white' : 'text-slate-300'}`}>{sourceType === 'modul' ? s : idx + 1}</span>}
               </div>
               <span className={`text-xs font-black uppercase tracking-widest ${step >= s ? 'text-slate-900' : 'text-slate-400'}`}>
                 {s === 1 ? 'Sumber' : s === 2 ? 'Filter' : 'Konfigurasi'}
@@ -409,7 +416,7 @@ export default function GenerateSoal() {
                     </div>
 
                     <div className="space-y-4">
-                      <label className="block text-sm font-black text-slate-400 uppercase tracking-widest">Taksonomi Bloom (Multi-Select)</label>
+                      <label className="block text-sm font-black text-slate-400 uppercase tracking-widest">Taksonomi Bloom (Opsional)</label>
                       <div className="grid grid-cols-2 gap-3">
                         {bloomOptions.map((opt) => (
                           <div 
@@ -541,7 +548,13 @@ export default function GenerateSoal() {
           size="lg"
           variant="outline"
           disabled={step === 1 || generateMutation.isPending}
-          onClick={() => setStep(step - 1)}
+          onClick={() => {
+            if (step === 3 && sourceType !== 'modul') {
+              setStep(1)
+            } else {
+              setStep(step - 1)
+            }
+          }}
           className="h-16 md:h-20 px-8 md:px-12 rounded-2xl md:rounded-3xl border-4 border-slate-200 bg-white text-lg font-black uppercase tracking-widest shadow-xl hover:bg-slate-50 disabled:opacity-30 transition-all hover:-translate-x-1"
         >
           Kembali

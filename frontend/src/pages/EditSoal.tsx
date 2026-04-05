@@ -42,6 +42,7 @@ export default function EditSoal() {
   const [regenerateIndex, setRegenerateIndex] = useState<number | null>(null)
   const [regenerateFeedback, setRegenerateFeedback] = useState('')
   const [regenerateGayaSoal, setRegenerateGayaSoal] = useState<string[]>(['formal_academic'])
+  const [regenerateBloomLevels, setRegenerateBloomLevels] = useState<string[]>([])
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -77,6 +78,9 @@ export default function EditSoal() {
     if (soal?.gaya_soal) {
       const gaya = Array.isArray(soal.gaya_soal) ? soal.gaya_soal : [soal.gaya_soal]
       setRegenerateGayaSoal(gaya)
+    }
+    if (soal?.bloom_levels) {
+      setRegenerateBloomLevels(soal.bloom_levels)
     }
   }, [soal])
 
@@ -161,6 +165,7 @@ export default function EditSoal() {
           nomor_soal: itemToRegenerate.nomor,
           soal_lama: itemToRegenerate,
           gaya_soal: regenerateGayaSoal,
+          bloom_levels: regenerateBloomLevels,
           feedback: regenerateFeedback || undefined,
         },
       })
@@ -298,7 +303,7 @@ export default function EditSoal() {
               <CardContent className="p-6 bg-slate-50 space-y-4 rounded-b-2xl">
                 <div className="space-y-4 text-left">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Gaya Soal (Multi-Select)</label>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pb-2">
                     {[
                       { id: "light_story", label: "Cerita Ringan" },
                       { id: "formal_academic", label: "Akademik Formal" },
@@ -337,6 +342,37 @@ export default function EditSoal() {
                         <Label htmlFor={`reg-${style.id}`} className="text-xs font-bold text-slate-700 cursor-pointer select-none">
                           {style.label}
                         </Label>
+                      </div>
+                    ))}
+                  </div>
+
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Taksonomi Bloom (Opsional)</label>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {[
+                      { id: 'C1', label: 'C1' },
+                      { id: 'C2', label: 'C2' },
+                      { id: 'C3', label: 'C3' },
+                      { id: 'C4', label: 'C4' },
+                      { id: 'C5', label: 'C5' },
+                      { id: 'C6', label: 'C6' },
+                    ].map((bloom) => (
+                      <div 
+                        key={bloom.id}
+                        onClick={() => {
+                          if (regenerateBloomLevels.includes(bloom.id)) {
+                            setRegenerateBloomLevels(regenerateBloomLevels.filter(b => b !== bloom.id))
+                          } else {
+                            setRegenerateBloomLevels([...regenerateBloomLevels, bloom.id])
+                          }
+                        }}
+                        className={cn(
+                          "flex items-center justify-center p-2 rounded-lg border-2 transition-all cursor-pointer text-[10px] font-black",
+                          regenerateBloomLevels.includes(bloom.id)
+                            ? 'bg-indigo-50 border-indigo-200 text-indigo-700'
+                            : 'bg-white border-slate-100 text-slate-400'
+                        )}
+                      >
+                        {bloom.label}
                       </div>
                     ))}
                   </div>
