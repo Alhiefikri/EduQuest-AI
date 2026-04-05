@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { ArrowLeft, CheckCircle2, BrainCircuit, Rocket, ChevronRight, Loader2, AlertCircle, BookOpen, Check, LayoutGrid, FileType } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useGenerateSoal } from '../hooks/useSoal'
@@ -34,6 +34,28 @@ export default function GenerateSoal() {
   const [includePembahasan, setIncludePembahasan] = useState(true)
   const [includeKunci, setIncludeKunci] = useState(true)
   const [includeGambar, setIncludeGambar] = useState(false)
+  const [bloomLevels, setBloomLevels] = useState<string[]>([])
+  const [activeProvider, setActiveProvider] = useState('AI Powered')
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const response = await fetch(`${BASE_URL}/api/v1/settings/ai`)
+        const data = await response.json()
+        if (data && data.ai_provider) {
+          const providers: Record<string, string> = {
+            'gemini': 'Google Gemini 2.0',
+            'groq': 'Groq Llama 3.3',
+            'openrouter': 'OpenRouter AI'
+          }
+          setActiveProvider(providers[data.ai_provider] || data.ai_provider)
+        }
+      } catch (err) {
+        console.error("Failed to fetch AI settings", err)
+      }
+    }
+    fetchSettings()
+  }, [])
 
   const tipeMap: Record<string, string> = {
     'Pilihan Ganda': 'pilihan_ganda',
@@ -46,8 +68,17 @@ export default function GenerateSoal() {
     'Mudah': 'mudah',
     'Sedang': 'sedang',
     'Sulit': 'sulit',
-    'Campuran (HOTS)': 'campuran',
+    'Campuran': 'campuran',
   }
+
+  const bloomOptions = [
+    { id: 'C1', label: 'C1 Mengingat', desc: 'Recall fakta/konsep' },
+    { id: 'C2', label: 'C2 Memahami', desc: 'Menjelaskan ide' },
+    { id: 'C3', label: 'C3 Menerapkan', desc: 'Gunakan dlm situasi baru' },
+    { id: 'C4', label: 'C4 Menganalisis', desc: 'HOTS: Unsur & Hubungan' },
+    { id: 'C5', label: 'C5 Mengevaluasi', desc: 'HOTS: Menilai/Justifikasi' },
+    { id: 'C6', label: 'C6 Mencipta', desc: 'HOTS: Menghasilkan Karya' },
+  ]
 
   const handleGenerate = async () => {
     setError(null)
@@ -69,6 +100,7 @@ export default function GenerateSoal() {
         include_pembahasan: includePembahasan,
         include_kunci: includeKunci,
         include_gambar: includeGambar,
+        bloom_levels: bloomLevels,
         page_ranges: sourceType === 'modul' ? pageRanges : undefined,
         cp_atp_text: sourceType === 'cp_atp' ? cpAtpText : undefined,
         tipe_konten: sourceType === 'modul' ? 'modul_ajar' : sourceType === 'cp_atp' ? 'cp_tp' : 'input_manual',
@@ -377,13 +409,43 @@ export default function GenerateSoal() {
                     </div>
 
                     <div className="space-y-4">
+                      <label className="block text-sm font-black text-slate-400 uppercase tracking-widest">Taksonomi Bloom (Multi-Select)</label>
+                      <div className="grid grid-cols-2 gap-3">
+                        {bloomOptions.map((opt) => (
+                          <div 
+                            key={opt.id}
+                            onClick={() => {
+                              if (bloomLevels.includes(opt.id)) {
+                                setBloomLevels(bloomLevels.filter(b => b !== opt.id))
+                              } else {
+                                setBloomLevels([...bloomLevels, opt.id])
+                              }
+                            }}
+                            className={`p-3 rounded-xl border-4 cursor-pointer transition-all flex flex-col gap-1 ${
+                              bloomLevels.includes(opt.id) 
+                                ? 'border-brand-500 bg-brand-50 shadow-md' 
+                                : 'border-slate-100 bg-white text-slate-400'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between">
+                              <span className="text-[10px] font-black uppercase tracking-wider">{opt.label}</span>
+                              {bloomLevels.includes(opt.id) && <Check className="w-3 h-3 text-brand-500" />}
+                            </div>
+                            <span className="text-[8px] font-bold text-slate-500 lowercase opacity-60 leading-none">{opt.desc}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="space-y-4">
                       <label className="block text-sm font-black text-slate-400 uppercase tracking-widest">Gaya Bahasa / Style</label>
                       <div className="grid grid-cols-2 gap-3">
                         {[
+                          { id: 'light_story', label: 'Cerita Ringan' },
                           { id: 'formal_academic', label: 'Formal Akademik' },
-                          { id: 'kontekstual', label: 'Kontekstual' },
-                          { id: 'humor_ringan', label: 'Humor Ringan' },
-                          { id: 'cerita_narasi', label: 'Cerita Narasi' }
+                          { id: 'case_study', label: 'Studi Kasus' },
+                          { id: 'standard_exam', label: 'Ujian Standar' },
+                          { id: 'hots', label: 'HOTS (Anti-Recall)' }
                         ].map((style) => (
                           <div 
                             key={style.id}
@@ -488,7 +550,13 @@ export default function GenerateSoal() {
         {step < 3 ? (
           <Button
             size="lg"
-            onClick={() => setStep(step + 1)}
+            onClick={() => {
+              if (step === 1 && sourceType !== 'modul') {
+                setStep(3)
+              } else {
+                setStep(step + 1)
+              }
+            }}
             disabled={(step === 1 && sourceType === 'modul' && !modulId) || (step === 1 && sourceType === 'cp_atp' && !cpAtpText) || (step === 1 && sourceType === 'manual' && !topik)}
             className="h-16 md:h-20 px-12 md:px-20 rounded-2xl md:rounded-3xl bg-slate-900 text-white text-lg font-black uppercase tracking-widest shadow-2xl hover:scale-105 transition-all flex items-center gap-4 disabled:opacity-50"
           >
@@ -509,7 +577,7 @@ export default function GenerateSoal() {
 
       <div className="text-center">
         <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.3em] bg-slate-50 inline-block px-8 py-3 rounded-full border border-slate-100 shadow-inner">
-           Fase: {step} dari 3 &bull; AI Tier: Qwen 3.6 Plus
+           Fase: {step} dari 3 &bull; AI Tier: {activeProvider}
         </p>
       </div>
     </div>

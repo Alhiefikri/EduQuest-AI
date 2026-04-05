@@ -155,6 +155,26 @@ async def _get_ai_config() -> tuple[str, str]:
     return await _get_config()
 
 
+def _get_bloom_instruction(bloom_levels: List[str]) -> str:
+    bloom_map = {
+        "C1": "C1 Mengingat (recall fakta, istilah, konsep dasar)",
+        "C2": "C2 Memahami (menjelaskan ide atau konsep)",
+        "C3": "C3 Menerapkan (menggunakan informasi dalam situasi baru)",
+        "C4": "C4 Menganalisis (memecah informasi untuk melihat hubungan/struktur)",
+        "C5": "C5 Mengevaluasi (menjustifikasi keputusan atau tindakan)",
+        "C6": "C6 Mencipta (menghasilkan karya baru atau orisinal)"
+    }
+    
+    if not bloom_levels:
+        return ""
+        
+    instructions = [bloom_map[b] for b in bloom_levels if b in bloom_map]
+    if not instructions:
+        return ""
+        
+    return "Level Kognitif (Taksonomi Bloom): " + ", ".join(instructions) + ". "
+
+
 def _get_gaya_instruction(gaya_soal: List[str]) -> str:
     gaya_map = {
         "light_story": "Cerita Ringan (berikan konteks berupa cerita/skenario sehari-hari)",
@@ -211,6 +231,7 @@ def _build_user_prompt(
     konten_modul: str,
     fase_kelas: str = "umum",
     tipe_konten: TipeKonten = TipeKonten.modul_ajar,
+    bloom_levels: Optional[List[str]] = None,
 ) -> str:
     tipe_label = {
         "pilihan_ganda": "pilihan ganda (4 opsi: A, B, C, D)",
@@ -227,6 +248,7 @@ def _build_user_prompt(
     }
 
     gaya_instruction = _get_gaya_instruction(gaya_soal)
+    bloom_instruction = _get_bloom_instruction(bloom_levels or [])
     fase_detail = _get_fase_detail(fase_kelas)
 
     if tipe_konten == TipeKonten.cp_tp:
@@ -256,6 +278,7 @@ def _build_user_prompt(
 Mapel: {mata_pelajaran} | Topik: {topik or 'Materi inti'}
 Panduan Wajib untuk Fase Ini: {fase_detail}
 Gaya: {gaya_instruction} | Level: {difficulty_instruction.get(difficulty, difficulty)}
+{bloom_instruction}
 
 Materi:
 {materi_section}
@@ -284,6 +307,7 @@ def _build_regenerate_prompt(
     fase_kelas: str = "umum",
     feedback_user: str = None,
     tipe_konten: TipeKonten = TipeKonten.modul_ajar,
+    bloom_levels: Optional[List[str]] = None,
 ) -> str:
     tipe_label = {
         "pilihan_ganda": "pilihan ganda (4 opsi: A, B, C, D)",
@@ -337,8 +361,8 @@ Soal Lama:
 Parameter Soal Baru:
 Mapel: {mata_pelajaran} | Topik: {topik if topik else "Sesuaikan dengan materi"}
 Panduan Wajib untuk Fase Ini: {fase_detail}
-Gaya Soal: {gaya_instruction}
-Level Kognitif: {difficulty_instruction.get(difficulty, difficulty)}
+Gaya Soal: {gaya_instruction} | Level: {difficulty_instruction.get(difficulty, difficulty)}
+{_get_bloom_instruction(bloom_levels or [])}
 Tipe Soal: {tipe_label.get(tipe_soal, tipe_soal)}
 {feedback_section}
 Ringkasan Materi:
@@ -444,7 +468,7 @@ async def _generate_with_gemini(
         try:
             # Menggunakan client.aio untuk async request
             response = await client.aio.models.generate_content(
-                model="gemini-1.5-flash",
+                model="gemini-2.5-flash-lite",
                 contents=prompt,
                 config=config,
             )
@@ -571,6 +595,7 @@ async def generate_soal(
     fase_kelas: str = "umum",
     tipe_konten: Optional[TipeKonten] = None,
     max_retries: int = 3,
+    bloom_levels: Optional[List[str]] = None,
 ) -> List[dict]:
     if tipe_konten is None:
         tipe_konten = TipeKonten(_detect_tipe_konten(konten_modul))
@@ -587,6 +612,8 @@ async def generate_soal(
         konten_modul=konten_modul,
         fase_kelas=fase_kelas,
         tipe_konten=tipe_konten,
+        bloom_levels=bloom_levels,
+        bloom_levels=bloom_levels,
     )
 
     provider, api_key = await _get_ai_config()
@@ -644,6 +671,7 @@ async def regenerate_single_soal(
     feedback_user: str = None,
     tipe_konten: Optional[TipeKonten] = None,
     max_retries: int = 3,
+    bloom_levels: Optional[List[str]] = None,
 ) -> dict:
     if tipe_konten is None:
         tipe_konten = TipeKonten(_detect_tipe_konten(konten_modul))
@@ -661,6 +689,7 @@ async def regenerate_single_soal(
         fase_kelas=fase_kelas,
         feedback_user=feedback_user,
         tipe_konten=tipe_konten,
+        bloom_levels=bloom_levels,
     )
 
     provider, api_key = await _get_ai_config()
