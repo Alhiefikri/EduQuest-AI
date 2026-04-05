@@ -1,13 +1,13 @@
 import { FileText, Search, Plus, Filter, Download, Edit, Trash2, ChevronRight, AlertCircle, Loader2 } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import { useSoal } from '../hooks/useSoal'
+import { useSoalList } from '../hooks/useSoal'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 
 export default function DaftarSoal() {
-  const { data: soalList, isLoading, error, refetch } = useSoal()
+  const { data: soalList, isLoading, error, refetch } = useSoalList()
 
   if (isLoading) {
     return (
