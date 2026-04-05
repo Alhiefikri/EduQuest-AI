@@ -12,7 +12,7 @@ from app.models.soal import (
     RegenerateSingleSoalRequest,
     SoalItem,
 )
-from app.services.ai_service import generate_soal, regenerate_single_soal
+from app.services.ai_service import generate_soal, regenerate_single_soal, TipeKonten
 from app.services.parser_service import extract_text_from_pdf_by_pages
 
 router = APIRouter(prefix="/api/v1/soal", tags=["soal"])
@@ -100,6 +100,7 @@ async def generate_soal_endpoint(request: GenerateSoalRequest):
         konten_modul = f"Mata pelajaran: {request.mata_pelajaran}. Topik: {request.topik}"
 
     try:
+        resolved_tipe_konten = TipeKonten(request.tipe_konten) if request.tipe_konten else None
         soal_list = await generate_soal(
             jumlah_soal=request.jumlah_soal,
             tipe_soal=request.tipe_soal,
@@ -111,6 +112,7 @@ async def generate_soal_endpoint(request: GenerateSoalRequest):
             konten_modul=konten_modul,
             topik=request.topik or "",
             fase_kelas=fase_kelas,
+            tipe_konten=resolved_tipe_konten,
         )
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e))

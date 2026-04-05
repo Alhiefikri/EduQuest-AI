@@ -71,6 +71,7 @@ export default function GenerateSoal() {
         include_gambar: includeGambar,
         page_ranges: sourceType === 'modul' ? pageRanges : undefined,
         cp_atp_text: sourceType === 'cp_atp' ? cpAtpText : undefined,
+        tipe_konten: sourceType === 'modul' ? 'modul_ajar' : sourceType === 'cp_atp' ? 'cp_tp' : 'input_manual',
       })
 
       
