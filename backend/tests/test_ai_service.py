@@ -3,7 +3,14 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from app.services.ai_service import _build_user_prompt, _parse_ai_response
+from app.services.ai_service import (
+    _build_user_prompt,
+    _parse_ai_response,
+    _validate_soal_item,
+    _smart_truncate,
+    _get_fase_detail,
+    FASE_GUIDELINES,
+)
 
 
 class TestBuildUserPrompt:
@@ -20,12 +27,13 @@ class TestBuildUserPrompt:
             konten_modul="Energi tidak dapat dimusnahkan.",
             fase_kelas="Fase B / Kelas 4",
         )
-        assert "Fase/Kelas: Fase B / Kelas 4" in prompt
-        assert "Mata Pelajaran: IPAS" in prompt
+        assert "Fase B" in prompt
+        assert "Mapel: IPAS" in prompt
         assert "Buat 5 soal pilihan ganda" in prompt
         assert "Energi tidak dapat dimusnahkan" in prompt
         assert "DILARANG KERAS" in prompt
         assert "Gaya: Cerita Ringan" in prompt
+        assert "Panduan Wajib untuk Fase Ini:" in prompt
 
     def test_build_user_prompt_default_fase_kelas(self):
         prompt = _build_user_prompt(
@@ -39,9 +47,105 @@ class TestBuildUserPrompt:
             include_gambar=True,
             konten_modul="Kancil dan Buaya.",
         )
-        assert "Fase/Kelas: umum" in prompt
-        assert "Mata Pelajaran: Bahasa Indonesia" in prompt
+        assert "umum" in prompt
+        assert "Mapel: Bahasa Indonesia" in prompt
         assert "Buat 1 soal isian singkat" in prompt
+
+
+class TestGetFaseDetail:
+    def test_exact_match(self):
+        assert _get_fase_detail("Fase A") == FASE_GUIDELINES["Fase A"]
+
+    def test_substring_match(self):
+        assert _get_fase_detail("Fase A / Kelas 1") == FASE_GUIDELINES["Fase A"]
+        assert _get_fase_detail("Fase B / Kelas 4") == FASE_GUIDELINES["Fase B"]
+        assert _get_fase_detail("Fase D / Kelas 8") == FASE_GUIDELINES["Fase D"]
+
+    def test_fallback_to_umum(self):
+        assert _get_fase_detail("umum") == FASE_GUIDELINES["umum"]
+        assert _get_fase_detail("unknown") == FASE_GUIDELINES["umum"]
+
+
+class TestSmartTruncate:
+    def test_short_content_not_truncated(self):
+        content = "Short content"
+        assert _smart_truncate(content) == content
+
+    def test_long_content_with_keywords(self):
+        content = "Fotosintesis adalah proses penting. " * 500
+        result = _smart_truncate(content, topik="Fotosintesis", mata_pelajaran="Biologi")
+        assert len(result) <= 8000 + 50
+        assert "Konten diseleksi berdasarkan relevansi topik" in result
+
+    def test_no_keywords_fallback(self):
+        content = "Some content " * 500
+        result = _smart_truncate(content, topik="", mata_pelajaran="")
+        assert len(result) <= 8000 + 50
+        assert "Konten diringkas" in result
+
+
+class TestValidateSoalItem:
+    def test_valid_soal(self):
+        soal = {
+            "nomor": 1,
+            "pertanyaan": "Berapa 2+2?",
+            "pilihan": ["A. 1", "B. 2", "C. 3", "D. 4"],
+            "jawaban": "D",
+        }
+        valid, reason = _validate_soal_item(soal, "pilihan_ganda")
+        assert valid is True
+        assert reason == "ok"
+
+    def test_empty_pertanyaan(self):
+        soal = {"pertanyaan": "", "jawaban": "A"}
+        valid, reason = _validate_soal_item(soal, "pilihan_ganda")
+        assert valid is False
+        assert "pertanyaan" in reason
+
+    def test_placeholder_pertanyaan(self):
+        soal = {"pertanyaan": "...", "jawaban": "A"}
+        valid, reason = _validate_soal_item(soal, "pilihan_ganda")
+        assert valid is False
+
+    def test_empty_jawaban(self):
+        soal = {"pertanyaan": "Test?", "jawaban": ""}
+        valid, reason = _validate_soal_item(soal, "pilihan_ganda")
+        assert valid is False
+
+    def test_less_than_4_pilihan(self):
+        soal = {
+            "pertanyaan": "Test?",
+            "pilihan": ["A. 1", "B. 2"],
+            "jawaban": "A",
+        }
+        valid, reason = _validate_soal_item(soal, "pilihan_ganda")
+        assert valid is False
+        assert "pilihan" in reason
+
+    def test_invalid_jawaban_letter(self):
+        soal = {
+            "pertanyaan": "Test?",
+            "pilihan": ["A. 1", "B. 2", "C. 3", "D. 4"],
+            "jawaban": "E",
+        }
+        valid, reason = _validate_soal_item(soal, "pilihan_ganda")
+        assert valid is False
+        assert "bukan A/B/C/D" in reason
+
+    def test_identical_pilihan(self):
+        soal = {
+            "pertanyaan": "Test?",
+            "pilihan": ["A. Sama", "B. Sama", "C. Sama", "D. Sama"],
+            "jawaban": "A",
+        }
+        valid, reason = _validate_soal_item(soal, "pilihan_ganda")
+        assert valid is False
+        assert "identik" in reason
+
+    def test_essay_no_pilihan_validation(self):
+        soal = {"pertanyaan": "Jelaskan!", "jawaban": "Essay answer"}
+        valid, reason = _validate_soal_item(soal, "essay")
+        assert valid is True
 
 
 class TestParseAIResponse:
