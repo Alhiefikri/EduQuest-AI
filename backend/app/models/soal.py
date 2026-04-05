@@ -2,10 +2,11 @@ from datetime import datetime
 import json
 from typing import List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict  # type: ignore
 
 
 class SoalItem(BaseModel):
+    id: Optional[str] = None
     nomor: int
     pertanyaan: str
     pilihan: Optional[List[str]] = None
@@ -27,6 +28,8 @@ class GenerateSoalRequest(BaseModel):
     include_pembahasan: bool = True
     include_kunci: bool = True
     include_gambar: bool = False
+    page_ranges: Optional[str] = None
+    cp_atp_text: Optional[str] = None
 
 
 class GenerateSoalResponse(BaseModel):
@@ -53,9 +56,7 @@ class GenerateSoalResponse(BaseModel):
         if not value:
             return ["formal_academic"]
         return [value]
-
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
     @classmethod
     def from_prisma(cls, soal) -> "GenerateSoalResponse":
@@ -76,7 +77,7 @@ class GenerateSoalResponse(BaseModel):
             status=soal.status,
             created_at=soal.createdAt,
             updated_at=soal.updatedAt,
-        )
+        )  # type: ignore
 
 
 class SoalListResponse(BaseModel):
@@ -91,9 +92,7 @@ class SoalListResponse(BaseModel):
     status: str
     created_at: datetime
     updated_at: datetime
-
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
     @classmethod
     def _parse_gaya_soal(cls, value: str | List[str]) -> List[str]:
@@ -117,7 +116,7 @@ class SoalListResponse(BaseModel):
             status=soal.status,
             created_at=soal.createdAt,
             updated_at=soal.updatedAt,
-        )
+        )  # type: ignore
 
 
 class UpdateSoalRequest(BaseModel):
@@ -128,6 +127,7 @@ class UpdateSoalRequest(BaseModel):
 
 class RegenerateSingleSoalRequest(BaseModel):
     nomor_soal: int
+    soal_lama: SoalItem
     gaya_soal: List[str] = Field(default_factory=lambda: ["formal_academic"])
     feedback: Optional[str] = None
 

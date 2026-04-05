@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 
-from dotenv import load_dotenv
+from dotenv import load_dotenv  # type: ignore
 
 load_dotenv()
 
@@ -111,4 +111,5 @@ def _mask_key(key: str) -> str:
         return ""
     if len(key) <= 8:
         return "****"
-    return key[:4] + "****" + key[-4:]
+    s_key = str(key)
+    return s_key[:4] + "****" + s_key[-4:]  # type: ignore

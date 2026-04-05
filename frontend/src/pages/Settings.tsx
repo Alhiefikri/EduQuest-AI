@@ -28,7 +28,6 @@ export default function Settings() {
   const [testing, setTesting] = useState(false)
   const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null)
   const [saveResult, setSaveResult] = useState<{ success: boolean; message: string } | null>(null)
-  const [loaded, setLoaded] = useState(false)
   const [activeTab, setActiveTab] = useState(2)
 
   useEffect(() => {
@@ -39,9 +38,8 @@ export default function Settings() {
         setGeminiConfigured(data.gemini_configured)
         setGroqConfigured(data.groq_configured)
         setOpenrouterConfigured(data.openrouter_configured)
-        setLoaded(true)
       })
-      .catch(() => setLoaded(true))
+      .catch(() => {})
   }, [])
 
   const handleTestConnection = async () => {

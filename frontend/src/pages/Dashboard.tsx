@@ -1,118 +1,11 @@
-import { useState } from 'react'
-import { Upload, Zap, FileText, BookOpen, LayoutTemplate, ArrowRight, Folder, Lightbulb, Clock, ChevronRight, X, AlertCircle, CheckCircle2 } from 'lucide-react'
+import { Upload, Zap, FileText, BookOpen, LayoutTemplate, ArrowRight, Folder, Lightbulb, Clock, ChevronRight, AlertCircle } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useDocuments } from '../hooks/useDocuments'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-
-function UploadModal({ isOpen, onClose, onSuccess }: { isOpen: boolean; onClose: () => void; onSuccess: (file: File) => void }) {
-  const [dragActive, setDragActive] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [success, setSuccess] = useState(false)
-
-  if (!isOpen) return null
-
-  const handleUpload = async (file: File) => {
-    const allowedTypes = [
-      'application/pdf',
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    ]
-    if (!allowedTypes.includes(file.type)) {
-      setError('Hanya file PDF dan DOCX yang diterima')
-      return
-    }
-    if (file.size > 10 * 1024 * 1024) {
-      setError('Ukuran file melebihi batas maksimum 10MB')
-      return
-    }
-
-    setError(null)
-    setSuccess(false)
-    try {
-      await onSuccess(file)
-      setSuccess(true)
-      setTimeout(() => {
-        onClose()
-      }, 1500)
-    } catch (err: unknown) {
-      const message = err instanceof Error && 'message' in err ? err.message : 'Gagal mengupload file'
-      setError(message)
-    }
-  }
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault()
-    setDragActive(false)
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      handleUpload(e.dataTransfer.files[0])
-    }
-  }
-
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      handleUpload(e.target.files[0])
-    }
-  }
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm" onClick={onClose}>
-      <Card className="w-full max-w-lg mx-4 overflow-hidden border-2 border-slate-200 shadow-xl rounded-2xl" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between p-6 border-b border-slate-100">
-          <h2 className="text-xl font-bold tracking-tight text-slate-900">Upload Modul Ajar</h2>
-          <Button variant="ghost" size="icon" onClick={onClose} className="rounded-full">
-            <X className="w-5 h-5" />
-          </Button>
-        </div>
-
-        <CardContent className="p-8">
-          {success ? (
-            <div className="flex flex-col items-center py-10 text-center">
-              <div className="w-20 h-20 rounded-full bg-emerald-50 border-2 border-emerald-100 flex items-center justify-center mb-6 shadow-sm">
-                <CheckCircle2 className="w-10 h-10 text-emerald-500" strokeWidth={2.5} />
-              </div>
-              <p className="text-2xl font-bold text-slate-900">Upload Berhasil</p>
-              <p className="text-slate-500 mt-2 font-medium">Modul ajar telah ditambahkan ke sistem</p>
-            </div>
-          ) : (
-            <>
-              <div
-                className={`border-2 border-dashed rounded-2xl p-12 text-center transition-all duration-300 ${
-                  dragActive ? 'border-brand-500 bg-brand-50/50 scale-[1.01]' : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50/50'
-                }`}
-                onDragOver={(e) => { e.preventDefault(); setDragActive(true) }}
-                onDragLeave={() => setDragActive(false)}
-                onDrop={handleDrop}
-              >
-                <div className="w-16 h-16 bg-white border border-slate-100 rounded-2xl shadow-sm flex items-center justify-center mx-auto mb-6">
-                  <Upload className="w-8 h-8 text-slate-400" strokeWidth={2} />
-                </div>
-                <p className="text-lg font-semibold text-slate-700">
-                  Tarik & lepas file di sini, atau{' '}
-                  <label className="text-brand-600 hover:text-brand-700 cursor-pointer underline underline-offset-4 decoration-2">
-                    pilih file
-                    <input type="file" className="hidden" accept=".pdf,.docx" onChange={handleFileSelect} />
-                  </label>
-                </p>
-                <p className="text-sm font-medium text-slate-400 mt-3 uppercase tracking-wider">PDF atau DOCX &bull; MAKS 10MB</p>
-              </div>
-
-              {error && (
-                <div className="flex items-center gap-3 mt-6 p-4 bg-rose-50 border border-rose-100 rounded-xl">
-                  <AlertCircle className="w-5 h-5 text-rose-500 shrink-0" strokeWidth={2.5} />
-                  <p className="text-sm text-rose-700 font-bold">{error}</p>
-                </div>
-              )}
-            </>
-          )}
-        </CardContent>
-      </Card>
-    </div>
-  )
-}
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 export default function Dashboard() {
-  const { documents, loading, error, uploadDocument, isUploading, refetch } = useDocuments()
-  const [uploadOpen, setUploadOpen] = useState(false)
+  const { documents, loading, error, refetch } = useDocuments()
 
   return (
     <div className="space-y-12 animate-in fade-in pb-12">
@@ -124,13 +17,15 @@ export default function Dashboard() {
         </div>
         <div className="flex flex-wrap items-center gap-4">
           <Button
+            asChild
             variant="outline"
             size="lg"
-            onClick={() => setUploadOpen(true)}
             className="h-12 px-6 rounded-xl font-bold border-2 border-slate-200 hover:bg-slate-50 shadow-sm"
           >
-            <Upload className="w-5 h-5 mr-2" strokeWidth={2.5} />
-            Upload Modul
+            <Link to="/modul">
+              <Upload className="w-5 h-5 mr-2" strokeWidth={2.5} />
+              Upload Modul
+            </Link>
           </Button>
           <Button asChild size="lg" className="h-12 px-6 rounded-xl font-bold bg-brand-600 hover:bg-brand-700 shadow-md shadow-brand-200 transition-all hover:translate-y-[-1px]">
             <Link to="/soal/generate">
@@ -197,7 +92,9 @@ export default function Dashboard() {
                 <Folder className="w-12 h-12 text-slate-300 mb-4" strokeWidth={2} />
                 <p className="text-xl font-bold text-slate-900 mb-2">Belum ada dokumen</p>
                 <p className="text-slate-500 mb-8 max-w-[240px]">Mulai dengan mengupload modul ajar pertama Anda.</p>
-                <Button onClick={() => setUploadOpen(true)} className="rounded-xl px-8 bg-brand-600 shadow-md">Upload Sekarang</Button>
+                <Button asChild className="rounded-xl px-8 bg-brand-600 shadow-md">
+                  <Link to="/modul">Upload Sekarang</Link>
+                </Button>
               </CardContent>
             </Card>
           ) : (

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Search, Filter, Edit, FileDown, Trash, Plus, MoreVertical, Loader2, AlertCircle } from 'lucide-react'
+import { Search, Filter, Edit, FileDown, Trash, Plus, Loader2, AlertCircle } from 'lucide-react'
 import { useSoalList, useDeleteSoal } from '../hooks/useSoal'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'

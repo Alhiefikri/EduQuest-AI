@@ -22,6 +22,7 @@ class DocumentResponse(BaseModel):
     page_count: int
     word_count: int
     content: str
+    filepath: str
     uploaded_at: datetime
     updated_at: datetime
 
@@ -38,6 +39,7 @@ class DocumentResponse(BaseModel):
             page_count=doc.pageCount,
             word_count=doc.wordCount,
             content=doc.content,
+            filepath=doc.filepath,
             uploaded_at=doc.uploadedAt,
             updated_at=doc.updatedAt,
         )
@@ -50,6 +52,7 @@ class DocumentListResponse(BaseModel):
     filesize: int
     page_count: int
     word_count: int
+    filepath: str
     uploaded_at: datetime
     updated_at: datetime
 
@@ -65,6 +68,7 @@ class DocumentListResponse(BaseModel):
             filesize=doc.filesize,
             page_count=doc.pageCount,
             word_count=doc.wordCount,
+            filepath=doc.filepath,
             uploaded_at=doc.uploadedAt,
             updated_at=doc.updatedAt,
         )
