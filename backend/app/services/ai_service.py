@@ -613,7 +613,6 @@ async def generate_soal(
         fase_kelas=fase_kelas,
         tipe_konten=tipe_konten,
         bloom_levels=bloom_levels,
-        bloom_levels=bloom_levels,
     )
 
     provider, api_key = await _get_ai_config()
