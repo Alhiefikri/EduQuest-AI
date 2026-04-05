@@ -75,6 +75,7 @@ export interface GenerateSoalRequest {
   include_gambar: boolean
   page_ranges?: string
   cp_atp_text?: string
+  tipe_konten?: string
 }
 
 export interface UpdateSoalRequest {

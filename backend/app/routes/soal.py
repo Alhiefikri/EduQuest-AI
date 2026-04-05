@@ -111,6 +111,7 @@ async def generate_soal_endpoint(request: GenerateSoalRequest):
             konten_modul=konten_modul,
             topik=request.topik or "",
             fase_kelas=fase_kelas,
+            tipe_konten=request.tipe_konten,
         )
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e))

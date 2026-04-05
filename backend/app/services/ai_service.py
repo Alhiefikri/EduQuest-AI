@@ -1,6 +1,14 @@
+from enum import Enum
 import json
 import asyncio
 from typing import List, Optional
+
+
+class TipeKonten(str, Enum):
+    modul_ajar = "modul_ajar"
+    cp_tp = "cp_tp"
+    input_manual = "input_manual"
+
 
 SYSTEM_PROMPT = """Kamu adalah sistem pembuat soal ujian untuk Kurikulum Merdeka Indonesia.
 
@@ -19,7 +27,9 @@ FASE_GUIDELINES: dict[str, str] = {
         "Kelas 1-2 SD. WAJIB: kalimat maksimal 8 kata per soal. "
         "Gunakan hanya kosakata yang biasa didengar anak usia 6-8 tahun. "
         "Konsep harus konkret dan bisa dilihat atau diraba. "
-        "DILARANG menggunakan kata: analisis, evaluasi, konsep, prinsip, hipotesis."
+        "DILARANG menggunakan kata: analisis, evaluasi, konsep, prinsip, hipotesis. "
+        "Contoh BENAR: 'Apa warna daun yang sehat?' "
+        "Contoh SALAH: 'Jelaskan proses fotosintesis secara terperinci!'"
     ),
     "Fase B": (
         "Kelas 3-4 SD. Kalimat maksimal 12 kata. Boleh 1 langkah penalaran sederhana. "
@@ -27,7 +37,9 @@ FASE_GUIDELINES: dict[str, str] = {
     ),
     "Fase C": (
         "Kelas 5-6 SD. Boleh 2 langkah penalaran. Boleh analogi konkret. "
-        "Mulai bisa gunakan istilah mata pelajaran dasar."
+        "Mulai bisa gunakan istilah mata pelajaran dasar. "
+        "Contoh BENAR: 'Mengapa es batu mencair jika diletakkan di luar?' "
+        "Contoh SALAH: 'Analisislah perubahan entalpi pada reaksi eksoterm!'"
     ),
     "Fase D": (
         "Kelas 7-9 SMP. Boleh penalaran multi-langkah. Konteks sosial dan sains dasar diperbolehkan. "
@@ -50,6 +62,27 @@ _STOPWORDS = frozenset({
     "sudah", "ada", "bisa", "oleh", "karena", "saat", "jika", "maka",
     "dapat", "lebih", "agar", "namun", "tetapi", "sehingga", "yaitu",
 })
+
+
+def _detect_tipe_konten(konten: str) -> str:
+    konten_lower = konten.lower()
+    if "tujuan pembelajaran" in konten_lower or "capaian pembelajaran" in konten_lower:
+        return "cp_tp"
+    return "modul_ajar"
+
+
+def _build_cp_tp_section(konten_cp_tp: str, mata_pelajaran: str, topik: str) -> str:
+    return (
+        f"Capaian/Tujuan Pembelajaran untuk {mata_pelajaran}:\n"
+        f"{konten_cp_tp}\n\n"
+        f"INSTRUKSI KHUSUS UNTUK CP/TP:\n"
+        f"Konten di atas berisi TUJUAN PEMBELAJARAN, bukan materi lengkap. "
+        f"Buat soal yang menguji apakah siswa SUDAH MENCAPAI tujuan tersebut. "
+        f"Gunakan level kognitif yang sesuai (aplikasi, analisis, evaluasi) — "
+        f"JANGAN hanya membuat soal definisi atau hafalan. "
+        f"Jika tujuan menyebutkan 'siswa mampu menganalisis...', buat soal analisis. "
+        f"Jika tujuan menyebutkan 'siswa mampu menjelaskan...', buat soal pemahaman."
+    )
 
 
 def _get_fase_detail(fase_kelas: str) -> str:
@@ -134,6 +167,7 @@ def _build_user_prompt(
     include_gambar: bool,
     konten_modul: str,
     fase_kelas: str = "umum",
+    tipe_konten: str = "modul_ajar",
 ) -> str:
     tipe_label = {
         "pilihan_ganda": "pilihan ganda (4 opsi: A, B, C, D)",
@@ -151,6 +185,11 @@ def _build_user_prompt(
 
     gaya_instruction = _get_gaya_instruction(gaya_soal)
     fase_detail = _get_fase_detail(fase_kelas)
+
+    if tipe_konten == "cp_tp":
+        materi_section = _build_cp_tp_section(konten_modul, mata_pelajaran, topik)
+    else:
+        materi_section = _smart_truncate(konten_modul, topik=topik, mata_pelajaran=mata_pelajaran)
 
     # Dynamic JSON Schema
     json_item = {
@@ -176,7 +215,7 @@ Panduan Wajib untuk Fase Ini: {fase_detail}
 Gaya: {gaya_instruction} | Level: {difficulty_instruction.get(difficulty, difficulty)}
 
 Materi:
-{_smart_truncate(konten_modul, topik=topik, mata_pelajaran=mata_pelajaran)}
+{materi_section}
 
 Aturan Wajib:
 1. FOKUS materi inti. JANGAN buat soal tentang metode/alat peraga guru.
@@ -389,6 +428,7 @@ async def generate_soal(
     konten_modul: str,
     topik: str = "",
     fase_kelas: str = "umum",
+    tipe_konten: str = "modul_ajar",
     max_retries: int = 3,
 ) -> List[dict]:
     prompt = _build_user_prompt(
@@ -402,6 +442,7 @@ async def generate_soal(
         include_gambar=include_gambar,
         konten_modul=konten_modul,
         fase_kelas=fase_kelas,
+        tipe_konten=tipe_konten,
     )
 
     provider, api_key = await _get_ai_config()
@@ -457,6 +498,7 @@ def _build_regenerate_prompt(
     konten_modul: str,
     fase_kelas: str = "umum",
     feedback_user: str = None,
+    tipe_konten: str = "modul_ajar",
 ) -> str:
     tipe_label = {
         "pilihan_ganda": "pilihan ganda (4 opsi: A, B, C, D)",
@@ -474,6 +516,11 @@ def _build_regenerate_prompt(
 
     gaya_instruction = _get_gaya_instruction(gaya_soal)
     fase_detail = _get_fase_detail(fase_kelas)
+
+    if tipe_konten == "cp_tp":
+        materi_section = _build_cp_tp_section(konten_modul, mata_pelajaran, topik)
+    else:
+        materi_section = _smart_truncate(konten_modul, topik=topik, mata_pelajaran=mata_pelajaran)
 
     # Dynamic JSON Schema
     json_item = {
@@ -510,7 +557,7 @@ Level Kognitif: {difficulty_instruction.get(difficulty, difficulty)}
 Tipe Soal: {tipe_label.get(tipe_soal, tipe_soal)}
 {feedback_section}
 Ringkasan Materi:
-{_smart_truncate(konten_modul, topik=topik, mata_pelajaran=mata_pelajaran)}
+{materi_section}
 
 Instruksi Khusus (Wajib Dipatuhi):
 1. **DILARANG KERAS** membuat soal tentang kegiatan belajar di kelas, metode mengajar guru, langkah-langkah pembelajaran, atau alat peraga yang digunakan guru.
@@ -541,6 +588,7 @@ async def regenerate_single_soal(
     topik: str = "",
     fase_kelas: str = "umum",
     feedback_user: str = None,
+    tipe_konten: str = "modul_ajar",
     max_retries: int = 3,
 ) -> dict:
     prompt = _build_regenerate_prompt(
@@ -555,6 +603,7 @@ async def regenerate_single_soal(
         konten_modul=konten_modul,
         fase_kelas=fase_kelas,
         feedback_user=feedback_user,
+        tipe_konten=tipe_konten,
     )
 
     provider, api_key = await _get_ai_config()

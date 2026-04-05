@@ -30,6 +30,7 @@ class GenerateSoalRequest(BaseModel):
     include_gambar: bool = False
     page_ranges: Optional[str] = None
     cp_atp_text: Optional[str] = None
+    tipe_konten: str = Field("modul_ajar", pattern="^(modul_ajar|cp_tp|input_manual)$")
 
 
 class GenerateSoalResponse(BaseModel):
