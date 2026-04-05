@@ -1,4 +1,7 @@
 import { LayoutTemplate, Plus, MoreHorizontal, Info } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 
 export default function TemplateWord() {
   const templates = [
@@ -8,62 +11,72 @@ export default function TemplateWord() {
   ];
 
   return (
-    <div className="space-y-8 animate-in fade-in pb-12">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Template Word</h1>
-          <p className="text-gray-500 mt-2 font-medium">Sesuaikan tampilan output soal dengan template .docx kustom Anda.</p>
+    <div className="space-y-6 animate-in fade-in pb-12">
+      {/* Header Section */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6 border-b pb-6">
+        <div className="space-y-1.5 px-1">
+          <h1 className="text-xl font-black text-slate-900 tracking-tight uppercase leading-none">Template Word</h1>
+          <p className="text-xs font-bold text-slate-600 border-l-2 border-brand-500 pl-4 uppercase tracking-widest leading-none">Personalisasi Output Dokumen Evaluasi</p>
         </div>
-        <button className="flex items-center gap-2.5 px-6 py-3 bg-brand-500 text-white rounded-xl text-sm font-bold hover:bg-brand-600 transition-all shadow-md active:scale-95">
-          <Plus className="w-4 h-4" /> Upload Template
-        </button>
+        <Button
+          size="sm"
+          className="h-10 px-6 rounded-lg font-black bg-slate-900 border border-slate-950 text-white shadow-xl hover:translate-y-[-1px] transition-all uppercase tracking-widest text-xs"
+        >
+          <Plus className="w-4 h-4 mr-2.5" strokeWidth={3} /> Upload Template
+        </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {templates.map((tpl) => (
-          <div key={tpl.id} className="bg-white border border-gray-200 rounded-3xl p-8 shadow-sm hover:shadow-lg hover:border-brand-200 transition-all relative group cursor-default">
-            <div className="flex justify-between items-start mb-6">
-              <div className="bg-brand-50 p-4 rounded-2xl text-brand-500 shadow-inner group-hover:bg-brand-500 group-hover:text-white transition-colors">
-                <LayoutTemplate className="w-7 h-7" />
+          <Card key={tpl.id} className="border border-slate-100 shadow-sm hover:border-brand-200 hover:shadow-md transition-all duration-300 rounded-xl overflow-hidden group bg-white">
+            <CardContent className="p-6 flex flex-col h-full">
+              <div className="flex justify-between items-start mb-6">
+                <div className="w-12 h-12 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center border border-brand-100 shadow-sm group-hover:scale-105 transition-transform">
+                  <LayoutTemplate className="w-6 h-6" strokeWidth={2} />
+                </div>
+                {tpl.isDefault && (
+                  <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 text-[10px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded-md shadow-sm">
+                    Default
+                  </Badge>
+                )}
               </div>
-              {tpl.isDefault && (
-                <span className="bg-green-50 text-green-700 text-[10px] font-black px-3 py-1 rounded-lg border border-green-100 tracking-widest uppercase">Default</span>
-              )}
-            </div>
-            
-            <h3 className="text-lg font-bold text-gray-900 mb-2 group-hover:text-brand-600 transition-colors">{tpl.name}</h3>
-            <p className="text-sm font-medium text-gray-400 mb-8">Ditambahkan pada {tpl.date}</p>
-            
-            <div className="flex items-center gap-2 mt-auto">
-              <button className="flex-1 bg-gray-50 text-gray-700 text-xs font-black uppercase tracking-widest py-3 rounded-xl hover:bg-gray-100 transition-all active:scale-95">
-                Pratinjau
-              </button>
-              <button className="p-3 text-gray-400 hover:text-gray-900 bg-gray-50 rounded-xl transition-all"><MoreHorizontal className="w-5 h-5" /></button>
-            </div>
-          </div>
+              
+              <h3 className="text-sm font-black text-slate-900 mb-1 group-hover:text-brand-600 transition-colors uppercase tracking-tight">{tpl.name}</h3>
+              <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-8">DIPERBARUI: {tpl.date}</p>
+              
+              <div className="flex items-center gap-2 mt-auto">
+                <Button variant="outline" className="flex-1 h-9 bg-slate-50 border-slate-200 text-slate-700 text-[10px] font-black uppercase tracking-widest rounded-lg hover:bg-slate-100 transition-all active:scale-95 shadow-none">
+                  Pratinjau
+                </Button>
+                <Button variant="ghost" size="icon" className="h-9 w-9 rounded-lg hover:bg-slate-50 text-slate-400 hover:text-slate-900 border border-transparent hover:border-slate-100 transition-all active:scale-95">
+                  <MoreHorizontal className="w-5 h-5" />
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         ))}
 
         {/* Add New Card */}
-        <button className="border-2 border-dashed border-gray-200 rounded-3xl p-8 flex flex-col items-center justify-center gap-4 hover:border-brand-200 hover:bg-brand-50/10 transition-all group min-h-[220px]">
-          <div className="w-14 h-14 rounded-2xl bg-gray-50 flex items-center justify-center text-gray-300 group-hover:bg-brand-50 group-hover:text-brand-500 transition-colors shadow-inner">
-            <Plus className="w-8 h-8" strokeWidth={3} />
+        <button className="border-2 border-dashed border-slate-200 rounded-xl p-8 flex flex-col items-center justify-center gap-4 hover:border-brand-300 hover:bg-brand-50/20 transition-all group min-h-[200px] bg-white/50">
+          <div className="w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center text-slate-300 group-hover:bg-brand-50 group-hover:text-brand-500 transition-all border border-slate-100 shadow-inner">
+            <Plus className="w-7 h-7" strokeWidth={3} />
           </div>
-          <span className="text-xs font-black text-gray-400 group-hover:text-brand-600 uppercase tracking-[0.2em] transition-colors">Upload Baru</span>
+          <span className="text-[10px] font-black text-slate-400 group-hover:text-brand-600 uppercase tracking-[0.2em] transition-colors">Tambah Template Baru</span>
         </button>
       </div>
 
-      <div className="bg-brand-900 rounded-3xl p-8 flex gap-6 items-start shadow-xl relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-brand-800 rounded-full -mr-16 -mt-16 opacity-40 blur-2xl"></div>
-        <div className="bg-brand-800/50 p-3.5 rounded-2xl shadow-inner shrink-0 mt-0.5 border border-brand-700">
-          <Info className="w-6 h-6 text-brand-300" />
+      <div className="bg-slate-900 rounded-2xl p-6 flex flex-col sm:flex-row gap-5 items-start sm:items-center shadow-xl relative overflow-hidden border border-slate-800">
+        <div className="absolute top-0 right-0 w-48 h-48 bg-brand-500 rounded-full -mr-20 -mt-20 opacity-20 blur-[60px]"></div>
+        <div className="bg-brand-500/10 p-3 rounded-xl shadow-inner border border-brand-500/20 shrink-0">
+          <Info className="w-5 h-5 text-brand-400" strokeWidth={2.5} />
         </div>
-        <div>
-          <h4 className="text-sm font-black text-brand-400 uppercase tracking-widest mb-3">Panduan Integrasi Template</h4>
-          <p className="text-base text-brand-50 font-medium leading-relaxed max-w-3xl opacity-90">
-            Sistem kami mendukung injeksi variabel dinamis. Gunakan tag berikut di file Word Anda: <br/>
-            <code className="bg-brand-800/80 px-2 py-0.5 rounded text-white mr-2">{"{{JUDUL}}"}</code> 
-            <code className="bg-brand-800/80 px-2 py-0.5 rounded text-white mr-2">{"{{SOAL}}"}</code> 
-            <code className="bg-brand-800/80 px-2 py-0.5 rounded text-white">{"{{KUNCI}}"}</code>
+        <div className="relative z-10 space-y-2">
+          <h4 className="text-[11px] font-black text-brand-400 uppercase tracking-widest">Panduan Integrasi Template</h4>
+          <p className="text-xs text-slate-200 font-bold leading-relaxed max-w-4xl uppercase tracking-wide opacity-90">
+            Gunakan variabel dinamis berikut di file Word Anda: 
+            <code className="bg-white/10 px-2 py-0.5 rounded text-white mx-1.5 border border-white/10">{"{{JUDUL}}"}</code> 
+            <code className="bg-white/10 px-2 py-0.5 rounded text-white mx-1.5 border border-white/10">{"{{SOAL}}"}</code> 
+            <code className="bg-white/10 px-2 py-0.5 rounded text-white ml-1.5 border border-white/10">{"{{KUNCI}}"}</code>
           </p>
         </div>
       </div>

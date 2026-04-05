@@ -120,17 +120,17 @@ export default function GenerateSoal() {
   const steps = sourceType === 'modul' ? [1, 2, 3] : [1, 3]
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-6 space-y-5 animate-in fade-in overflow-hidden">
+    <div className="max-w-4xl lg:max-w-5xl xl:max-w-6xl mx-auto px-4 py-6 space-y-5 animate-in fade-in overflow-hidden">
       
       {/* ── HEADER: Compact & Professional ── */}
       <div className="flex items-center justify-between gap-4 border-b pb-4">
         <div className="flex items-center gap-3">
           <Button asChild variant="outline" size="icon" className="w-9 h-9 border-slate-200 rounded-lg shadow-sm">
-            <Link to="/soal"><ArrowLeft className="w-5 h-5 text-slate-600" /></Link>
+            <Link to="/soal"><ArrowLeft className="w-5 h-5 text-slate-700" /></Link>
           </Button>
           <div>
             <h1 className="text-xl font-black text-slate-900 uppercase tracking-tight">Generate Soal</h1>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{activeProvider} Infrastructure</p>
+            <p className="text-xs font-bold text-slate-600 uppercase tracking-widest">{activeProvider} Infrastructure</p>
           </div>
         </div>
         
@@ -139,9 +139,9 @@ export default function GenerateSoal() {
           {steps.map((s, idx) => (
             <div key={s} className="flex items-center gap-2">
               <div className={cn(
-                "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black uppercase transition-all ring-1 transition-all",
+                "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-black uppercase transition-all ring-1",
                 step === s ? "bg-brand-500 text-white ring-brand-600 shadow-md scale-105" : 
-                step > s ? "bg-slate-900 text-white ring-slate-900" : "bg-white text-slate-400 ring-slate-100"
+                step > s ? "bg-slate-900 text-white ring-slate-900" : "bg-white text-slate-500 ring-slate-200"
               )}>
                 {step > s ? <Check className="w-3 h-3" /> : <span>{idx + 1}</span>}
                 <span className="hidden md:inline">{s === 1 ? 'Sumber' : s === 2 ? 'Filter' : 'Konfigurasi'}</span>
@@ -155,7 +155,7 @@ export default function GenerateSoal() {
       {error && (
         <div className="flex items-center gap-2 p-3 bg-rose-50 border border-rose-200 rounded-xl">
           <AlertCircle className="w-4 h-4 text-rose-500 shrink-0" />
-          <p className="text-[10px] text-rose-700 font-bold uppercase tracking-wide">{error}</p>
+          <p className="text-xs text-rose-700 font-bold uppercase tracking-wide">{error}</p>
         </div>
       )}
 
@@ -164,9 +164,9 @@ export default function GenerateSoal() {
         <div className="space-y-4 animate-in slide-in-from-bottom-2 duration-300">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             {[
-              { id: 'modul', title: 'Modul PDF', icon: BookOpen, desc: 'Pilih file dari library', color: 'text-sky-500', bg: 'bg-sky-50' },
-              { id: 'cp_atp', title: 'CP / ATP', icon: FileType, desc: 'Tempel teks kurikulum', color: 'text-indigo-500', bg: 'bg-indigo-50' },
-              { id: 'manual', title: 'Topik Manual', icon: LayoutGrid, desc: 'Tuliskan topik khusus', color: 'text-emerald-500', bg: 'bg-emerald-50' }
+              { id: 'modul', title: 'Modul PDF', icon: BookOpen, desc: 'Pilih file dari library', color: 'text-sky-600', bg: 'bg-sky-50' },
+              { id: 'cp_atp', title: 'CP / ATP', icon: FileType, desc: 'Tempel teks kurikulum', color: 'text-indigo-600', bg: 'bg-indigo-50' },
+              { id: 'manual', title: 'Topik Manual', icon: LayoutGrid, desc: 'Tuliskan topik khusus', color: 'text-emerald-600', bg: 'bg-emerald-50' }
             ].map((src) => (
               <button
                 key={src.id}
@@ -181,7 +181,7 @@ export default function GenerateSoal() {
                 </div>
                 <div>
                   <h3 className="text-xs font-black uppercase tracking-tight text-slate-800">{src.title}</h3>
-                  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{src.desc}</p>
+                  <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">{src.desc}</p>
                 </div>
               </button>
             ))}
@@ -190,7 +190,7 @@ export default function GenerateSoal() {
           <div className="bg-white border border-slate-100 rounded-xl p-5 shadow-sm min-h-[220px]">
              {sourceType === 'modul' && (
                <div className="space-y-3">
-                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider flex items-center gap-2">
+                 <label className="text-xs font-black text-slate-600 uppercase tracking-wider flex items-center gap-2">
                    <div className="w-1.5 h-1.5 bg-brand-500 rounded-full animate-pulse"></div>
                    Pilih Dokumen Sumber
                  </label>
@@ -204,13 +204,13 @@ export default function GenerateSoal() {
                      ))}
                    </SelectContent>
                  </Select>
-                 <p className="text-[9px] text-slate-400 font-bold italic tracking-wide">AI akan menganalisis konten PDF untuk menghasilkan butir soal yang relevan.</p>
+                 <p className="text-xs text-slate-500 font-bold italic tracking-wide">AI akan menganalisis konten PDF untuk menghasilkan butir soal yang relevan.</p>
                </div>
              )}
 
              {sourceType === 'cp_atp' && (
                <div className="space-y-3">
-                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Paste Teks Kurikulum (CP/ATP)</label>
+                 <label className="text-xs font-black text-slate-600 uppercase tracking-wider">Paste Teks Kurikulum (CP/ATP)</label>
                  <Textarea
                    value={cpAtpText}
                    onChange={(e) => setCpAtpText(e.target.value)}
@@ -222,7 +222,7 @@ export default function GenerateSoal() {
 
              {sourceType === 'manual' && (
                <div className="space-y-3">
-                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Deskripsikan Topik Materi</label>
+                 <label className="text-xs font-black text-slate-600 uppercase tracking-wider">Deskripsikan Topik Materi</label>
                  <Input
                    value={topik}
                    onChange={(e) => setTopik(e.target.value)}
@@ -241,8 +241,8 @@ export default function GenerateSoal() {
            <div className="grid grid-cols-1 lg:grid-cols-6 gap-4">
               <div className="lg:col-span-4 border border-slate-200 rounded-xl overflow-hidden shadow-lg bg-slate-900 group h-[450px]">
                 <div className="bg-slate-800 px-4 py-2 border-b border-white/5 flex items-center justify-between">
-                  <span className="text-white/50 font-black text-[9px] uppercase tracking-widest">Context Preview</span>
-                  <div className="flex gap-1.5 opacity-40 group-hover:opacity-100 transition-opacity">
+                  <span className="text-slate-200 font-black text-xs uppercase tracking-widest">Context Preview</span>
+                  <div className="flex gap-1.5 opacity-60 group-hover:opacity-100 transition-opacity">
                     <div className="w-2 h-2 rounded-full bg-rose-500"></div>
                     <div className="w-2 h-2 rounded-full bg-amber-500"></div>
                     <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
@@ -258,19 +258,19 @@ export default function GenerateSoal() {
                 <div className="bg-brand-50 border border-brand-100 rounded-xl p-5 shadow-sm space-y-4">
                   <h3 className="text-sm font-black text-brand-900 uppercase tracking-tight">Rentang Halaman</h3>
                   <div className="space-y-2">
-                    <label className="text-[9px] font-black text-brand-600/60 uppercase tracking-widest">Halaman Spesifik (Filter)</label>
+                    <label className="text-xs font-black text-brand-800 uppercase tracking-widest">Halaman Spesifik (Filter)</label>
                     <Input
                       value={pageRanges}
                       onChange={(e) => setPageRanges(e.target.value)}
                       placeholder="Contoh: 2-4, 7, 10"
                       className="h-10 border-2 border-white bg-white/80 rounded-lg text-sm font-black text-brand-900 shadow-inner"
                     />
-                    <p className="text-[8px] text-brand-600/60 font-bold italic tracking-wide">* Biarkan kosong untuk memproses seluruh dokumen.</p>
+                    <p className="text-xs text-brand-700/80 font-bold italic tracking-wide">* Biarkan kosong untuk memproses seluruh dokumen.</p>
                   </div>
                 </div>
                 
-                <div className="p-4 bg-slate-50 border-2 border-dashed border-slate-200 rounded-xl">
-                  <p className="text-[9px] text-slate-400 font-bold uppercase leading-relaxed text-center">
+                <div className="p-4 bg-slate-100 border-2 border-dashed border-slate-300 rounded-xl">
+                  <p className="text-xs text-slate-600 font-bold uppercase leading-relaxed text-center">
                     Gunakan filter halaman untuk hasil yang jauh lebih akurat & fokus pada materi tertentu.
                   </p>
                 </div>
@@ -281,12 +281,12 @@ export default function GenerateSoal() {
 
       {/* ── STEP 3: Professional Configuration ── */}
       {step === 3 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-in slide-in-from-right-2 duration-300">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 animate-in slide-in-from-right-2 duration-300">
           
           {/* Left Column: Metadata & Core Parameters */}
-          <div className="space-y-4 bg-white border border-slate-100 rounded-xl p-5 shadow-sm">
+          <div className="md:col-span-3 space-y-4 bg-white/50 backdrop-blur-sm border border-slate-200/60 rounded-xl p-5 shadow-sm">
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Mata Pelajaran *</label>
+              <label className="text-xs font-black text-slate-600 uppercase tracking-wider">Mata Pelajaran *</label>
               <Input
                 value={mataPelajaran}
                 onChange={(e) => setMataPelajaran(e.target.value)}
@@ -297,7 +297,7 @@ export default function GenerateSoal() {
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Fase Kurikulum</label>
+                <label className="text-xs font-black text-slate-600 uppercase tracking-wider">Fase Kurikulum</label>
                 <Select value={fase} onValueChange={setFase}>
                   <SelectTrigger className="h-10 border-2 border-slate-50 bg-slate-50/50 text-xs font-bold rounded-lg">
                     <SelectValue placeholder="Pilih Fase" />
@@ -310,7 +310,7 @@ export default function GenerateSoal() {
                 </Select>
               </div>
               <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Target Kelas</label>
+                <label className="text-xs font-black text-slate-600 uppercase tracking-wider">Target Kelas</label>
                 <Select value={kelas} onValueChange={setKelas}>
                   <SelectTrigger className="h-10 border-2 border-slate-50 bg-slate-50/50 text-xs font-bold rounded-lg">
                     <SelectValue placeholder="Kelas" />
@@ -325,7 +325,7 @@ export default function GenerateSoal() {
             </div>
 
             <div className="space-y-2 pt-1">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Topik Fokus AI</label>
+              <label className="text-xs font-black text-slate-600 uppercase tracking-wider">Topik Fokus AI</label>
               <Input
                 value={topik}
                 onChange={(e) => setTopik(e.target.value)}
@@ -335,10 +335,10 @@ export default function GenerateSoal() {
             </div>
 
             <div className="space-y-3 pt-1">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Kesulitan & Tipe Soal</label>
+              <label className="text-xs font-black text-slate-600 uppercase tracking-wider">Kesulitan & Tipe Soal</label>
               <div className="flex flex-wrap gap-2">
                  <Select value={difficulty} onValueChange={setDifficulty}>
-                    <SelectTrigger className="w-[110px] h-9 border-2 border-slate-100 text-[10px] font-black uppercase rounded-lg bg-white">
+                    <SelectTrigger className="w-[110px] h-9 border-2 border-slate-100 text-xs font-black uppercase rounded-lg bg-white">
                        <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -351,8 +351,8 @@ export default function GenerateSoal() {
                       <button 
                         key={t} onClick={() => setTipeSoal(tipeMap[t])}
                         className={cn(
-                          "px-3 py-1 rounded-md text-[9px] font-black uppercase transition-all",
-                          tipeSoal === tipeMap[t] ? "bg-white text-slate-900 shadow-sm" : "text-slate-400 hover:text-slate-600"
+                          "px-3 py-1 rounded-md text-xs font-black uppercase transition-all",
+                          tipeSoal === tipeMap[t] ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-700"
                         )}
                       >{t}</button>
                     ))}
@@ -362,11 +362,11 @@ export default function GenerateSoal() {
           </div>
 
           {/* Right Column: Pedagogical & Generation Settings */}
-          <div className="space-y-4 bg-white border border-slate-100 rounded-xl p-5 shadow-sm">
+          <div className="md:col-span-2 space-y-4 bg-white/50 backdrop-blur-sm border border-slate-200/60 rounded-xl p-5 shadow-sm">
             
             {/* Bloom Taxonomy: Optimized 3-Column Grid */}
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Taksonomi Bloom <span className="opacity-40 italic">(Opsional)</span></label>
+              <label className="text-xs font-black text-slate-600 uppercase tracking-wider">Taksonomi Bloom <span className="text-slate-400 italic">(Opsional)</span></label>
               <div className="grid grid-cols-3 gap-1.5">
                 {bloomOptions.map((opt) => (
                   <button
@@ -380,8 +380,8 @@ export default function GenerateSoal() {
                       bloomLevels.includes(opt.id) ? "border-brand-300 bg-brand-50 shadow-sm" : "border-slate-50 bg-slate-50/30 hover:border-slate-100"
                     )}
                   >
-                    <span className={cn("text-[10px] font-black tracking-tight", bloomLevels.includes(opt.id) ? "text-brand-700" : "text-slate-500")}>{opt.label}</span>
-                    <span className="text-[8px] font-bold text-slate-300 uppercase leading-none">{opt.desc}</span>
+                    <span className={cn("text-xs font-black tracking-tight", bloomLevels.includes(opt.id) ? "text-brand-700" : "text-slate-600")}>{opt.label}</span>
+                    <span className="text-[10px] font-bold text-slate-500 uppercase leading-none">{opt.desc}</span>
                   </button>
                 ))}
               </div>
@@ -389,7 +389,7 @@ export default function GenerateSoal() {
 
             {/* Gaya Bahasa as Toggle Chips */}
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Preferensi Gaya Soal</label>
+              <label className="text-xs font-black text-slate-600 uppercase tracking-wider">Preferensi Gaya Soal</label>
               <div className="flex flex-wrap gap-1.5">
                 {[
                   { id: 'light_story', label: 'Cerita' },
@@ -405,8 +405,8 @@ export default function GenerateSoal() {
                       else setGayaSoal([...gayaSoal, st.id])
                     }}
                     className={cn(
-                      "px-3 py-1.5 rounded-lg border text-[9px] font-black uppercase transition-all tracking-wider",
-                      gayaSoal.includes(st.id) ? "bg-indigo-600 border-indigo-700 text-white shadow-sm" : "bg-white border-slate-100 text-slate-400 hover:border-slate-200"
+                      "px-3 py-1.5 rounded-lg border text-xs font-black uppercase transition-all tracking-wider",
+                      gayaSoal.includes(st.id) ? "bg-indigo-600 border-indigo-700 text-white shadow-sm" : "bg-white border-slate-100 text-slate-500 hover:border-slate-300"
                     )}
                   >{st.label}</button>
                 ))}
@@ -417,8 +417,8 @@ export default function GenerateSoal() {
             <div className="grid grid-cols-1 gap-2 pt-1">
                <div className="flex items-center justify-between gap-4 py-2 px-3 bg-slate-50/50 rounded-lg border border-slate-50">
                   <div className="flex flex-col">
-                    <span className="text-[10px] font-black text-slate-700 uppercase tracking-tight">Jumlah Soal</span>
-                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest italic leading-none">Max 50 soal</span>
+                    <span className="text-xs font-black text-slate-700 uppercase tracking-tight">Jumlah Soal</span>
+                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest italic leading-none">Max 50 soal</span>
                   </div>
                   <div className="flex items-center gap-3 w-1/2">
                     <input 
@@ -426,7 +426,7 @@ export default function GenerateSoal() {
                       onChange={(e) => setJumlahSoal(Number(e.target.value))} 
                       className="grow h-1.5 bg-slate-200 rounded-full appearance-none cursor-pointer accent-brand-500"
                     />
-                    <span className="shrink-0 bg-brand-500 text-white font-black text-[11px] px-2 py-0.5 rounded shadow-sm">{jumlahSoal}</span>
+                    <span className="shrink-0 bg-brand-500 text-white font-black text-xs px-2 py-0.5 rounded shadow-sm">{jumlahSoal}</span>
                   </div>
                </div>
 
@@ -440,7 +440,7 @@ export default function GenerateSoal() {
                       "flex flex-col items-center gap-1.5 py-2 px-1 rounded-lg border transition-all",
                       opt.active ? "bg-white border-slate-200 shadow-sm" : "bg-slate-50 border-transparent opacity-60"
                     )}>
-                       <span className="text-[9px] font-black uppercase tracking-tighter text-slate-600">{opt.label}</span>
+                       <span className="text-xs font-black uppercase tracking-tighter text-slate-700">{opt.label}</span>
                        <div className={cn("w-7 h-4 rounded-full relative transition-all", opt.active ? opt.on : "bg-slate-300")}>
                           <div className={cn("absolute top-0.5 w-3 h-3 bg-white rounded-full shadow transition-all", opt.active ? "right-0.5" : "left-0.5")}></div>
                        </div>
@@ -463,13 +463,13 @@ export default function GenerateSoal() {
             if (step === 3 && sourceType !== 'modul') setStep(1)
             else setStep(step - 1)
           }}
-          className="h-10 px-6 rounded-xl text-slate-400 font-bold uppercase tracking-widest text-xs hover:bg-white hover:text-slate-900"
+          className="h-10 px-6 rounded-xl text-slate-500 font-bold uppercase tracking-widest text-xs hover:bg-white hover:text-slate-900"
         >
           ← Kembali
         </Button>
         
         {step === 3 && (
-          <div className="hidden lg:flex items-center gap-2 text-[10px] text-slate-400 font-bold italic tracking-wide animate-pulse">
+          <div className="hidden lg:flex items-center gap-2 text-xs text-slate-500 font-bold italic tracking-wide animate-pulse">
             <BrainCircuit className="w-3.5 h-3.5" />
             AI Siap Mengolah {sourceType === 'modul' ? 'Modul' : 'Topik'} Anda
           </div>
