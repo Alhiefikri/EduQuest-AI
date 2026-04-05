@@ -38,8 +38,8 @@ FASE_GUIDELINES: dict[str, str] = {
     "Fase C": (
         "Kelas 5-6 SD. Boleh 2 langkah penalaran. Boleh analogi konkret. "
         "Mulai bisa gunakan istilah mata pelajaran dasar. "
-        "Contoh BENAR: 'Mengapa es batu mencair jika diletakkan di luar?' "
-        "Contoh SALAH: 'Analisislah perubahan entalpi pada reaksi eksoterm!'"
+        "Contoh BENAR: 'Sebuah kotak panjang 10 cm, lebar 5 cm, tinggi 4 cm. Berapa volumenya?' "
+        "Contoh SALAH: 'Analisislah karakteristik dimensi bangun ruang secara komprehensif.'"
     ),
     "Fase D": (
         "Kelas 7-9 SMP. Boleh penalaran multi-langkah. Konteks sosial dan sains dasar diperbolehkan. "
@@ -66,22 +66,60 @@ _STOPWORDS = frozenset({
 
 def _detect_tipe_konten(konten: str) -> str:
     konten_lower = konten.lower()
-    if "tujuan pembelajaran" in konten_lower or "capaian pembelajaran" in konten_lower:
-        return "cp_tp"
-    return "modul_ajar"
+
+    # Penanda kuat CP/TP — frasa yang hanya muncul di dokumen kurikulum
+    cp_tp_markers = [
+        "pada akhir fase",
+        "peserta didik dapat",
+        "peserta didik mampu",
+        "alur tujuan pembelajaran",
+        "capaian pembelajaran fase",
+        "atp matematika",
+        "atp bahasa",
+        "elemen capaian",
+    ]
+
+    # Penanda kuat modul ajar — ada konten substantif, bukan hanya tujuan
+    modul_markers = [
+        "contoh soal",
+        "perhatikan contoh",
+        "diketahui",
+        "penyelesaian",
+        "latihan",
+        "rumus",
+        "teorema",
+        "definisi",
+        "misalnya",
+        "perhatikan gambar",
+    ]
+
+    cp_tp_score = sum(1 for m in cp_tp_markers if m in konten_lower)
+    modul_score = sum(1 for m in modul_markers if m in konten_lower)
+
+    # Butuh minimal 2 penanda kuat CP/TP untuk diklasifikasi cp_tp
+    # (mencegah modul ajar dengan pendahuluan standar salah klasifikasi)
+    if cp_tp_score >= 2 and cp_tp_score > modul_score:
+        return TipeKonten.cp_tp.value
+
+    return TipeKonten.modul_ajar.value
 
 
 def _build_cp_tp_section(konten_cp_tp: str, mata_pelajaran: str, topik: str) -> str:
+    konten_terpilih = _smart_truncate(
+        konten_cp_tp,
+        topik=topik,
+        mata_pelajaran=mata_pelajaran,
+    )
     return (
         f"Capaian/Tujuan Pembelajaran untuk {mata_pelajaran}:\n"
-        f"{konten_cp_tp}\n\n"
-        f"INSTRUKSI KHUSUS UNTUK CP/TP:\n"
-        f"Konten di atas berisi TUJUAN PEMBELAJARAN, bukan materi lengkap. "
-        f"Buat soal yang menguji apakah siswa SUDAH MENCAPAI tujuan tersebut. "
-        f"Gunakan level kognitif yang sesuai (aplikasi, analisis, evaluasi) — "
-        f"JANGAN hanya membuat soal definisi atau hafalan. "
-        f"Jika tujuan menyebutkan 'siswa mampu menganalisis...', buat soal analisis. "
-        f"Jika tujuan menyebutkan 'siswa mampu menjelaskan...', buat soal pemahaman."
+        f"{konten_terpilih}\n\n"
+        f"INSTRUKSI KHUSUS UNTUK MODE CP/TP:\n"
+        f"Pengecualian Aturan 1 & 2 dari system prompt: Untuk mode CP/TP, kamu DIIZINKAN "
+        f"menggunakan pengetahuanmu tentang {mata_pelajaran} untuk membuat soal — "
+        f"TAPI hanya dalam cakupan topik yang disebutkan di CP/TP di atas.\n"
+        f"Buat soal yang menguji ketercapaian tujuan tersebut, bukan soal tentang tujuannya.\n"
+        f"Jika tujuan menyebut 'menghitung volume', buat soal hitung — BUKAN 'apa itu volume'.\n"
+        f"Jika tujuan menyebut 'menyajikan data', buat soal interpretasi — BUKAN 'apa itu diagram'."
     )
 
 
@@ -221,7 +259,9 @@ Aturan Wajib:
 1. FOKUS materi inti. JANGAN buat soal tentang metode/alat peraga guru.
 2. Bahasa sesuai tingkat siswa.
 3. Output HANYA JSON valid sesuai skema: {schema_str}
-4. Jawaban akurat & pembahasan jelas. No intro/outro."""
+4. Distribusikan soal secara merata ke semua topik/unit yang ada di materi. \
+Jangan buat semua soal dari satu topik saja meskipun topik itu paling panjang.
+5. Jawaban akurat & pembahasan jelas. No intro/outro."""
 
     return prompt
 
