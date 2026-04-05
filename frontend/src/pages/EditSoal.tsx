@@ -84,6 +84,19 @@ export default function EditSoal() {
     }
   }, [soal])
 
+  useEffect(() => {
+    if (regenerateIndex !== null) {
+      if (soal?.gaya_soal) {
+        const gaya = Array.isArray(soal.gaya_soal) ? soal.gaya_soal : [soal.gaya_soal]
+        setRegenerateGayaSoal(gaya)
+      }
+      if (soal?.bloom_levels) {
+        setRegenerateBloomLevels(soal.bloom_levels)
+      }
+      setRegenerateFeedback('')
+    }
+  }, [regenerateIndex, soal])
+
   const handleSave = async (finalized: boolean = false) => {
     if (!id) return
     setSaving(true)
