@@ -167,7 +167,7 @@ def _build_user_prompt(
     include_gambar: bool,
     konten_modul: str,
     fase_kelas: str = "umum",
-    tipe_konten: str = "modul_ajar",
+    tipe_konten: TipeKonten = TipeKonten.modul_ajar,
 ) -> str:
     tipe_label = {
         "pilihan_ganda": "pilihan ganda (4 opsi: A, B, C, D)",
@@ -186,7 +186,7 @@ def _build_user_prompt(
     gaya_instruction = _get_gaya_instruction(gaya_soal)
     fase_detail = _get_fase_detail(fase_kelas)
 
-    if tipe_konten == "cp_tp":
+    if tipe_konten == TipeKonten.cp_tp:
         materi_section = _build_cp_tp_section(konten_modul, mata_pelajaran, topik)
     else:
         materi_section = _smart_truncate(konten_modul, topik=topik, mata_pelajaran=mata_pelajaran)
@@ -428,9 +428,12 @@ async def generate_soal(
     konten_modul: str,
     topik: str = "",
     fase_kelas: str = "umum",
-    tipe_konten: str = "modul_ajar",
+    tipe_konten: Optional[TipeKonten] = None,
     max_retries: int = 3,
 ) -> List[dict]:
+    if tipe_konten is None:
+        tipe_konten = TipeKonten(_detect_tipe_konten(konten_modul))
+
     prompt = _build_user_prompt(
         jumlah_soal=jumlah_soal,
         tipe_soal=tipe_soal,
@@ -498,7 +501,7 @@ def _build_regenerate_prompt(
     konten_modul: str,
     fase_kelas: str = "umum",
     feedback_user: str = None,
-    tipe_konten: str = "modul_ajar",
+    tipe_konten: TipeKonten = TipeKonten.modul_ajar,
 ) -> str:
     tipe_label = {
         "pilihan_ganda": "pilihan ganda (4 opsi: A, B, C, D)",
@@ -517,7 +520,7 @@ def _build_regenerate_prompt(
     gaya_instruction = _get_gaya_instruction(gaya_soal)
     fase_detail = _get_fase_detail(fase_kelas)
 
-    if tipe_konten == "cp_tp":
+    if tipe_konten == TipeKonten.cp_tp:
         materi_section = _build_cp_tp_section(konten_modul, mata_pelajaran, topik)
     else:
         materi_section = _smart_truncate(konten_modul, topik=topik, mata_pelajaran=mata_pelajaran)
@@ -588,9 +591,12 @@ async def regenerate_single_soal(
     topik: str = "",
     fase_kelas: str = "umum",
     feedback_user: str = None,
-    tipe_konten: str = "modul_ajar",
+    tipe_konten: Optional[TipeKonten] = None,
     max_retries: int = 3,
 ) -> dict:
+    if tipe_konten is None:
+        tipe_konten = TipeKonten(_detect_tipe_konten(konten_modul))
+
     prompt = _build_regenerate_prompt(
         soal_lama=soal_lama,
         tipe_soal=tipe_soal,
