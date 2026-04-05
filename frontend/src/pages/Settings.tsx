@@ -1,5 +1,9 @@
 import { useState, useEffect } from 'react'
 import { Save, Check, Eye, EyeOff, Loader2, AlertCircle, CheckCircle2, Zap } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Badge } from '@/components/ui/badge'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
@@ -50,7 +54,7 @@ export default function Settings() {
       const apiKey = keys[aiProvider as keyof typeof keys] || geminiKey
 
       if (!apiKey) {
-        setTestResult({ success: false, message: 'Masukkan API key terlebih dahulu untuk menguji koneksi' })
+        setTestResult({ success: false, message: 'Masukkan API key terlebih dahulu' })
         setTesting(false)
         return
       }
@@ -97,94 +101,99 @@ export default function Settings() {
   }
 
   return (
-    <div className="max-w-[1000px] mx-auto space-y-10 pb-20 animate-in fade-in">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Settings</h1>
-          <p className="text-gray-500 mt-2 font-medium">Manage your personal profile and application preferences.</p>
+    <div className="max-w-4xl mx-auto space-y-6 animate-in fade-in pb-12">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6 border-b pb-6">
+        <div className="space-y-1.5 px-1">
+          <h1 className="text-xl font-black text-slate-900 tracking-tight uppercase leading-none">Konfigurasi Sistem</h1>
+          <p className="text-xs font-bold text-slate-600 border-l-2 border-brand-500 pl-4 uppercase tracking-widest leading-none">Integrasi AI & Preferensi Aplikasi</p>
         </div>
       </div>
 
-      <div className="bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden">
-        <div className="flex border-b border-gray-100 bg-gray-50/50 p-1">
-          {['My Details', 'Preferences', 'AI Integration'].map((tab, i) => (
+      <Card className="border border-slate-200 shadow-sm rounded-2xl overflow-hidden bg-white">
+        <div className="flex border-b border-slate-100 bg-slate-50/50 p-1.5">
+          {['Detail Profil', 'Preferensi', 'Integrasi AI'].map((tab, i) => (
             <button
               key={i}
               onClick={() => setActiveTab(i)}
-              className={`flex-1 px-6 py-4 text-xs font-black uppercase tracking-widest transition-all rounded-2xl ${
-                i === activeTab ? 'bg-white text-brand-500 shadow-sm' : 'text-gray-400 hover:text-gray-900'
+              className={`flex-1 px-4 py-2.5 text-[11px] font-black uppercase tracking-widest transition-all rounded-xl ${
+                i === activeTab ? 'bg-white text-brand-600 shadow-sm border border-slate-100' : 'text-slate-400 hover:text-slate-900'
               }`}>{tab}</button>
           ))}
         </div>
 
-        <div className="p-10 md:p-12 space-y-12">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-            <div>
-              <h3 className="text-base font-bold text-gray-900 flex items-center gap-2">
-                <Zap className="w-5 h-5 text-brand-500" />
-                AI Integration
+        <CardContent className="p-8 md:p-10 space-y-10">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="space-y-2">
+              <h3 className="text-xs font-black text-slate-800 flex items-center gap-2 uppercase tracking-widest">
+                <Zap className="w-4 h-4 text-brand-500" />
+                Integrasi AI
               </h3>
-              <p className="text-sm font-medium text-gray-400 mt-2 leading-relaxed">Configure your AI provider and API key for question generation.</p>
+              <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wide leading-relaxed">Konfigurasi provider kecerdasan buatan untuk pemrosesan soal.</p>
             </div>
 
-            <div className="md:col-span-2 space-y-8">
+            <div className="md:col-span-2 space-y-6">
               {saveResult && (
-                <div className={`flex items-center gap-2 p-4 rounded-xl ${
-                  saveResult.success ? 'bg-green-50 border border-green-100' : 'bg-red-50 border border-red-100'
+                <div className={`flex items-center gap-3 p-4 rounded-xl animate-in slide-in-from-top-2 border ${
+                  saveResult.success ? 'bg-emerald-50 border-emerald-100 text-emerald-800' : 'bg-rose-50 border-rose-100 text-rose-800'
                 }`}>
                   {saveResult.success ? (
-                    <CheckCircle2 className="w-5 h-5 text-green-500 shrink-0" />
+                    <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
                   ) : (
-                    <AlertCircle className="w-5 h-5 text-red-500 shrink-0" />
+                    <AlertCircle className="w-5 h-5 text-rose-500 shrink-0" />
                   )}
-                  <p className={`text-sm font-medium ${saveResult.success ? 'text-green-700' : 'text-red-700'}`}>
+                  <p className="text-xs font-black uppercase tracking-tight leading-none">
                     {saveResult.message}
                   </p>
                 </div>
               )}
 
-              <div className="space-y-2">
-                <label className="text-[11px] font-black text-gray-400 tracking-widest uppercase">AI Provider</label>
-                <select
-                  value={aiProvider}
-                  onChange={(e) => setAiProvider(e.target.value)}
-                  className="w-full bg-gray-50 border border-gray-100 text-gray-900 text-sm font-bold rounded-xl focus:ring-2 focus:ring-brand-100 focus:border-brand-500 block px-4 py-3 outline-none appearance-none cursor-pointer"
-                >
-                  <option value="gemini">Google Gemini (gemini-1.5-flash)</option>
-                  <option value="groq">Groq (llama-3.3-70b-versatile)</option>
-                  <option value="openrouter">OpenRouter (qwen-3.6-plus:free)</option>
-                </select>
-                <p className="text-xs text-gray-400 mt-1">
+              <div className="space-y-3">
+                <label className="text-[10px] font-black text-slate-600 tracking-[0.2em] uppercase ml-1">AI Provider Engine</label>
+                <div className="relative group">
+                  <select
+                    value={aiProvider}
+                    onChange={(e) => setAiProvider(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 text-slate-900 text-xs font-black rounded-xl focus:ring-2 focus:ring-brand-500/10 focus:border-brand-500 block px-4 py-3 outline-none appearance-none cursor-pointer uppercase transition-all shadow-sm"
+                  >
+                    <option value="gemini">Google Gemini (1.5 Flash)</option>
+                    <option value="groq">Groq (Llama 3.3 70B)</option>
+                    <option value="openrouter">OpenRouter (Qwen Free)</option>
+                  </select>
+                  <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 group-hover:text-slate-600 transition-colors">
+                     <Zap className="w-4 h-4" />
+                  </div>
+                </div>
+                <p className="text-[10px] font-bold text-slate-400 mt-2 uppercase tracking-wide px-1 leading-relaxed">
                   {aiProvider === 'gemini'
-                    ? 'Free tier: 15 RPM. Requires Google AI Studio API key.'
+                    ? 'Free tier: 15 RPM. Memerlukan API key dari Google AI Studio.'
                     : aiProvider === 'groq'
-                    ? 'Free tier: 30 RPM. Requires Groq Cloud API key.'
-                    : 'Free: qwen-3.6-plus is currently free on OpenRouter.'}
+                    ? 'Free tier: 30 RPM. Memerlukan API key dari Groq Cloud.'
+                    : 'OpenRouter: Provider agregator pihak ketiga.'}
                 </p>
               </div>
 
               {aiProvider === 'gemini' && (
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <label className="text-[11px] font-black text-gray-400 tracking-widest uppercase">Gemini API Key</label>
+                <div className="space-y-3 animate-in fade-in zoom-in-95 duration-200">
+                  <div className="flex items-center justify-between ml-1">
+                    <label className="text-[10px] font-black text-slate-600 tracking-[0.2em] uppercase">Gemini API Key</label>
                     {geminiConfigured && (
-                      <span className="flex items-center gap-1 text-[10px] font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-md">
-                        <Check className="w-3 h-3" strokeWidth={3} /> Tersimpan
-                      </span>
+                      <Badge variant="secondary" className="flex items-center gap-1.5 text-[9px] font-black text-emerald-700 bg-emerald-50 border-emerald-100 px-2 py-0 rounded-md uppercase tracking-tighter">
+                        <Check className="w-3 h-3" strokeWidth={4} /> Terhubung
+                      </Badge>
                     )}
                   </div>
-                  <div className="relative">
-                    <input
+                  <div className="relative group">
+                    <Input
                       type={showGeminiKey ? 'text' : 'password'}
                       value={geminiKey}
                       onChange={(e) => setGeminiKey(e.target.value)}
-                      placeholder={geminiConfigured ? "Biarkan kosong untuk menggunakan key yang sudah tersimpan" : "AIza..."}
-                      className="w-full bg-gray-50 border border-gray-100 text-gray-900 text-sm font-bold rounded-xl focus:ring-2 focus:ring-brand-100 focus:border-brand-500 block px-4 py-3 pr-12 outline-none transition-all placeholder:text-gray-400 placeholder:font-normal"
+                      placeholder={geminiConfigured ? "Penyimpanan aktif (biarkan kosong)" : "AIza..."}
+                      className="w-full h-11 bg-white border border-slate-200 text-slate-900 text-xs font-bold rounded-xl pr-12 focus-visible:ring-brand-500/10 focus-visible:border-brand-500 transition-all font-mono shadow-sm"
                     />
                     <button
                       type="button"
                       onClick={() => setShowGeminiKey(!showGeminiKey)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors h-8 w-8 flex items-center justify-center rounded-lg hover:bg-slate-50"
                     >
                       {showGeminiKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
@@ -193,55 +202,56 @@ export default function Settings() {
               )}
 
               {aiProvider === 'groq' && (
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <label className="text-[11px] font-black text-gray-400 tracking-widest uppercase">Groq API Key</label>
+                <div className="space-y-3 animate-in fade-in zoom-in-95 duration-200">
+                  <div className="flex items-center justify-between ml-1">
+                    <label className="text-[10px] font-black text-slate-600 tracking-[0.2em] uppercase">Groq API Key</label>
                     {groqConfigured && (
-                      <span className="flex items-center gap-1 text-[10px] font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-md">
-                        <Check className="w-3 h-3" strokeWidth={3} /> Tersimpan
-                      </span>
+                      <Badge variant="secondary" className="flex items-center gap-1.5 text-[9px] font-black text-emerald-700 bg-emerald-50 border-emerald-100 px-2 py-0 rounded-md uppercase tracking-tighter">
+                        <Check className="w-3 h-3" strokeWidth={4} /> Terhubung
+                      </Badge>
                     )}
                   </div>
-                  <div className="relative">
-                    <input
+                  <div className="relative group">
+                    <Input
                       type={showGroqKey ? 'text' : 'password'}
                       value={groqKey}
                       onChange={(e) => setGroqKey(e.target.value)}
-                      placeholder={groqConfigured ? "Biarkan kosong untuk menggunakan key yang sudah tersimpan" : "gsk_..."}
-                      className="w-full bg-gray-50 border border-gray-100 text-gray-900 text-sm font-bold rounded-xl focus:ring-2 focus:ring-brand-100 focus:border-brand-500 block px-4 py-3 pr-12 outline-none transition-all placeholder:text-gray-400 placeholder:font-normal"
+                      placeholder={groqConfigured ? "Penyimpanan aktif (biarkan kosong)" : "gsk_..."}
+                      className="w-full h-11 bg-white border border-slate-200 text-slate-900 text-xs font-bold rounded-xl pr-12 focus-visible:ring-brand-500/10 focus-visible:border-brand-500 transition-all font-mono shadow-sm"
                     />
                     <button
                       type="button"
                       onClick={() => setShowGroqKey(!showGroqKey)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors h-8 w-8 flex items-center justify-center rounded-lg hover:bg-slate-50"
                     >
                       {showGroqKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                   </div>
                 </div>
               )}
+
               {aiProvider === 'openrouter' && (
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <label className="text-[11px] font-black text-gray-400 tracking-widest uppercase">OpenRouter API Key</label>
+                <div className="space-y-3 animate-in fade-in zoom-in-95 duration-200">
+                  <div className="flex items-center justify-between ml-1">
+                    <label className="text-[10px] font-black text-slate-600 tracking-[0.2em] uppercase">OpenRouter Key</label>
                     {openrouterConfigured && (
-                      <span className="flex items-center gap-1 text-[10px] font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-md">
-                        <Check className="w-3 h-3" strokeWidth={3} /> Tersimpan
-                      </span>
+                      <Badge variant="secondary" className="flex items-center gap-1.5 text-[9px] font-black text-emerald-700 bg-emerald-50 border-emerald-100 px-2 py-0 rounded-md uppercase tracking-tighter">
+                        <Check className="w-3 h-3" strokeWidth={4} /> Terhubung
+                      </Badge>
                     )}
                   </div>
-                  <div className="relative">
-                    <input
+                  <div className="relative group">
+                    <Input
                       type={showOpenrouterKey ? 'text' : 'password'}
                       value={openrouterKey}
                       onChange={(e) => setOpenrouterKey(e.target.value)}
-                      placeholder={openrouterConfigured ? "Biarkan kosong untuk menggunakan key yang sudah tersimpan" : "sk-or-v1-..."}
-                      className="w-full bg-gray-50 border border-gray-100 text-gray-900 text-sm font-bold rounded-xl focus:ring-2 focus:ring-brand-100 focus:border-brand-500 block px-4 py-3 pr-12 outline-none transition-all placeholder:text-gray-400 placeholder:font-normal"
+                      placeholder={openrouterConfigured ? "Penyimpanan aktif (biarkan kosong)" : "sk-or-v1-..."}
+                      className="w-full h-11 bg-white border border-slate-200 text-slate-900 text-xs font-bold rounded-xl pr-12 focus-visible:ring-brand-500/10 focus-visible:border-brand-500 transition-all font-mono shadow-sm"
                     />
                     <button
                       type="button"
                       onClick={() => setShowOpenrouterKey(!showOpenrouterKey)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors h-8 w-8 flex items-center justify-center rounded-lg hover:bg-slate-50"
                     >
                       {showOpenrouterKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
@@ -249,20 +259,20 @@ export default function Settings() {
                 </div>
               )}
 
-
-              <div className="flex items-center gap-3 pt-2">
-                <button
+              <div className="flex items-center gap-3 pt-4 border-t border-slate-50">
+                <Button
                   onClick={handleTestConnection}
                   disabled={testing}
-                  className="flex items-center gap-2 px-5 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl text-sm font-bold hover:bg-gray-50 transition-all shadow-xs active:scale-95 disabled:opacity-50"
+                  variant="outline"
+                  className="flex items-center gap-2.5 px-6 h-10 bg-white border-slate-200 text-slate-700 rounded-lg text-xs font-black uppercase tracking-widest hover:bg-slate-50 transition-all shadow-sm active:scale-95 disabled:opacity-50"
                 >
-                  {testing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
-                  Test Connection
-                </button>
+                  {testing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4 text-amber-500" fill="currentColor" />}
+                  Uji Koneksi
+                </Button>
 
                 {testResult && (
-                  <div className={`flex items-center gap-1.5 text-sm font-medium ${
-                    testResult.success ? 'text-green-600' : 'text-red-600'
+                  <div className={`flex items-center gap-2 text-[11px] font-bold uppercase tracking-tight animate-in slide-in-from-left-2 ${
+                    testResult.success ? 'text-emerald-600' : 'text-rose-600'
                   }`}>
                     {testResult.success ? (
                       <CheckCircle2 className="w-4 h-4" />
@@ -275,20 +285,20 @@ export default function Settings() {
               </div>
             </div>
           </div>
-        </div>
+        </CardContent>
 
-        <div className="p-8 bg-gray-50/80 border-t border-gray-100 flex justify-end gap-4">
-          <button className="px-6 py-3 text-xs font-black uppercase tracking-widest text-gray-400 hover:text-gray-900 transition-all">Reset to Defaults</button>
-          <button
+        <div className="p-6 bg-slate-50/50 border-t border-slate-100 flex justify-between items-center px-8">
+          <Button variant="ghost" className="h-9 px-4 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-slate-900 transition-all">Reset Default</Button>
+          <Button
             onClick={handleSave}
             disabled={loading}
-            className="flex items-center gap-2.5 px-8 py-3 bg-brand-500 text-white rounded-2xl text-sm font-bold hover:bg-brand-600 transition-all shadow-lg active:scale-95 disabled:opacity-50"
+            className="flex items-center gap-2.5 px-10 h-10 bg-slate-900 text-white rounded-lg text-xs font-black uppercase tracking-widest hover:translate-y-[-1px] transition-all shadow-xl active:scale-95 disabled:opacity-50"
           >
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-            Save Settings
-          </button>
+            Simpan Perubahan
+          </Button>
         </div>
-      </div>
+      </Card>
     </div>
   )
 }

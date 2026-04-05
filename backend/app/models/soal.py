@@ -25,6 +25,7 @@ class GenerateSoalRequest(BaseModel):
     jumlah_soal: int = Field(..., ge=1, le=100)
     difficulty: str = Field(..., pattern="^(mudah|sedang|sulit|campuran)$")
     gaya_soal: List[str] = Field(default_factory=lambda: ["formal_academic"])
+    bloom_levels: List[str] = Field(default_factory=list)
     include_pembahasan: bool = True
     include_kunci: bool = True
     include_gambar: bool = False
@@ -41,6 +42,7 @@ class GenerateSoalResponse(BaseModel):
     tipe_soal: str
     difficulty: str
     gaya_soal: List[str] = Field(default_factory=list)
+    bloom_levels: List[str] = Field(default_factory=list)
     jumlah_soal: int
     include_pembahasan: bool
     include_kunci: bool
@@ -61,6 +63,17 @@ class GenerateSoalResponse(BaseModel):
 
     @classmethod
     def from_prisma(cls, soal) -> "GenerateSoalResponse":
+        # Handle gaya_soal and bloom_levels JSON parsing
+        def parse_json_list(val: str | List[str] | None, default: List[str]) -> List[str]:
+            if not val:
+                return default
+            if isinstance(val, list):
+                return val
+            try:
+                return json.loads(val)
+            except:
+                return [val] if val else default
+
         return cls(
             id=soal.id,
             modul_id=soal.modulId,
@@ -68,8 +81,8 @@ class GenerateSoalResponse(BaseModel):
             topik=soal.topik,
             tipe_soal=soal.tipeSoal,
             difficulty=soal.difficulty,
-            # Handle gaya_soal if it's a string (legacy) or missing
-            gaya_soal=cls._parse_gaya_soal(getattr(soal, 'gayaSoal', "formal_academic")),
+            gaya_soal=parse_json_list(getattr(soal, 'gayaSoal', None), ["formal_academic"]),
+            bloom_levels=parse_json_list(getattr(soal, 'bloomLevels', None), []),
             jumlah_soal=soal.jumlahSoal,
             include_pembahasan=soal.includePembahasan,
             include_kunci=soal.includeKunci,
@@ -105,6 +118,16 @@ class SoalListResponse(BaseModel):
 
     @classmethod
     def from_prisma(cls, soal) -> "SoalListResponse":
+        def parse_json_list(val: str | List[str] | None, default: List[str]) -> List[str]:
+            if not val:
+                return default
+            if isinstance(val, list):
+                return val
+            try:
+                return json.loads(val)
+            except:
+                return [val] if val else default
+
         return cls(
             id=soal.id,
             modul_id=soal.modulId,
@@ -112,7 +135,7 @@ class SoalListResponse(BaseModel):
             topik=soal.topik,
             tipe_soal=soal.tipeSoal,
             difficulty=soal.difficulty,
-            gaya_soal=cls._parse_gaya_soal(getattr(soal, 'gayaSoal', "formal_academic")),
+            gaya_soal=parse_json_list(getattr(soal, 'gayaSoal', None), ["formal_academic"]),
             jumlah_soal=soal.jumlahSoal,
             status=soal.status,
             created_at=soal.createdAt,
@@ -130,6 +153,7 @@ class RegenerateSingleSoalRequest(BaseModel):
     nomor_soal: int
     soal_lama: SoalItem
     gaya_soal: List[str] = Field(default_factory=lambda: ["formal_academic"])
+    bloom_levels: List[str] = Field(default_factory=list)
     feedback: Optional[str] = None
 
 

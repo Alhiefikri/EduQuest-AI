@@ -42,6 +42,7 @@ export default function EditSoal() {
   const [regenerateIndex, setRegenerateIndex] = useState<number | null>(null)
   const [regenerateFeedback, setRegenerateFeedback] = useState('')
   const [regenerateGayaSoal, setRegenerateGayaSoal] = useState<string[]>(['formal_academic'])
+  const [regenerateBloomLevels, setRegenerateBloomLevels] = useState<string[]>([])
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -78,7 +79,23 @@ export default function EditSoal() {
       const gaya = Array.isArray(soal.gaya_soal) ? soal.gaya_soal : [soal.gaya_soal]
       setRegenerateGayaSoal(gaya)
     }
+    if (soal?.bloom_levels) {
+      setRegenerateBloomLevels(soal.bloom_levels)
+    }
   }, [soal])
+
+  useEffect(() => {
+    if (regenerateIndex !== null) {
+      if (soal?.gaya_soal) {
+        const gaya = Array.isArray(soal.gaya_soal) ? soal.gaya_soal : [soal.gaya_soal]
+        setRegenerateGayaSoal(gaya)
+      }
+      if (soal?.bloom_levels) {
+        setRegenerateBloomLevels(soal.bloom_levels)
+      }
+      setRegenerateFeedback('')
+    }
+  }, [regenerateIndex, soal])
 
   const handleSave = async (finalized: boolean = false) => {
     if (!id) return
@@ -161,6 +178,7 @@ export default function EditSoal() {
           nomor_soal: itemToRegenerate.nomor,
           soal_lama: itemToRegenerate,
           gaya_soal: regenerateGayaSoal,
+          bloom_levels: regenerateBloomLevels,
           feedback: regenerateFeedback || undefined,
         },
       })
@@ -183,10 +201,10 @@ export default function EditSoal() {
 
   if (isLoading) {
     return (
-      <div className="max-w-[1000px] mx-auto space-y-8 pb-20 animate-in fade-in p-4 md:p-8">
-        <div className="flex flex-col items-center justify-center py-20 space-y-4">
-          <Loader2 className="w-12 h-12 text-brand-500 animate-spin" strokeWidth={2.5} />
-          <p className="text-lg font-bold text-slate-400 uppercase tracking-widest">Sinkronisasi Data...</p>
+      <div className="max-w-5xl xl:max-w-6xl mx-auto px-4 py-8 space-y-6 animate-in fade-in">
+        <div className="flex flex-col items-center justify-center py-20 space-y-4 text-center">
+          <Loader2 className="w-10 h-10 text-brand-500 animate-spin" strokeWidth={2.5} />
+          <p className="text-xs font-black text-slate-500 uppercase tracking-[0.3em]">Singkronisasi Library...</p>
         </div>
       </div>
     )
@@ -194,16 +212,16 @@ export default function EditSoal() {
 
   if (error || !soal) {
     return (
-      <div className="max-w-[1000px] mx-auto space-y-8 pb-20 animate-in fade-in p-4 md:p-8">
-        <Card className="border-2 border-rose-100 shadow-xl rounded-[2rem] overflow-hidden text-center">
-          <CardContent className="p-16">
-            <div className="w-20 h-20 bg-rose-50 rounded-full flex items-center justify-center mx-auto mb-6">
-              <AlertCircle className="w-10 h-10 text-rose-500" strokeWidth={2.5} />
+      <div className="max-w-5xl xl:max-w-6xl mx-auto px-4 py-8 space-y-6 animate-in fade-in">
+        <Card className="border border-rose-100 bg-white shadow-sm rounded-xl overflow-hidden text-center">
+          <CardContent className="p-12">
+            <div className="w-16 h-16 bg-rose-50 rounded-full flex items-center justify-center mx-auto mb-6">
+              <AlertCircle className="w-8 h-8 text-rose-500" />
             </div>
-            <p className="text-2xl font-bold text-slate-900 uppercase tracking-tight">Data Tidak Ditemukan</p>
-            <p className="text-slate-500 mt-2 font-medium mb-10">{error instanceof Error ? error.message : 'Soal tidak ditemukan di basis data'}</p>
-            <Button asChild size="lg" variant="outline" className="rounded-xl border-2 border-slate-200 hover:bg-slate-50 font-bold px-10">
-              <Link to="/soal">Kembali ke Daftar Soal</Link>
+            <p className="text-xl font-black text-slate-900 uppercase tracking-tight">Data Tidak Ditemukan</p>
+            <p className="text-xs font-bold text-slate-500 mt-2 uppercase tracking-wide mb-8">{error instanceof Error ? error.message : 'Soal tidak ditemukan di basis data'}</p>
+            <Button asChild size="sm" variant="outline" className="h-10 px-8 rounded-lg border border-slate-200 font-black uppercase text-xs tracking-widest">
+              <Link to="/soal">Kembali ke Daftar</Link>
             </Button>
           </CardContent>
         </Card>
@@ -214,45 +232,45 @@ export default function EditSoal() {
   const activeRegenerateItem = regenerateIndex !== null ? editedSoal[regenerateIndex] : null;
 
   return (
-    <div className="max-w-[1000px] mx-auto space-y-12 pb-40 animate-in fade-in p-2 md:p-8 max-w-full overflow-hidden">
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 px-2">
-        <div className="flex items-center gap-6">
-          <Button asChild variant="outline" size="icon" className="w-12 h-12 border-2 border-slate-200 shadow-sm hover:bg-slate-50 rounded-xl transition-all shrink-0">
+    <div className="max-w-5xl xl:max-w-6xl mx-auto px-4 py-6 space-y-8 animate-in fade-in pb-40">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b pb-4">
+        <div className="flex items-center gap-4">
+          <Button asChild variant="ghost" size="icon" className="w-9 h-9 border border-slate-200 hover:bg-slate-50 rounded-lg transition-all shrink-0">
             <Link to="/soal">
-              <ArrowLeft className="w-6 h-6 text-slate-600" strokeWidth={2.5} />
+              <ArrowLeft className="w-4 h-4 text-slate-600" />
             </Link>
           </Button>
           <div className="space-y-1">
-            <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight uppercase leading-none break-words">Editor Soal</h1>
-            <p className="text-sm md:text-base font-bold text-slate-400 border-l-4 border-brand-500 pl-4 uppercase tracking-wider">
-              {soal.mata_pelajaran} {soal.topik ? ` - ${soal.topik}` : ''}
+            <h1 className="text-xl font-black text-slate-900 tracking-tight uppercase leading-none break-words">Editor Soal</h1>
+            <p className="text-xs font-black text-slate-600 border-l-2 border-brand-500 pl-3 uppercase tracking-widest">
+              {soal.mata_pelajaran} {soal.topik ? ` • ${soal.topik}` : ''}
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-3 md:gap-4 flex-wrap w-full lg:w-auto">
+        <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
           {saveError && (
-            <span className="text-[10px] md:text-sm font-black text-rose-600 bg-rose-50 border border-rose-100 shadow-sm px-4 py-2 rounded-full uppercase tracking-wider animate-in fade-in slide-in-from-right-4">{saveError}</span>
+            <span className="text-xs font-black text-rose-600 bg-rose-50 border border-rose-100 px-3 py-1.5 rounded-full uppercase tracking-widest animate-in fade-in">{saveError}</span>
           )}
           {saveSuccess && (
-            <span className="text-[10px] md:text-sm font-black text-emerald-600 bg-emerald-50 border border-emerald-100 shadow-sm px-4 py-2 rounded-full uppercase tracking-wider animate-in fade-in slide-in-from-right-4">Tersimpan!</span>
+            <span className="text-xs font-black text-emerald-700 bg-emerald-50 border border-emerald-100 px-3 py-1.5 rounded-full uppercase tracking-widest animate-in fade-in">Tersimpan!</span>
           )}
           <Button
             onClick={() => handleSave(false)}
             disabled={saving}
             variant="outline"
-            className="flex-1 lg:flex-none h-12 border-2 border-slate-200 text-slate-700 font-bold uppercase px-6 rounded-xl shadow-sm hover:bg-slate-50 transition-all disabled:opacity-50 text-xs md:text-sm"
+            className="flex-1 sm:flex-none h-9 border border-slate-200 text-slate-700 font-black uppercase px-4 rounded-lg shadow-sm hover:bg-slate-50 transition-all text-xs tracking-widest"
           >
-            {saving ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <Save className="w-5 h-5 mr-2" />} <span className="hidden sm:inline">Simpan</span> Draft
+            {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-2" /> : <Save className="w-3.5 h-3.5 mr-2" />} Simpan Draft
           </Button>
-          <Button asChild className="flex-1 lg:flex-none h-12 border-none font-bold uppercase px-8 rounded-xl bg-brand-600 hover:bg-brand-700 text-white shadow-lg shadow-brand-200 transition-all hover:translate-y-[-1px] text-xs md:text-sm">
+          <Button asChild className="flex-1 sm:flex-none h-9 font-black uppercase px-6 rounded-lg bg-slate-900 text-white shadow-sm hover:translate-y-[-1px] transition-all text-xs tracking-widest">
             <Link to={`/soal/preview/${id}`}>
-              <FileCheck className="w-5 h-5 mr-2" /> Selesai <span className="hidden sm:inline">& Preview</span>
+              <FileCheck className="w-3.5 h-3.5 mr-2" /> Selesai & Preview
             </Link>
           </Button>
         </div>
       </div>
 
-      <div className="space-y-6">
+      <div className="space-y-4">
         <DndContext 
           sensors={sensors}
           collisionDetection={closestCenter}
@@ -281,85 +299,113 @@ export default function EditSoal() {
 
         {/* Global Regenerate Modal (DRY implementation) */}
         {regenerateIndex !== null && activeRegenerateItem && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-6 animate-in fade-in">
-            <Card className="w-full max-w-lg border-2 border-slate-200 shadow-2xl rounded-2xl relative animate-in zoom-in-95 duration-200">
-              <div className="flex items-center justify-between p-5 border-b border-slate-100 bg-white rounded-t-2xl">
-                <h3 className="font-bold text-slate-900 flex items-center gap-2 uppercase tracking-tight">
-                  <RefreshCcw className="w-5 h-5 text-brand-500" />
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 backdrop-blur-sm p-4 animate-in fade-in">
+            <Card className="w-full max-w-lg border border-slate-200 shadow-2xl rounded-xl relative animate-in zoom-in-95 duration-200 bg-white">
+              <div className="flex items-center justify-between p-4 border-b border-slate-100">
+                <h3 className="text-sm font-black text-slate-900 flex items-center gap-2 uppercase tracking-widest">
+                  <RefreshCcw className="w-4.5 h-4.5 text-brand-500" />
                   Regenerate Soal {activeRegenerateItem.nomor}
                 </h3>
-                <Button variant="ghost" size="icon" onClick={() => {
+                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" onClick={() => {
                   setRegenerateIndex(null); 
                   setRegenerateFeedback('');
                 }}>
-                  <X className="w-5 h-5 text-slate-400" />
+                  <X className="w-4 h-4 text-slate-600" />
                 </Button>
               </div>
-              <CardContent className="p-6 bg-slate-50 space-y-4 rounded-b-2xl">
-                <div className="space-y-4 text-left">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Gaya Soal (Multi-Select)</label>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {[
-                      { id: "light_story", label: "Cerita Ringan" },
-                      { id: "formal_academic", label: "Akademik Formal" },
-                      { id: "case_study", label: "Studi Kasus" },
-                      { id: "standard_exam", label: "Ujian Standar" },
-                      { id: "hots", label: "Tingkat Tinggi (HOTS)" },
-                    ].map((style) => (
-                      <div 
-                        key={style.id} 
-                        className={cn(
-                          "flex items-center space-x-2.5 p-3 rounded-xl border-2 transition-all cursor-pointer",
-                          regenerateGayaSoal.includes(style.id) 
-                            ? 'bg-brand-50 border-brand-200' 
-                            : 'bg-white border-slate-200 hover:border-slate-300'
-                        )}
-                        onClick={() => {
-                          if (regenerateGayaSoal.includes(style.id)) {
-                            setRegenerateGayaSoal(regenerateGayaSoal.filter(id => id !== style.id))
-                          } else {
-                            setRegenerateGayaSoal([...regenerateGayaSoal, style.id])
-                          }
-                        }}
-                      >
-                        <Checkbox 
-                          id={`reg-${style.id}`} 
-                          checked={regenerateGayaSoal.includes(style.id)}
-                          onCheckedChange={(checked) => {
-                            if (checked) {
-                              setRegenerateGayaSoal([...regenerateGayaSoal, style.id])
-                            } else {
+              <CardContent className="p-6 space-y-6">
+                <div className="space-y-4">
+                  <div className="space-y-3">
+                    <label className="text-xs font-black text-slate-600 uppercase tracking-wider">Gaya Soal (Multi-Select)</label>
+                    <div className="grid grid-cols-2 gap-2.5">
+                      {[
+                        { id: "light_story", label: "Cerita" },
+                        { id: "formal_academic", label: "Formal" },
+                        { id: "case_study", label: "Studi Kasus" },
+                        { id: "standard_exam", label: "Standar" },
+                        { id: "hots", label: "HOTS" },
+                      ].map((style) => (
+                        <div 
+                          key={style.id} 
+                          className={cn(
+                            "flex items-center space-x-3 p-2.5 rounded-lg border-2 transition-all cursor-pointer",
+                            regenerateGayaSoal.includes(style.id) 
+                              ? 'bg-brand-50 border-brand-200 shadow-sm' 
+                              : 'bg-white border-slate-50 hover:border-slate-100'
+                          )}
+                          onClick={() => {
+                            if (regenerateGayaSoal.includes(style.id)) {
                               setRegenerateGayaSoal(regenerateGayaSoal.filter(id => id !== style.id))
+                            } else {
+                              setRegenerateGayaSoal([...regenerateGayaSoal, style.id])
                             }
                           }}
-                          className="border-2 border-slate-300 data-[state=checked]:bg-brand-500 data-[state=checked]:border-brand-500 w-4 h-4"
-                        />
-                        <Label htmlFor={`reg-${style.id}`} className="text-xs font-bold text-slate-700 cursor-pointer select-none">
-                          {style.label}
-                        </Label>
-                      </div>
-                    ))}
+                        >
+                          <Checkbox 
+                            id={`reg-${style.id}`} 
+                            checked={regenerateGayaSoal.includes(style.id)}
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                setRegenerateGayaSoal([...regenerateGayaSoal, style.id])
+                              } else {
+                                setRegenerateGayaSoal(regenerateGayaSoal.filter(id => id !== style.id))
+                              }
+                            }}
+                            className="w-4 h-4 border-slate-300"
+                          />
+                          <Label htmlFor={`reg-${style.id}`} className="text-xs font-black text-slate-800 cursor-pointer select-none uppercase tracking-tight">
+                            {style.label}
+                          </Label>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <label className="text-xs font-black text-slate-600 uppercase tracking-wider">Taksonomi Bloom</label>
+                    <div className="grid grid-cols-6 gap-1.5">
+                      {['C1', 'C2', 'C3', 'C4', 'C5', 'C6'].map((bloom) => (
+                        <div 
+                          key={bloom}
+                          onClick={() => {
+                            if (regenerateBloomLevels.includes(bloom)) {
+                              setRegenerateBloomLevels(regenerateBloomLevels.filter(b => b !== bloom))
+                            } else {
+                              setRegenerateBloomLevels([...regenerateBloomLevels, bloom])
+                            }
+                          }}
+                          className={cn(
+                            "flex items-center justify-center h-9 rounded-lg border-2 transition-all cursor-pointer text-xs font-black",
+                            regenerateBloomLevels.includes(bloom)
+                              ? 'bg-brand-600 border-brand-600 text-white shadow-md'
+                              : 'bg-white border-slate-50 text-slate-600 hover:border-slate-100'
+                          )}
+                        >
+                          {bloom}
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
-                <div className="space-y-3 text-left">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Instruksi Tambahan (Opsional)</label>
+                <div className="space-y-2">
+                  <label className="text-xs font-black text-slate-600 uppercase tracking-wider">Instruksi Tambahan</label>
                   <Textarea 
-                    placeholder="Contoh: Buat lebih sulit, gunakan bahasa yang lebih sederhana..."
+                    placeholder="Contoh: Buat lebih sulit, gunakan studi kasus nyata..."
                     value={regenerateFeedback}
                     onChange={(e) => setRegenerateFeedback(e.target.value)}
-                    className="bg-white border-2 border-slate-200 rounded-xl focus-visible:ring-brand-500/20 text-sm font-medium text-slate-600"
-                    rows={3}
+                    className="bg-slate-50 border-slate-100 rounded-lg focus-visible:ring-brand-500/10 text-xs font-bold text-slate-800 min-h-[80px] p-3 transition-all"
                   />
                 </div>
-                <div className="flex justify-end gap-3 pt-4">
-                  <Button variant="outline" onClick={() => setRegenerateIndex(null)} className="rounded-xl font-bold uppercase tracking-tight">Batal</Button>
+                <div className="flex justify-end gap-3 pt-3">
+                  <Button variant="ghost" size="sm" onClick={() => setRegenerateIndex(null)} className="rounded-lg font-black uppercase tracking-widest text-xs h-10 px-6">Batal</Button>
                   <Button 
                     onClick={handleRegenerate}
                     disabled={regenerateMutation.isPending}
-                    className="rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-bold px-6 uppercase tracking-tight"
+                    size="sm"
+                    className="rounded-lg bg-brand-600 hover:bg-brand-700 text-white font-black px-8 uppercase tracking-widest text-xs h-10 shadow-lg transition-all active:scale-95"
                   >
-                    {regenerateMutation.isPending ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <RefreshCcw className="w-5 h-5 mr-2" />}
-                    Mulai Generate
+                    {regenerateMutation.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-2" /> : <RefreshCcw className="w-3.5 h-3.5 mr-2" />}
+                    Mulai Regenerate
                   </Button>
                 </div>
               </CardContent>
@@ -370,30 +416,33 @@ export default function EditSoal() {
         <Button
           onClick={addSoalItem}
           variant="outline"
-          className="w-full h-32 border-2 border-dashed border-slate-200 bg-slate-50/30 text-slate-400 font-bold uppercase tracking-widest hover:bg-slate-50 hover:border-brand-300 hover:text-brand-600 transition-all group rounded-[2rem]"
+          className="w-full h-24 border border-dashed border-slate-300 bg-slate-50/20 text-slate-400 font-bold uppercase tracking-widest hover:bg-slate-50 hover:border-brand-400 hover:text-brand-600 transition-all group rounded-xl shadow-inner"
         >
-          <div className="flex flex-col items-center gap-4">
-            <div className="w-14 h-14 bg-white border-2 border-slate-100 rounded-2xl flex items-center justify-center group-hover:scale-110 group-hover:border-brand-200 group-hover:shadow-md transition-all shadow-sm">
-              <Plus className="w-8 h-8" strokeWidth={2.5} />
+          <div className="flex flex-col items-center gap-2">
+            <div className="w-10 h-10 bg-white border border-slate-100 rounded-lg flex items-center justify-center group-hover:scale-105 group-hover:border-brand-300 transition-all shadow-sm">
+              <Plus className="w-6 h-6 text-slate-400 group-hover:text-brand-600" />
             </div>
-            <span className="text-xs font-black">Tambah Butir Soal Baru</span>
+            <span className="text-xs font-black tracking-widest uppercase">Tambah Butir Soal Baru</span>
           </div>
         </Button>
       </div>
 
-      <div className="fixed bottom-4 md:bottom-10 left-1/2 -translate-x-1/2 bg-slate-900/90 backdrop-blur-xl border border-white/10 px-6 md:px-10 py-4 md:py-5 rounded-2xl md:rounded-[2.5rem] shadow-2xl z-30 flex flex-col sm:flex-row items-center gap-4 md:gap-10 animate-in slide-in-from-bottom-10 border-t-2 border-t-white/5 w-[95%] max-w-2xl">
-        <div className="flex items-center gap-4 md:gap-6 sm:border-r border-white/10 sm:pr-10">
-          <p className="text-[8px] md:text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Editor Status</p>
-          <p className="text-sm md:text-base font-bold text-white tracking-tight">{editedSoal.length} <span className="text-brand-400">Butir</span></p>
+      {/* Floating Action Bar (Optimized Contrast) */}
+      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-900 border border-white/10 px-6 py-4 rounded-xl shadow-2xl z-30 flex items-center gap-6 animate-in slide-in-from-bottom-10 w-[95%] max-w-xl">
+        <div className="flex items-center gap-5 border-r border-white/20 pr-6">
+          <div>
+             <p className="text-xs font-black text-slate-400 uppercase tracking-widest leading-none mb-1.5">Editor Status</p>
+             <p className="text-base font-black text-white tracking-tight leading-none">{editedSoal.length} <span className="text-brand-400 uppercase text-xs ml-1 tracking-widest font-black">Butir Soal</span></p>
+          </div>
         </div>
-        <div className="flex items-center gap-3 md:gap-5 w-full sm:w-auto">
-          <button onClick={() => navigate('/soal')} className="flex-1 sm:flex-none px-4 md:px-6 py-2 text-[10px] md:text-xs font-black text-slate-400 hover:text-white uppercase tracking-widest transition-colors">Batal</button>
+        <div className="flex items-center gap-3 flex-1">
+          <button onClick={() => navigate('/soal')} className="px-4 py-2 text-xs font-black text-slate-400 hover:text-white uppercase tracking-widest transition-colors mr-auto">Batal</button>
           <Button
             onClick={() => handleSave(true)}
             disabled={saving}
-            className="flex-2 sm:flex-none h-10 md:h-12 bg-white text-slate-950 hover:bg-brand-50 rounded-xl md:rounded-2xl font-black uppercase tracking-widest text-[10px] md:text-xs px-6 md:px-10 shadow-lg active:scale-95 transition-all disabled:opacity-50"
+            className="h-10 bg-white text-slate-950 hover:bg-brand-50 rounded-lg font-black uppercase tracking-widest text-xs px-8 shadow-xl active:scale-95 transition-all disabled:opacity-50"
           >
-            {saving && <Loader2 className="w-4 h-4 animate-spin mr-3" />} Simpan Permanen
+            {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-2" /> : <Save className="w-3.5 h-3.5 mr-2" />} Simpan Final
           </Button>
         </div>
       </div>

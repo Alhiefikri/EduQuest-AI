@@ -36,6 +36,7 @@ export interface SoalResponse {
   tipe_soal: string
   difficulty: string
   gaya_soal?: string[]
+  bloom_levels?: string[]
   jumlah_soal: number
   include_pembahasan: boolean
   include_kunci: boolean
@@ -54,6 +55,7 @@ export interface SoalListResponse {
   tipe_soal: string
   difficulty: string
   gaya_soal?: string[]
+  bloom_levels?: string[]
   jumlah_soal: number
   status: string
   created_at: string
@@ -70,6 +72,7 @@ export interface GenerateSoalRequest {
   jumlah_soal: number
   difficulty: string
   gaya_soal?: string[]
+  bloom_levels?: string[]
   include_pembahasan: boolean
   include_kunci: boolean
   include_gambar: boolean
@@ -104,6 +107,7 @@ export interface RegenerateSingleSoalRequest {
   nomor_soal: number
   soal_lama: SoalItem
   gaya_soal?: string[]
+  bloom_levels?: string[]
   feedback?: string
 }
 

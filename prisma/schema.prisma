@@ -4,7 +4,7 @@ generator client {
 
 datasource db {
   provider = "sqlite"
-  url      = "file:../backend/data/soal.db"
+  url      = env("DATABASE_URL")
 }
 
 model ModulAjar {
@@ -42,6 +42,8 @@ model Soal {
   includePembahasan Boolean  @default(true)
   includeKunci      Boolean  @default(true)
   includeGambar     Boolean  @default(false)
+  gayaSoal          String?
+  bloomLevels       String?
   dataSoal          String
   status            String   @default("draft")
   filePath          String?

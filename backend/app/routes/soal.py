@@ -113,6 +113,7 @@ async def generate_soal_endpoint(request: GenerateSoalRequest):
             topik=request.topik or "",
             fase_kelas=fase_kelas,
             tipe_konten=resolved_tipe_konten,
+            bloom_levels=request.bloom_levels,
         )
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e))
@@ -131,6 +132,8 @@ async def generate_soal_endpoint(request: GenerateSoalRequest):
                 "topik": request.topik,
                 "tipeSoal": request.tipe_soal,
                 "difficulty": request.difficulty,
+                "gayaSoal": json.dumps(request.gaya_soal),
+                "bloomLevels": json.dumps(request.bloom_levels),
                 "jumlahSoal": request.jumlah_soal,
                 "includePembahasan": request.include_pembahasan,
                 "includeKunci": request.include_kunci,
@@ -285,6 +288,7 @@ async def regenerate_soal_item(soal_id: str, request: RegenerateSingleSoalReques
             topik=soal.topik or "",
             fase_kelas=fase_kelas,
             feedback_user=request.feedback,
+            bloom_levels=request.bloom_levels,
         )
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e))
