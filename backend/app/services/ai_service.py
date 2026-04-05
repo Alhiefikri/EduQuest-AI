@@ -2,20 +2,97 @@ import json
 import asyncio
 from typing import List, Optional
 
-SYSTEM_PROMPT = "Pendidik ahli evaluasi Kurikulum Merdeka. Buat soal valid, materi inti, sesuai level kognitif, bahasa mudah dipahami, nada edukatif."
+SYSTEM_PROMPT = """Kamu adalah sistem pembuat soal ujian untuk Kurikulum Merdeka Indonesia.
+
+ATURAN MUTLAK — TIDAK BOLEH DILANGGAR:
+1. Soal HANYA boleh dibuat berdasarkan teks materi yang diberikan di bagian "Materi:" dalam prompt.
+2. DILARANG KERAS menambahkan fakta, konsep, contoh, atau informasi dari luar teks materi tersebut.
+3. DILARANG membuat soal tentang cara mengajar, metode pembelajaran, atau alat peraga guru.
+4. Jika teks materi tidak cukup untuk membuat jumlah soal yang diminta, hasilkan soal sebanyak yang bisa dibuat dari materi — jangan mengarang untuk memenuhi kuota.
+5. Output HANYA berupa JSON valid. Tidak ada kalimat pembuka, penutup, atau penjelasan apapun."""
 
 # TODO: Implementasi ekstraksi PDF berdasarkan rentang halaman di layer controller untuk optimasi lebih lanjut
 MAX_CONTENT_CHARS = 8000
 
+FASE_GUIDELINES: dict[str, str] = {
+    "Fase A": (
+        "Kelas 1-2 SD. WAJIB: kalimat maksimal 8 kata per soal. "
+        "Gunakan hanya kosakata yang biasa didengar anak usia 6-8 tahun. "
+        "Konsep harus konkret dan bisa dilihat atau diraba. "
+        "DILARANG menggunakan kata: analisis, evaluasi, konsep, prinsip, hipotesis."
+    ),
+    "Fase B": (
+        "Kelas 3-4 SD. Kalimat maksimal 12 kata. Boleh 1 langkah penalaran sederhana. "
+        "Konteks harus dekat kehidupan sehari-hari siswa."
+    ),
+    "Fase C": (
+        "Kelas 5-6 SD. Boleh 2 langkah penalaran. Boleh analogi konkret. "
+        "Mulai bisa gunakan istilah mata pelajaran dasar."
+    ),
+    "Fase D": (
+        "Kelas 7-9 SMP. Boleh penalaran multi-langkah. Konteks sosial dan sains dasar diperbolehkan. "
+        "Istilah akademik boleh digunakan jika disertai konteks yang jelas."
+    ),
+    "Fase E": (
+        "Kelas 10-11 SMA. Analisis dan evaluasi argumen diperbolehkan. "
+        "Konteks kompleks dan istilah akademik penuh diperbolehkan."
+    ),
+    "Fase F": (
+        "Kelas 12 SMA atau setara. Sintesis, kreasi, dan evaluasi kritis. "
+        "Soal boleh multi-perspektif dan open-ended."
+    ),
+    "umum": "Sesuaikan kompleksitas bahasa dan konsep dengan konteks materi yang diberikan."
+}
 
-def _truncate_content(content: str, max_chars: int = MAX_CONTENT_CHARS) -> str:
+_STOPWORDS = frozenset({
+    "dan", "di", "yang", "ini", "itu", "atau", "dengan", "untuk",
+    "dari", "ke", "pada", "adalah", "dalam", "tidak", "akan", "juga",
+    "sudah", "ada", "bisa", "oleh", "karena", "saat", "jika", "maka",
+    "dapat", "lebih", "agar", "namun", "tetapi", "sehingga", "yaitu",
+})
+
+
+def _get_fase_detail(fase_kelas: str) -> str:
+    fase_detail = FASE_GUIDELINES["umum"]
+    for fase_key, guideline in FASE_GUIDELINES.items():
+        if fase_key in fase_kelas:
+            fase_detail = guideline
+            break
+    return fase_detail
+
+
+def _smart_truncate(
+    content: str,
+    topik: str = "",
+    mata_pelajaran: str = "",
+    max_chars: int = MAX_CONTENT_CHARS,
+) -> str:
     if len(content) <= max_chars:
         return content
-    truncated = content[:max_chars]
-    last_period = truncated.rfind(".")
-    if last_period > max_chars * 0.8:
-        truncated = truncated[:last_period + 1]
-    return truncated + "\n\n[Konten diringkas agar fokus pada materi inti]"
+
+    raw_keywords = (topik + " " + mata_pelajaran).lower().split()
+    keywords = [kw for kw in raw_keywords if kw not in _STOPWORDS and len(kw) > 2]
+
+    if not keywords:
+        return content[:max_chars] + "\n\n[Konten diringkas]"
+
+    chunk_size = 400
+    chunks = [content[i:i + chunk_size] for i in range(0, len(content), chunk_size)]
+
+    def score_chunk(chunk: str) -> int:
+        chunk_lower = chunk.lower()
+        return sum(chunk_lower.count(kw) for kw in keywords)
+
+    scored_chunks = sorted(
+        enumerate(chunks),
+        key=lambda x: score_chunk(x[1]),
+        reverse=True,
+    )
+    n_chunks_needed = max_chars // chunk_size
+    top_indices = sorted(i for i, _ in scored_chunks[:n_chunks_needed])
+    selected_chunks = [chunks[i] for i in top_indices]
+
+    return "\n\n".join(selected_chunks) + "\n\n[Konten diseleksi berdasarkan relevansi topik]"
 
 
 async def _get_ai_config() -> tuple[str, str]:
@@ -31,18 +108,18 @@ def _get_gaya_instruction(gaya_soal: List[str]) -> str:
         "standard_exam": "Ujian Standar (singkat, padat, jelas seperti UN/SNBT)",
         "hots": "HOTS (Higher Order Thinking Skills - menguji analisis, evaluasi, dan kreasi)"
     }
-    
+
     if not gaya_soal:
         return gaya_map["formal_academic"]
-        
+
     instructions = []
     for g in gaya_soal:
         if g in gaya_map:
             instructions.append(gaya_map[g])
-    
+
     if not instructions:
         return gaya_map["formal_academic"]
-        
+
     return "Gabungan Gaya: " + ", ".join(instructions) + ". Pastikan soal mencerminkan kombinasi elemen-elemen tersebut."
 
 
@@ -73,6 +150,7 @@ def _build_user_prompt(
     }
 
     gaya_instruction = _get_gaya_instruction(gaya_soal)
+    fase_detail = _get_fase_detail(fase_kelas)
 
     # Dynamic JSON Schema
     json_item = {
@@ -81,27 +159,28 @@ def _build_user_prompt(
     }
     if tipe_soal in ["pilihan_ganda", "campuran"]:
         json_item["pilihan"] = ["A. ...", "B. ...", "C. ...", "D. ..."]
-    
+
     json_item["jawaban"] = "..."
-    
+
     if include_pembahasan:
         json_item["pembahasan"] = "..."
-    
+
     if include_gambar:
         json_item["gambar_prompt"] = "Deskripsi visual sederhana untuk ilustrasi soal ini"
 
     schema_str = json.dumps({"soal": [json_item]}, indent=2)
 
     prompt = f"""Buat {jumlah_soal} soal {tipe_label.get(tipe_soal, tipe_soal)}:
-Fase/Kelas: {fase_kelas} | Mapel: {mata_pelajaran} | Topik: {topik or 'Materi inti'}
+Mapel: {mata_pelajaran} | Topik: {topik or 'Materi inti'}
+Panduan Wajib untuk Fase Ini: {fase_detail}
 Gaya: {gaya_instruction} | Level: {difficulty_instruction.get(difficulty, difficulty)}
 
 Materi:
-{_truncate_content(konten_modul)}
+{_smart_truncate(konten_modul, topik=topik, mata_pelajaran=mata_pelajaran)}
 
 Aturan Wajib:
 1. FOKUS materi inti. JANGAN buat soal tentang metode/alat peraga guru.
-2. Bahasa sesuai tingkat siswa (Fase A: sangat sederhana).
+2. Bahasa sesuai tingkat siswa.
 3. Output HANYA JSON valid sesuai skema: {schema_str}
 4. Jawaban akurat & pembahasan jelas. No intro/outro."""
 
@@ -140,6 +219,31 @@ def _parse_ai_response(response_text: str) -> List[dict]:
     raise ValueError("Format respons AI tidak dikenali")
 
 
+def _validate_soal_item(soal: dict, tipe_soal: str) -> tuple[bool, str]:
+    pertanyaan = soal.get("pertanyaan", "").strip()
+    if not pertanyaan or pertanyaan == "...":
+        return False, "pertanyaan kosong/placeholder"
+
+    jawaban = soal.get("jawaban", "").strip()
+    if not jawaban or jawaban == "...":
+        return False, "jawaban kosong/placeholder"
+
+    if tipe_soal in ["pilihan_ganda", "campuran"]:
+        pilihan = soal.get("pilihan", [])
+        if len(pilihan) < 4:
+            return False, "pilihan kurang dari 4"
+
+        jawaban_huruf = jawaban[0].upper() if jawaban else ""
+        if jawaban_huruf not in {"A", "B", "C", "D"}:
+            return False, "jawaban bukan A/B/C/D"
+
+        pilihan_stripped = [p.strip() for p in pilihan]
+        if len(set(pilihan_stripped)) == 1:
+            return False, "semua pilihan identik"
+
+    return True, "ok"
+
+
 async def _generate_with_gemini(
     prompt: str,
     api_key: str,
@@ -153,7 +257,7 @@ async def _generate_with_gemini(
 
     config = types.GenerateContentConfig(
         system_instruction=SYSTEM_PROMPT,
-        temperature=0.7,
+        temperature=0.3,
         max_output_tokens=8192,
         response_mime_type="application/json",
     )
@@ -207,7 +311,7 @@ async def _generate_with_groq(
             response = await client.chat.completions.create(
                 model="llama-3.3-70b-versatile",
                 messages=messages,
-                temperature=0.7,
+                temperature=0.3,
                 max_tokens=4096,
                 response_format={"type": "json_object"},
             )
@@ -234,10 +338,10 @@ async def _generate_with_openrouter(
     max_retries: int = 3,
 ) -> str:
     from openrouter import OpenRouter
-    
+
     # Model specified in ISSUE-39
     model = "qwen/qwen3.6-plus:free"
-    
+
     messages = [
         {"role": "system", "content": SYSTEM_PROMPT},
         {"role": "user", "content": prompt},
@@ -251,6 +355,9 @@ async def _generate_with_openrouter(
                 response = await client.chat.send_async(
                     model=model,
                     messages=messages,
+                    temperature=0.2,
+                    top_p=0.85,
+                    max_tokens=4096,
                 )
                 return response.choices[0].message.content or ""
 
@@ -300,19 +407,40 @@ async def generate_soal(
     if not api_key:
         raise RuntimeError("API key belum dikonfigurasi. Silakan atur di halaman Settings.")
 
-    if provider == "groq":
-        response_text = await _generate_with_groq(prompt, api_key, max_retries)
-    elif provider == "openrouter":
-        response_text = await _generate_with_openrouter(prompt, api_key, max_retries)
-    else:
-        response_text = await _generate_with_gemini(prompt, api_key, max_retries)
+    last_error: Exception | None = None
 
-    soal_list = _parse_ai_response(response_text)
+    for attempt in range(max_retries):
+        try:
+            if provider == "groq":
+                response_text = await _generate_with_groq(prompt, api_key, max_retries=1)
+            elif provider == "openrouter":
+                response_text = await _generate_with_openrouter(prompt, api_key, max_retries=1)
+            else:
+                response_text = await _generate_with_gemini(prompt, api_key, max_retries=1)
 
-    if not soal_list:
-        raise ValueError("AI menghasilkan daftar soal kosong")
+            soal_list = _parse_ai_response(response_text)
 
-    return soal_list
+            valid_soal = []
+            for soal in soal_list:
+                is_valid, reason = _validate_soal_item(soal, tipe_soal)
+                if is_valid:
+                    valid_soal.append(soal)
+                else:
+                    print(f"[WARN] Soal #{soal.get('nomor', '?')} dibuang: {reason}")
+
+            threshold = max(1, int(jumlah_soal * 0.7))
+            if len(valid_soal) >= threshold:
+                return valid_soal
+
+            last_error = ValueError(f"Hanya {len(valid_soal)}/{jumlah_soal} valid (min {threshold}). Retry...")
+
+        except Exception as e:
+            last_error = e
+
+        if attempt < max_retries - 1:
+            await asyncio.sleep(2 ** attempt)
+
+    raise RuntimeError(f"Gagal menghasilkan soal yang cukup valid. Error terakhir: {last_error}")
 
 
 def _build_regenerate_prompt(
@@ -343,6 +471,7 @@ def _build_regenerate_prompt(
     }
 
     gaya_instruction = _get_gaya_instruction(gaya_soal)
+    fase_detail = _get_fase_detail(fase_kelas)
 
     # Dynamic JSON Schema
     json_item = {
@@ -351,19 +480,19 @@ def _build_regenerate_prompt(
     }
     if tipe_soal in ["pilihan_ganda", "campuran"]:
         json_item["pilihan"] = ["A. ...", "B. ...", "C. ...", "D. ..."]
-    
+
     json_item["jawaban"] = "..."
-    
+
     if include_pembahasan:
         json_item["pembahasan"] = "..."
-    
+
     if include_gambar:
         json_item["gambar_prompt"] = "Deskripsi visual sederhana untuk ilustrasi soal ini"
 
     schema_str = json.dumps({"soal": [json_item]}, indent=2)
-    
+
     soal_lama_str = json.dumps(soal_lama, indent=2, ensure_ascii=False)
-    
+
     feedback_section = f"\nInstruksi Khusus dari Guru (Wajib Diikuti):\n{feedback_user}\n" if feedback_user else ""
 
     prompt = f"""Buat 1 soal BARU yang BERBEDA dari soal lama berikut, tetap berdasarkan materi yang sama.
@@ -372,23 +501,21 @@ Soal Lama:
 {soal_lama_str}
 
 Parameter Soal Baru:
-Fase/Kelas: {fase_kelas}
-Mata Pelajaran: {mata_pelajaran}
-Tujuan Pembelajaran / Topik: {topik if topik else "Sesuaikan dengan materi"}
+Mapel: {mata_pelajaran} | Topik: {topik if topik else "Sesuaikan dengan materi"}
+Panduan Wajib untuk Fase Ini: {fase_detail}
 Gaya Soal: {gaya_instruction}
 Level Kognitif: {difficulty_instruction.get(difficulty, difficulty)}
 Tipe Soal: {tipe_label.get(tipe_soal, tipe_soal)}
 {feedback_section}
 Ringkasan Materi:
-{_truncate_content(konten_modul)}
+{_smart_truncate(konten_modul, topik=topik, mata_pelajaran=mata_pelajaran)}
 
 Instruksi Khusus (Wajib Dipatuhi):
 1. **DILARANG KERAS** membuat soal tentang kegiatan belajar di kelas, metode mengajar guru, langkah-langkah pembelajaran, atau alat peraga yang digunakan guru.
 2. **FOKUS HANYA** pada materi/fakta/konsep yang harus dikuasai oleh siswa.
 3. Bahasa harus disesuaikan untuk anak-anak sekolah/siswa.
-4. KHUSUS Fase A (Kelas 1-2): Gunakan kalimat sangat pendek, kosakata dasar, dan konsep konkret.
-5. Terapkan instruksi "Gaya Soal" yang tercantum pada Parameter Soal secara konsisten pada pertanyaan.
-6. Output HANYA berupa JSON valid sesuai skema berikut:
+4. Terapkan instruksi "Gaya Soal" yang tercantum pada Parameter Soal secara konsisten pada pertanyaan.
+5. Output HANYA berupa JSON valid sesuai skema berikut:
 
 {schema_str}
 
@@ -433,19 +560,34 @@ async def regenerate_single_soal(
     if not api_key:
         raise RuntimeError("API key belum dikonfigurasi. Silakan atur di halaman Settings.")
 
-    if provider == "groq":
-        response_text = await _generate_with_groq(prompt, api_key, max_retries)
-    elif provider == "openrouter":
-        response_text = await _generate_with_openrouter(prompt, api_key, max_retries)
-    else:
-        response_text = await _generate_with_gemini(prompt, api_key, max_retries)
+    last_error: Exception | None = None
 
-    soal_list = _parse_ai_response(response_text)
+    for attempt in range(max_retries):
+        try:
+            if provider == "groq":
+                response_text = await _generate_with_groq(prompt, api_key, max_retries=1)
+            elif provider == "openrouter":
+                response_text = await _generate_with_openrouter(prompt, api_key, max_retries=1)
+            else:
+                response_text = await _generate_with_gemini(prompt, api_key, max_retries=1)
 
-    if not soal_list or len(soal_list) == 0:
-        raise ValueError("AI gagal menghasilkan soal pengganti")
+            soal_list = _parse_ai_response(response_text)
 
-    return soal_list[0]
+            if soal_list and len(soal_list) > 0:
+                is_valid, reason = _validate_soal_item(soal_list[0], tipe_soal)
+                if is_valid:
+                    return soal_list[0]
+                print(f"[WARN] Soal regenerasi dibuang: {reason}")
+
+            last_error = ValueError("Soal regenerasi tidak valid")
+
+        except Exception as e:
+            last_error = e
+
+        if attempt < max_retries - 1:
+            await asyncio.sleep(2 ** attempt)
+
+    raise RuntimeError(f"Gagal menghasilkan soal pengganti yang valid. Error terakhir: {last_error}")
 
 
 async def test_ai_connection(provider: str, api_key: str) -> str:
