@@ -1,196 +1,119 @@
-Saya baca kodenya secara menyeluruh. Ada beberapa temuan — sebagian kecil bug, sebagian besar adalah kelemahan yang bisa menyebabkan masalah di production.
+Kode ini sudah jauh lebih baik dari versi sebelumnya. Tapi ada beberapa hal yang perlu dicatat sebelum di-approve.
 
 ---
 
-## Temuan 1 — `_detect_tipe_konten()` terlalu lemah (risiko tinggi)
+## Review Final: Apa yang Sudah Benar ✅
+
+Semua 5 poin yang disebutkan di PR description sudah terimplementasi dengan benar. Tidak ada yang perlu diulang. Lanjut ke temuan baru.
+
+---
+
+## Temuan Baru yang Perlu Diaddress
+
+### 1. `_build_cp_tp_section()` dipanggil sebelum `_smart_truncate()` didefinisikan — potential `NameError`
+
+Ini bug urutan definisi fungsi. Di file ini, `_build_cp_tp_section()` ada di **baris ~75**, sedangkan `_smart_truncate()` baru didefinisikan di **baris ~110**. Di dalam `_build_cp_tp_section()` ada pemanggilan:
 
 ```python
-# KONDISI SEKARANG — hanya cek 2 keyword
-def _detect_tipe_konten(konten: str) -> str:
-    konten_lower = konten.lower()
-    if "tujuan pembelajaran" in konten_lower or "capaian pembelajaran" in konten_lower:
-        return "cp_tp"
-    return "modul_ajar"
+konten_terpilih = _smart_truncate(...)  # dipanggil di sini
 ```
 
-Masalahnya: modul ajar yang bagus hampir selalu **menyertakan** frasa "tujuan pembelajaran" di bagian pembukaan sebelum isi materinya. Artinya modul ajar dengan pendahuluan standar akan salah dideteksi sebagai `cp_tp`, lalu diperlakukan dengan strategi prompt yang salah.
+Di Python, fungsi didefinisikan saat file di-load secara berurutan. Ini **tidak akan error saat import** karena Python hanya mengeksekusi body fungsi saat fungsi dipanggil, bukan saat didefinisikan. Jadi runtime aman.
 
-Selain itu, `input_manual` tidak pernah bisa terdeteksi dari fungsi ini — padahal itu salah satu dari tiga tipe yang ada.
+Tapi ini tetap **bad practice** karena membuat kode sulit dibaca dan di-maintain — siapapun yang membaca `_build_cp_tp_section()` harus scroll ke bawah untuk menemukan `_smart_truncate()`. Solusinya: pindahkan `_smart_truncate()` dan `_STOPWORDS` ke atas, sebelum `_build_cp_tp_section()`.
 
-```python
-# PERBAIKAN — scoring berbasis bobot, bukan binary check
-def _detect_tipe_konten(konten: str) -> str:
-    konten_lower = konten.lower()
-
-    # Penanda kuat CP/TP — frasa yang hanya muncul di dokumen kurikulum
-    cp_tp_markers = [
-        "pada akhir fase",
-        "peserta didik dapat",
-        "peserta didik mampu",
-        "alur tujuan pembelajaran",
-        "capaian pembelajaran fase",
-        "atp matematika",
-        "atp bahasa",
-        "elemen capaian",
-    ]
-
-    # Penanda kuat modul ajar — ada konten substantif, bukan hanya tujuan
-    modul_markers = [
-        "contoh soal",
-        "perhatikan contoh",
-        "diketahui",
-        "penyelesaian",
-        "latihan",
-        "rumus",
-        "teorema",
-        "definisi",
-        "misalnya",
-        "perhatikan gambar",
-    ]
-
-    cp_tp_score  = sum(1 for m in cp_tp_markers if m in konten_lower)
-    modul_score  = sum(1 for m in modul_markers  if m in konten_lower)
-
-    # Butuh minimal 2 penanda kuat CP/TP untuk diklasifikasi cp_tp
-    # (mencegah modul ajar dengan pendahuluan standar salah klasifikasi)
-    if cp_tp_score >= 2 and cp_tp_score > modul_score:
-        return TipeKonten.cp_tp.value
-
-    return TipeKonten.modul_ajar.value
+**Urutan definisi yang seharusnya:**
+```
+constants (SYSTEM_PROMPT, MAX_CONTENT_CHARS, FASE_GUIDELINES, _STOPWORDS)
+    ↓
+pure utility functions (_smart_truncate, _detect_tipe_konten, _get_fase_detail, _get_gaya_instruction)
+    ↓
+prompt builders (_build_cp_tp_section, _build_user_prompt, _build_regenerate_prompt)
+    ↓
+provider functions (_generate_with_*)
+    ↓
+orchestrators (generate_soal, regenerate_single_soal)
+    ↓
+utilities (test_ai_connection)
 ```
 
 ---
 
-## Temuan 2 — `_build_cp_tp_section()` tidak memanggil `_smart_truncate()` (bug)
+### 2. `_build_regenerate_prompt()` punya duplikasi instruksi yang konflik dengan dirinya sendiri
+
+Di `_build_regenerate_prompt()`, ada dua blok instruksi yang tumpang tindih:
 
 ```python
-# KONDISI SEKARANG — konten CP/TP dikirim mentah tanpa truncate
-def _build_cp_tp_section(konten_cp_tp: str, mata_pelajaran: str, topik: str) -> str:
-    return (
-        f"Capaian/Tujuan Pembelajaran untuk {mata_pelajaran}:\n"
-        f"{konten_cp_tp}\n\n"   # ← tidak ada truncate di sini
-        ...
-    )
+# Blok 1 — dari parameter
+f"Panduan Wajib untuk Fase Ini: {fase_detail}"
+
+# Blok 2 — hardcoded di bawah, mengulang hal yang sama tapi berbeda kata
+"""Instruksi Khusus (Wajib Dipatuhi):
+3. Bahasa harus disesuaikan untuk anak-anak sekolah/siswa."""
 ```
 
-Jika user paste CP/TP yang panjang (misalnya seluruh ATP satu semester), konten akan dikirim penuh ke model tanpa batasan. Ini bisa menyebabkan token limit terlampaui di Groq free tier.
+Blok 2 ini adalah sisa dari kode lama yang belum dibersihkan. `fase_detail` dari `FASE_GUIDELINES` sudah mencakup instruksi bahasa dengan lebih lengkap dan spesifik. Hardcode "untuk anak-anak sekolah/siswa" di Blok 2 bisa bertentangan dengan `fase_detail` Fase E/F yang memang untuk remaja/dewasa muda.
+
+Hapus poin nomor 3 dari `Instruksi Khusus` di `_build_regenerate_prompt()`:
 
 ```python
-# PERBAIKAN
-def _build_cp_tp_section(konten_cp_tp: str, mata_pelajaran: str, topik: str) -> str:
-    konten_terpilih = _smart_truncate(
-        konten_cp_tp,
-        topik=topik,
-        mata_pelajaran=mata_pelajaran,
-    )
-    return (
-        f"Capaian/Tujuan Pembelajaran untuk {mata_pelajaran}:\n"
-        f"{konten_terpilih}\n\n"
-        f"INSTRUKSI KHUSUS UNTUK CP/TP:\n"
-        ...
-    )
+# HAPUS baris ini dari _build_regenerate_prompt
+"3. Bahasa harus disesuaikan untuk anak-anak sekolah/siswa.\n"
+
+# GANTI nomor urutannya:
+# 1. DILARANG KERAS...
+# 2. FOKUS HANYA...
+# 3. Terapkan instruksi "Gaya Soal"... (sebelumnya nomor 4)
+# 4. Output HANYA berupa JSON...  (sebelumnya nomor 5)
 ```
 
 ---
 
-## Temuan 3 — `SYSTEM_PROMPT` konflik dengan `_build_cp_tp_section()` (bug logika)
+### 3. `_build_regenerate_prompt()` tidak punya instruksi distribusi soal — tapi ini by design, bukan bug
 
-Ini yang paling subtle tapi paling berdampak. `SYSTEM_PROMPT` menyatakan:
-
-```
-Aturan 1: Soal HANYA boleh dibuat berdasarkan teks materi yang diberikan.
-Aturan 2: DILARANG KERAS menambahkan fakta dari luar teks materi.
-```
-
-Tapi `_build_cp_tp_section()` justru meminta model melakukan sebaliknya:
+Ini bukan masalah. `regenerate_single_soal` hanya membuat 1 soal pengganti, jadi instruksi distribusi merata memang tidak relevan. Catat ini di komentar kode agar reviewer berikutnya tidak mempertanyakan hal yang sama:
 
 ```python
-# Instruksi ini secara eksplisit meminta model pakai pengetahuan umumnya
-"Gunakan level kognitif yang sesuai (aplikasi, analisis, evaluasi)"
-```
-
-Ketika input adalah CP/TP, model menerima dua instruksi yang bertentangan:
-- System prompt: "jangan pakai pengetahuan luar"
-- User prompt: "buat soal aplikasi" (tapi tidak ada materi aplikasinya)
-
-Model akan bingung dan hasilnya tidak konsisten antar provider. Groq mematuhi system prompt → soal terlalu basic. Qwen mengikuti user prompt → halusinasi.
-
-Solusinya adalah **memodifikasi SYSTEM_PROMPT secara kondisional** berdasarkan tipe konten, atau menambahkan instruksi pengecualian yang eksplisit di CP/TP section:
-
-```python
-def _build_cp_tp_section(konten_cp_tp: str, mata_pelajaran: str, topik: str) -> str:
-    konten_terpilih = _smart_truncate(konten_cp_tp, topik=topik, mata_pelajaran=mata_pelajaran)
-    return (
-        f"Capaian/Tujuan Pembelajaran untuk {mata_pelajaran}:\n"
-        f"{konten_terpilih}\n\n"
-        f"INSTRUKSI KHUSUS UNTUK MODE CP/TP:\n"
-        f"Pengecualian Aturan 1 & 2 dari system prompt: Untuk mode CP/TP, kamu DIIZINKAN "
-        f"menggunakan pengetahuanmu tentang {mata_pelajaran} untuk membuat soal — "
-        f"TAPI hanya dalam cakupan topik yang disebutkan di CP/TP di atas.\n"
-        f"Buat soal yang menguji ketercapaian tujuan tersebut, bukan soal tentang tujuannya.\n"
-        f"Jika tujuan menyebut 'menghitung volume', buat soal hitung — BUKAN 'apa itu volume'.\n"
-        f"Jika tujuan menyebut 'menyajikan data', buat soal interpretasi — BUKAN 'apa itu diagram'."
-    )
+# Catatan: tidak ada instruksi distribusi soal di sini karena
+# regenerate hanya menghasilkan 1 soal pengganti, bukan batch.
 ```
 
 ---
 
-## Temuan 4 — `_build_user_prompt()`: instruksi distribusi soal hilang
+### 4. `FASE_GUIDELINES` Fase C masih ada celah — tidak ada larangan kata eksplisit
 
-Di diskusi sebelumnya sudah disepakati perlu instruksi distribusi soal merata antar unit/topik. Tapi di kode terbaru ini tidak ada. Ini yang menyebabkan Groq menumpuk semua soal di Unit 1 (Bangun Ruang) saja.
-
-```python
-# Di _build_user_prompt(), tambahkan di bagian Aturan Wajib:
-prompt = f"""...
-Aturan Wajib:
-1. FOKUS materi inti. JANGAN buat soal tentang metode/alat peraga guru.
-2. Bahasa sesuai tingkat siswa.
-3. Output HANYA JSON valid sesuai skema: {schema_str}
-4. Distribusikan soal secara merata ke semua topik/unit yang ada di materi. \
-Jangan buat semua soal dari satu topik saja meskipun topik itu paling panjang.
-5. Jawaban akurat & pembahasan jelas. No intro/outro."""
-```
-
----
-
-## Temuan 5 — `FASE_GUIDELINES` Fase C: contoh soal tidak relevan dengan konteks matematika
+Fase A punya daftar kata yang dilarang. Fase C tidak punya. Ini yang membuat Qwen masih bisa pakai kata "karakteristik", "komprehensif", dll untuk Fase C meskipun contoh salah sudah ada:
 
 ```python
-# KONDISI SEKARANG — contoh soal tentang IPA, bukan matematika
+# SEKARANG — hanya ada contoh, tidak ada larangan eksplisit
 "Fase C": (
-    ...
-    "Contoh BENAR: 'Mengapa es batu mencair jika diletakkan di luar?' "
-    "Contoh SALAH: 'Analisislah perubahan entalpi pada reaksi eksoterm!'"
+    "Kelas 5-6 SD. Boleh 2 langkah penalaran. ..."
+    "Contoh BENAR: '...' "
+    "Contoh SALAH: '...'"
 ),
-```
 
-CP/TP yang diuji adalah matematika (bangun ruang, statistika), tapi contoh soalnya tentang IPA. Ini tidak konsisten dan bisa membingungkan model. Contoh harus domain-agnostic atau lebih umum:
-
-```python
+# SEHARUSNYA — tambahkan larangan kata seperti Fase A
 "Fase C": (
     "Kelas 5-6 SD. Boleh 2 langkah penalaran. Boleh analogi konkret. "
     "Mulai bisa gunakan istilah mata pelajaran dasar. "
-    "DILARANG menggunakan kata: karakteristik, hipotesis, fundamental, implikasi. "
+    "DILARANG menggunakan kata: karakteristik, komprehensif, hipotesis, implikasi, fundamental. "
     "Contoh BENAR: 'Sebuah kotak panjang 10 cm, lebar 5 cm, tinggi 4 cm. Berapa volumenya?' "
-    "Contoh SALAH: 'Analisislah karakteristik dimensi bangun ruang berikut secara komprehensif.'"
+    "Contoh SALAH: 'Analisislah karakteristik dimensi bangun ruang secara komprehensif.'"
 ),
 ```
 
 ---
 
-## Ringkasan Status Kode
+## Status Review
 
-| # | Fungsi | Status | Severity |
-|---|--------|--------|----------|
-| 1 | `_detect_tipe_konten()` | Bug — false positive tinggi | Tinggi |
-| 2 | `_build_cp_tp_section()` — truncate | Bug — konten tidak di-truncate | Sedang |
-| 3 | Konflik `SYSTEM_PROMPT` vs CP/TP section | Bug logika — instruksi bertentangan | Tinggi |
-| 4 | Distribusi soal hilang dari prompt | Regression — fitur yang disepakati tidak ada | Sedang |
-| 5 | Contoh soal Fase C tidak relevan | Kelemahan — bisa membingungkan model | Rendah |
-| ✅ | `TipeKonten` enum + routing | Sudah benar | — |
-| ✅ | Retry + Partial Success di `generate_soal()` | Sudah benar | — |
-| ✅ | `_validate_soal_item()` | Sudah benar | — |
-| ✅ | Parameter sampling semua provider | Sudah benar | — |
-| ✅ | `FASE_GUIDELINES` struktur | Sudah benar | — |
+| Item | Status |
+|------|--------|
+| 5 poin dari PR description | ✅ Semua sudah benar |
+| Urutan definisi fungsi | ⚠️ Perlu reorder — bukan blocker tapi wajib dirapikan |
+| Duplikasi instruksi di `_build_regenerate_prompt` | 🔴 Minor bug — instruksi bahasa hardcode konflik dengan `fase_detail` |
+| Catatan distribusi soal di regenerate | 📝 Tambahkan komentar saja |
+| Larangan kata Fase C | ⚠️ Perlu ditambahkan agar konsisten dengan Fase A |
 
-Temuan 1 dan 3 harus diperbaiki sebelum testing — keduanya akan menyebabkan behavior tidak terduga di production. Temuan 2 dan 4 perlu diperbaiki sebelum merge. Temuan 5 bisa masuk backlog atau diperbaiki bersamaan.
+**Verdict: Request Changes** — dua item perlu difix sebelum bisa di-merge: duplikasi instruksi di `_build_regenerate_prompt` dan larangan kata Fase C. Reorder fungsi bisa dikerjakan bersamaan karena effort-nya kecil.
+
+Setelah tiga item ini diperbaiki, kode ini siap untuk di-approve. Good work secara keseluruhan — arsitektur dan logika utamanya sudah solid.
