@@ -155,7 +155,7 @@ async def _get_ai_config() -> tuple[str, str]:
     return await _get_config()
 
 
-def _get_bloom_instruction(bloom_levels: List[str]) -> str:
+def _get_bloom_instruction(bloom_levels: List[str], jumlah_soal: int = 20) -> str:
     bloom_map = {
         "C1": "C1 Mengingat (recall fakta, istilah, konsep dasar)",
         "C2": "C2 Memahami (menjelaskan ide atau konsep)",
@@ -164,15 +164,64 @@ def _get_bloom_instruction(bloom_levels: List[str]) -> str:
         "C5": "C5 Mengevaluasi (menjustifikasi keputusan atau tindakan)",
         "C6": "C6 Mencipta (menghasilkan karya baru atau orisinal)"
     }
-    
+
+    c1_forbidden_patterns = [
+        '"Apa yang dimaksud dengan..."',
+        '"Sebutkan..."',
+        '"Manakah yang termasuk..."',
+        '"Apa nama..."',
+        '"Tuliskan..."',
+        '"Jelaskan definisi..."',
+        '"Apa fungsi dari..."',
+        '"Apa arti..."',
+    ]
+
     if not bloom_levels:
         return ""
-        
-    instructions = [bloom_map[b] for b in bloom_levels if b in bloom_map]
-    if not instructions:
+
+    allowed_levels = [b for b in bloom_levels if b in bloom_map]
+    if not allowed_levels:
         return ""
-        
-    return "Level Kognitif (Taksonomi Bloom): " + ", ".join(instructions) + ". "
+
+    all_levels = ["C1", "C2", "C3", "C4", "C5", "C6"]
+    forbidden_levels = [lvl for lvl in all_levels if lvl not in allowed_levels]
+
+    allowed_descriptions = [bloom_map[b] for b in allowed_levels]
+    wajib_section = "LEVEL KOGNITIF YANG WAJIB DIBUAT:\n" + "\n".join(f"- {desc}" for desc in allowed_descriptions)
+
+    if forbidden_levels:
+        forbidden_descriptions = [bloom_map[lvl] for lvl in forbidden_levels]
+        forbidden_section = (
+            "LEVEL KOGNITIF YANG DILARANG (JANGAN BUAT SOAL LEVEL INI):\n"
+            + "\n".join(f"- {desc}" for desc in forbidden_descriptions)
+        )
+    else:
+        forbidden_section = ""
+
+    c1_warning = ""
+    if "C1" not in allowed_levels:
+        patterns_str = "\n".join(f"- {p}" for p in c1_forbidden_patterns)
+        c1_warning = (
+            "PERINGATAN: Level C1 (Mengingat) TIDAK dipilih. "
+            "JANGAN gunakan pola kalimat recall/mengingat seperti:\n"
+            f"{patterns_str}\n"
+            "Soal harus menguji pemahaman, penerapan, analisis, evaluasi, atau kreasi — BUKAN sekadar mengingat fakta."
+        )
+
+    per_level = max(1, jumlah_soal // len(allowed_levels))
+    distribusi_section = (
+        f"DISTRIBUSI: Buat sekitar {per_level} soal untuk setiap level kognitif yang dipilih "
+        f"(total {jumlah_soal} soal). Pastikan semua level terwakili secara merata."
+    )
+
+    parts = [wajib_section]
+    if forbidden_section:
+        parts.append(forbidden_section)
+    if c1_warning:
+        parts.append(c1_warning)
+    parts.append(distribusi_section)
+
+    return "--- LEVEL KOGNITIF WAJIB ---\n" + "\n\n".join(parts) + "\n--- END LEVEL KOGNITIF ---"
 
 
 def _get_gaya_instruction(gaya_soal: List[str]) -> str:
@@ -248,7 +297,7 @@ def _build_user_prompt(
     }
 
     gaya_instruction = _get_gaya_instruction(gaya_soal)
-    bloom_instruction = _get_bloom_instruction(bloom_levels or [])
+    bloom_instruction = _get_bloom_instruction(bloom_levels or [], jumlah_soal)
     fase_detail = _get_fase_detail(fase_kelas)
 
     if tipe_konten == TipeKonten.cp_tp:
@@ -277,8 +326,8 @@ def _build_user_prompt(
     prompt = f"""Buat {jumlah_soal} soal {tipe_label.get(tipe_soal, tipe_soal)}:
 Mapel: {mata_pelajaran} | Topik: {topik or 'Materi inti'}
 Panduan Wajib untuk Fase Ini: {fase_detail}
-Gaya: {gaya_instruction} | Level: {difficulty_instruction.get(difficulty, difficulty)}
 {bloom_instruction}
+Gaya: {gaya_instruction} | Level: {difficulty_instruction.get(difficulty, difficulty)}
 
 Materi:
 {materi_section}
@@ -324,6 +373,7 @@ def _build_regenerate_prompt(
     }
 
     gaya_instruction = _get_gaya_instruction(gaya_soal)
+    bloom_instruction = _get_bloom_instruction(bloom_levels or [], jumlah_soal=1)
     fase_detail = _get_fase_detail(fase_kelas)
 
     if tipe_konten == TipeKonten.cp_tp:
@@ -361,8 +411,8 @@ Soal Lama:
 Parameter Soal Baru:
 Mapel: {mata_pelajaran} | Topik: {topik if topik else "Sesuaikan dengan materi"}
 Panduan Wajib untuk Fase Ini: {fase_detail}
+{bloom_instruction}
 Gaya Soal: {gaya_instruction} | Level: {difficulty_instruction.get(difficulty, difficulty)}
-{_get_bloom_instruction(bloom_levels or [])}
 Tipe Soal: {tipe_label.get(tipe_soal, tipe_soal)}
 {feedback_section}
 Ringkasan Materi:
